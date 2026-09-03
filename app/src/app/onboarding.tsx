@@ -14,7 +14,7 @@ import { Chevron, ProgressBar, StepFrame, Subtitle, Title } from '@/features/onb
 import { MultiSelect, SingleSelect } from '@/features/onboarding/components/options';
 import { Analyzing, DateStep, ScoreStep } from '@/features/onboarding/components/hero-steps';
 import { Framing, Interstitial, Plan, Welcome } from '@/features/onboarding/components/intro-steps';
-import { Notifications, Paywall, Signature } from '@/features/onboarding/components/closing-steps';
+import { Notifications, Signature } from '@/features/onboarding/components/closing-steps';
 
 function Flow() {
   const { index, direction, answers, dispatch } = useOnboarding();
@@ -99,8 +99,7 @@ function Flow() {
         {step.kind === 'date' && <DateStep onNext={next} />}
         {step.kind === 'plan' && <Plan answers={answers} onNext={next} />}
         {step.kind === 'signature' && <Signature onNext={next} />}
-        {step.kind === 'notifications' && <Notifications onNext={next} />}
-        {step.kind === 'paywall' && <Paywall onDone={done} />}
+        {step.kind === 'notifications' && <Notifications onNext={done} />}
       </StepFrame>
     </SafeAreaView>
   );

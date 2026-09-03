@@ -65,6 +65,8 @@ export default function RootLayout() {
           <Stack.Screen name="reasons" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="account" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="sign-in" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+          {/* The wall. No swipe-to-dismiss — there is no free tier to fall back to. */}
+          <Stack.Screen name="paywall" options={{ gestureEnabled: false, animation: 'slide_from_bottom' }} />
           <Stack.Screen name="urge" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
           <Stack.Screen name="relapse" options={{ presentation: 'modal', animation: 'fade' }} />
           <Stack.Screen name="milestone" options={{ presentation: 'fullScreenModal', animation: 'fade', gestureEnabled: false }} />

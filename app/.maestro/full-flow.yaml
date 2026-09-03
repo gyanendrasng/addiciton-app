@@ -1,0 +1,67 @@
+# The whole first-run chain: onboarding → required sign-in → hard paywall → tabs.
+# One habit (Smoking) so there's exactly one frequency question.
+# Needs a fresh install: `stopApp` alone won't clear an existing profile.
+appId: host.exp.Exponent
+---
+- stopApp
+- openLink: exp://127.0.0.1:8090
+- extendedWaitUntil: { visible: "Break the cycle.", timeout: 120000 }
+- tapOn: "Start the 2-minute quiz"
+
+- extendedWaitUntil: { visible: "Your brain can rewire itself in 90 days.", timeout: 20000 }
+- tapOn: "I’m ready"
+
+- extendedWaitUntil: { visible: "What are you quitting?", timeout: 20000 }
+- tapOn: "Smoking"
+# the multi-select CTA counts the picks, so match it loosely
+- tapOn: "Continue.*"
+
+- extendedWaitUntil: { visible: "How often do you smoke?", timeout: 20000 }
+- tapOn: "About once a day"
+- extendedWaitUntil: { visible: "How long has this been part of your life?", timeout: 20000 }
+- tapOn: "1–3 years"
+- extendedWaitUntil: { visible: "When do urges hit hardest?", timeout: 20000 }
+- tapOn: "Late at night"
+- extendedWaitUntil: { visible: "What have you noticed?", timeout: 20000 }
+- tapOn: "Low energy"
+- tapOn: "Continue.*"
+- extendedWaitUntil: { visible: "You’re not alone.", timeout: 20000 }
+- tapOn: "Continue.*"
+- extendedWaitUntil: { visible: "Have you tried to quit before?", timeout: 20000 }
+- tapOn: "Once or twice"
+- extendedWaitUntil: { visible: "What is it costing you?", timeout: 20000 }
+- tapOn: "My time"
+- tapOn: "Continue.*"
+- extendedWaitUntil: { visible: "Your brain can rewire.", timeout: 20000 }
+- tapOn: "Continue.*"
+- extendedWaitUntil: { visible: "How old are you?", timeout: 20000 }
+- tapOn: "26–34"
+- extendedWaitUntil: { visible: "What’s your goal?", timeout: 20000 }
+- tapOn: "Quit completely"
+
+# analyzing (auto) → score → freedom date → plan → signature → reminders
+- extendedWaitUntil: { visible: "See what’s possible", timeout: 60000 }
+- tapOn: "See what’s possible"
+- extendedWaitUntil: { visible: "Build my plan", timeout: 20000 }
+- tapOn: "Build my plan"
+- extendedWaitUntil: { visible: "Commit to it", timeout: 20000 }
+- tapOn: "Commit to it"
+- extendedWaitUntil: { visible: "I commit", timeout: 20000 }
+- swipe: { start: 30%, 55%, end: 75%, 45% }   # sign the pad
+- tapOn: "I commit"
+- extendedWaitUntil: { visible: "Maybe later", timeout: 20000 }
+- tapOn: "Maybe later"
+
+# ── the gate takes over ────────────────────────────────────────────────────
+- extendedWaitUntil: { visible: "Create your account.", timeout: 30000 }
+- assertNotVisible: "Not now"        # required mode has no escape hatch
+- tapOn: "Skip (dev only)"
+
+- extendedWaitUntil: { visible: "Subscribe.*", timeout: 30000 }
+- assertVisible: "Restore purchase"  # Apple 3.1.2
+- assertVisible: "Terms"
+- assertVisible: "Privacy"
+- tapOn: "Subscribe.*"
+
+- extendedWaitUntil: { visible: "Settings", timeout: 40000 }
+- assertVisible: "I have an urge"

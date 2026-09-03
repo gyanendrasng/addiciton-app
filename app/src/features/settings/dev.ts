@@ -10,6 +10,19 @@ import { addDays, dayKey, getTimeOffset, now, setTimeOffset } from '@/lib/clock'
 
 export const DEV_OFFSET_KEY = 'dev.time_offset_ms';
 
+/**
+ * Lets development past the required sign-in step.
+ *
+ * The wall needs a live backend and a dev build (native Apple/Google sign-in,
+ * RevenueCat) to clear honestly. Until then this flag stands in for "has an
+ * account" so the rest of the app stays reachable. Read only under `__DEV__`.
+ */
+export const DEV_SKIP_AUTH_KEY = 'dev.skip_auth';
+
+export async function skipAuthForDev() {
+  await setSetting(DEV_SKIP_AUTH_KEY, true);
+}
+
 export async function loadDevOffset() {
   const v = await getSetting<number>(DEV_OFFSET_KEY);
   if (typeof v === 'number' && v !== 0) setTimeOffset(v);

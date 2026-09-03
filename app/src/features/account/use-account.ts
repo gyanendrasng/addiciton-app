@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { AUTH_BASE_URL, authClient } from '@/lib/auth-client';
 import { useSession } from '@/lib/session';
 import { getSetting, setSetting } from '@/db/repo/settings';
+import { setPremium } from '@/db/repo/profile';
 
 export type Entitlement = {
   active: boolean;
@@ -71,8 +72,12 @@ export function useAccount() {
   const refresh = useCallback(async () => {
     setChecking(true);
     const fresh = await fetchEntitlement();
-    if (fresh) setEntitlement(fresh);
-    else {
+    if (fresh) {
+      setEntitlement(fresh);
+      // Mirror the server's answer into local SQLite so the premium gate can
+      // decide instantly, and correctly, on a cold or offline launch.
+      await setPremium(fresh.active);
+    } else {
       const cached = await getSetting<Entitlement>(CACHE_KEY);
       if (cached) setEntitlement(cached);
     }

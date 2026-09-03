@@ -1,5 +1,5 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -28,6 +28,7 @@ import {
   verifyEmailCode,
   type Provider,
 } from '@/features/account/sign-in';
+import { skipAuthForDev } from '@/features/settings/dev';
 import { useSession } from '@/lib/session';
 import { hues, palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
@@ -59,6 +60,13 @@ const POINTS = [
 
 export default function SignInScreen() {
   const router = useRouter();
+  /**
+   * `required=1` means the tabs gate sent the user here: an account is a step
+   * on the way in, not an option, so there is no close button and no "not now".
+   * Opened from Settings instead, it's an ordinary dismissible modal.
+   */
+  const { required } = useLocalSearchParams<{ required?: string }>();
+  const mustSignIn = required === '1';
   const { refresh: refreshSession } = useSession();
   const [pane, setPane] = useState<Pane>('providers');
   const [busy, setBusy] = useState<Provider | null>(null);
@@ -85,6 +93,7 @@ export default function SignInScreen() {
 
   /** This screen can be reached by deep link, so there may be no history. */
   const leave = () => {
+    if (mustSignIn) return router.replace('/'); // let the gate decide what's next
     if (router.canGoBack()) router.back();
     else router.replace('/');
   };
@@ -128,12 +137,13 @@ export default function SignInScreen() {
     Keyboard.dismiss();
     if (pane === 'code') setPane('email');
     else if (pane === 'email') setPane('providers');
-    else leave();
+    else if (!mustSignIn) leave();
   };
 
   return (
     <SafeAreaView style={s.root} edges={['top', 'bottom']}>
       <View style={s.bar}>
+        {mustSignIn && pane === 'providers' ? null : (
         <Tap
           haptic="none"
           onPress={back}
@@ -152,6 +162,7 @@ export default function SignInScreen() {
             <Text style={s.closeGlyph}>{pane === 'providers' ? '✕' : '‹'}</Text>
           )}
         </Tap>
+        )}
       </View>
 
       <KeyboardAvoidingView
@@ -161,8 +172,14 @@ export default function SignInScreen() {
           <Animated.View entering={FadeIn.duration(320)} style={s.fill}>
             <View style={s.top}>
               <AppLogo size={56} />
-              <Text style={s.h1}>Keep your premium{'\n'}on every device.</Text>
-              <Text style={s.sub}>One account, used for one thing: proving you’ve paid.</Text>
+              <Text style={s.h1}>
+                {mustSignIn ? 'Create your account.' : 'Keep your premium\non every device.'}
+              </Text>
+              <Text style={s.sub}>
+                {mustSignIn
+                  ? 'One account, used for one thing: holding your subscription so it follows you to a new phone.'
+                  : 'One account, used for one thing: proving you’ve paid.'}
+              </Text>
             </View>
 
             <View style={s.middle}>
@@ -230,6 +247,28 @@ export default function SignInScreen() {
               <Text style={s.legal}>
                 We store your email address and whether your subscription is active. Nothing else.
               </Text>
+
+              {/* Sign in with Apple can't run on the iOS Simulator —
+                  `isAvailableAsync()` reports false and `signInAsync` throws.
+                  It appears on a real device. */}
+              {__DEV__ && Platform.OS === 'ios' && !showApple ? (
+                <Text style={s.legal}>
+                  Dev note: Apple sign-in is hidden because this is the Simulator.
+                </Text>
+              ) : null}
+
+              {/* Real sign-in needs a deployed backend and a dev build. */}
+              {__DEV__ && mustSignIn ? (
+                <Tap
+                  haptic="none"
+                  onPress={async () => {
+                    await skipAuthForDev();
+                    router.replace('/');
+                  }}
+                  style={s.ghost}>
+                  <Text style={s.ghostLabel}>Skip (dev only)</Text>
+                </Tap>
+              ) : null}
             </View>
           </Animated.View>
         ) : (

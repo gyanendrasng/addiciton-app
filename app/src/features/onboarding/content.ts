@@ -130,8 +130,7 @@ export type Step =
   | { kind: 'date' }
   | { kind: 'plan' }
   | { kind: 'signature' }
-  | { kind: 'notifications' }
-  | { kind: 'paywall' };
+  | { kind: 'notifications' };
 
 export const steps: Step[] = [
   { kind: 'welcome' },
@@ -246,7 +245,9 @@ export const steps: Step[] = [
   { kind: 'plan' },
   { kind: 'signature' },
   { kind: 'notifications' },
-  { kind: 'paywall' },
+  // The paywall is NOT an onboarding step any more — the tabs gate routes
+  // through /sign-in then /paywall once the profile exists, so the wall is in
+  // one place instead of two.
 ];
 
 /** Expand the base steps for the picked habits: one frequency question per habit. */

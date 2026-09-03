@@ -20,7 +20,8 @@ export function Welcome({ onNext }: { onNext: () => void }) {
           </View>
           <Title center>Break the cycle.{'\n'}For good.</Title>
           <Subtitle center>
-            A 90-day, science-based program that rewires the habit — not another test of willpower.
+            A 90-day plan with something to do in the moment an urge hits — not another test of
+            willpower.
           </Subtitle>
         </Animated.View>
       </View>
