@@ -90,7 +90,35 @@ The pattern used across Settings and Account, and the default for any list of op
 - **Ghost:** text only in `textDim`, centred, 44pt tall touch area.
 - **Destructive:** `danger` label on a normal surface. Never a filled red button — the confirm alert carries the weight.
 - Disabled is `opacity: 0.4` **and** a no-op handler. Never a button that looks live and does nothing.
-- Third-party auth buttons use the provider's own mark, unmodified (`brand-marks.tsx`), and Apple's own control where it's available — their HIG requires it and Google's guidelines forbid recolouring the G.
+- Third-party auth buttons are **not ours to design**. Use `components/ui/provider-buttons.tsx`, never a hand-rolled one — see below.
+
+### Sign-in provider buttons (vendor specs, not preferences)
+
+These two controls are most of what decides whether an auth screen reads as
+native or home-made. Both vendors publish rules, and both gate App Review.
+
+**Apple** — Sign in with Apple → Buttons (HIG):
+- Display it prominently and **no smaller than any other sign-in button**.
+- Never make the user scroll to reach it.
+- Titles allowed: *Sign in with Apple*, *Sign up with Apple*, *Continue with Apple*. Nothing else.
+- Prefer Apple's own `AppleAuthenticationButton`; it supports `cornerRadius`, so it can match the app's radius. Custom buttons must set the logo height equal to the button height, with no cropping and no vertical padding.
+- It cannot run on the **iOS Simulator**: `isAvailableAsync()` returns false and `signInAsync` always throws. Development draws a stand-in so the screen looks like it ships.
+
+**Google** — Sign in with Google branding guidelines, exact values:
+
+| | fill | 1px inside stroke | text |
+|---|---|---|---|
+| dark | `#131314` | `#8E918F` | `#E3E3E3` |
+| light | `#FFFFFF` | `#747775` | `#1F1F1F` |
+| neutral | `#F2F2F2` | none | `#1F1F1F` |
+
+- Type is Google Sans Medium 14/20. Google Sans can't be bundled, so use the **platform system face** — the app's brand font is not an option on this button.
+- The four-colour G may never be resized or recoloured.
+- Titles allowed: *Sign in with Google*, *Sign up with Google*, *Continue with Google*. Rectangular or pill.
+
+The trap: theming these from `palette` so they "match the app". That is exactly
+what makes an auth screen look generic — they are supposed to look like Apple's
+and Google's buttons, not like ours.
 
 ### Inputs
 

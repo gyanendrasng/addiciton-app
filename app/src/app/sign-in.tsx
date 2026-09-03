@@ -1,4 +1,3 @@
-import * as AppleAuthentication from 'expo-apple-authentication';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useEffect, useState } from 'react';
@@ -15,7 +14,13 @@ import {
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AppleMark, GoogleMark } from '@/components/ui/brand-marks';
+import { AppLogo } from '@/components/ui/app-logo';
+import {
+  AppleButton,
+  AppleFallbackButton,
+  GoogleButton,
+  PROVIDER_BUTTON_HEIGHT,
+} from '@/components/ui/provider-buttons';
 import { Notice } from '@/components/ui/notice';
 import { Tap } from '@/components/ui/tap';
 import {
@@ -176,12 +181,13 @@ export default function SignInScreen() {
 
       <KeyboardAvoidingView style={s.fill} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <Animated.View entering={FadeIn.duration(280)} style={s.fill}>
-          {/* The screen is three buttons and a sentence. Splitting those to
-              opposite ends of the phone leaves a hole in the middle, so the
-              slack goes above the block instead. */}
+          {/* One centred composition. There's no content above to anchor to,
+              so the slack is split evenly rather than left as a hole in the
+              middle — the mark carries the top of the block. */}
           <View style={s.spacer} />
 
           <View style={s.top}>
+            {pane === 'providers' ? <AppLogo size={60} /> : null}
             <Text style={s.h1}>{heading}</Text>
             <Text style={s.sub}>{subheading}</Text>
           </View>
@@ -228,47 +234,21 @@ export default function SignInScreen() {
 
             {pane === 'providers' ? (
               <>
-                {busy === 'apple' ? (
-                  <View style={[s.btn, s.apple]}>
-                    <ActivityIndicator color="#000000" />
-                  </View>
-                ) : showRealAppleButton ? (
-                  <AppleAuthentication.AppleAuthenticationButton
-                    buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
-                    buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
-                    cornerRadius={16}
-                    style={s.btn}
+                {showRealAppleButton ? (
+                  <AppleButton
+                    available
+                    busy={busy === 'apple'}
                     onPress={() => go('apple')}
                   />
                 ) : showStandInAppleButton ? (
-                  <Tap
-                    haptic="light"
-                    onPress={() => go('apple')}
-                    accessibilityRole="button"
-                    accessibilityLabel="Continue with Apple"
-                    style={[s.btn, s.apple, busy !== null && s.dim]}>
-                    <View style={s.btnInner}>
-                      <AppleMark size={19} color="#000000" />
-                      <Text style={[s.btnLabel, { color: '#000000' }]}>Continue with Apple</Text>
-                    </View>
-                  </Tap>
+                  <AppleFallbackButton onPress={() => go('apple')} disabled={busy !== null} />
                 ) : null}
 
-                <Tap
-                  haptic="light"
+                <GoogleButton
                   onPress={() => go('google')}
-                  accessibilityRole="button"
-                  accessibilityLabel="Continue with Google"
-                  style={[s.btn, s.google, busy !== null && s.dim]}>
-                  {busy === 'google' ? (
-                    <ActivityIndicator color={palette.text} />
-                  ) : (
-                    <View style={s.btnInner}>
-                      <GoogleMark size={19} />
-                      <Text style={s.btnLabel}>Continue with Google</Text>
-                    </View>
-                  )}
-                </Tap>
+                  busy={busy === 'google'}
+                  disabled={busy !== null}
+                />
 
                 <Tap
                   haptic="none"
@@ -323,6 +303,8 @@ export default function SignInScreen() {
               </>
             )}
           </View>
+
+          <View style={s.spacer} />
         </Animated.View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -337,7 +319,7 @@ const s = StyleSheet.create({
   closeIcon: { width: 17, height: 17 },
   closeGlyph: { color: palette.textDim, fontSize: 22, fontFamily: type.bodyMed },
 
-  top: { paddingHorizontal: Spacing.four, paddingBottom: Spacing.five, gap: Spacing.two },
+  top: { paddingHorizontal: Spacing.four, paddingBottom: Spacing.five, gap: Spacing.three },
   h1: {
     color: palette.text,
     fontSize: 32,
@@ -361,14 +343,16 @@ const s = StyleSheet.create({
   },
   codeInput: { textAlign: 'center', fontSize: 26, letterSpacing: 10, fontFamily: type.bodySemi },
 
-  spacer: { flex: 1, minHeight: Spacing.five },
+  spacer: { flex: 1, minHeight: Spacing.four },
 
-  actions: { paddingHorizontal: Spacing.four, paddingBottom: Spacing.two, gap: Spacing.two },
-  btn: { height: 54, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  btnInner: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  actions: { paddingHorizontal: Spacing.four, gap: Spacing.two },
+  btn: {
+    height: PROVIDER_BUTTON_HEIGHT,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   btnLabel: { color: palette.text, fontSize: 16, fontFamily: type.bodySemi },
-  apple: { backgroundColor: '#FFFFFF' },
-  google: { backgroundColor: palette.surface2, borderWidth: 1, borderColor: palette.line },
   primary: { backgroundColor: palette.accent },
   dim: { opacity: 0.4 },
   ghost: { alignSelf: 'center', paddingVertical: 10, paddingHorizontal: 20 },

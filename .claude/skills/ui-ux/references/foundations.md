@@ -121,6 +121,22 @@ This app is flat. Depth order, cheapest first:
 3. **Space** — more gap than the neighbours have.
 4. **Shadow** — rare, and only on genuinely floating things (sheets). If used: two parts, a tight dark one and a wide soft one; never a coloured glow.
 
+## Feeling native on both platforms
+
+The app should read as an iOS app on iPhone and an Android app on Android — not
+as one custom skin shipped twice.
+
+- **Vendor controls stay vendor-coloured.** Sign-in buttons, share sheets and
+  system alerts follow their platform, never the palette (patterns → provider buttons).
+- **System font where the platform owns the text.** Brand fonts are for our
+  copy; a provider button, a system alert and the keyboard are not our copy.
+- **Platform affordances:** iOS gets SF Symbols, a left chevron for back, an ✕
+  on modal sheets, swipe-to-dismiss. Android gets its back arrow and back
+  gesture, and a ripple rather than an opacity dip.
+- **Don't reinvent navigation.** Tabs, sheets and the back gesture are where a
+  user's muscle memory lives (Jakob's Law); novelty belongs in the hero moments.
+- Test both. A screen verified only on one platform is verified on neither.
+
 ## Motion
 
 Owned by the `animation` skill. The one number to remember here: **Doherty Threshold — keep interaction response under 400ms** or the app feels like it's thinking.
