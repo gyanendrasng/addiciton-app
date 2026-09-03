@@ -189,6 +189,18 @@ export default function SettingsScreen() {
           </View>
         </Section>
 
+        <Section label="Your quiz">
+          <Row
+            icon="list.bullet.rectangle"
+            iconTint={hues.checkin.solid}
+            iconWash={hues.checkin.wash}
+            label="Your answers"
+            sub="Change what you said during onboarding."
+            onPress={() => router.push('/answers')}
+            chevron
+          />
+        </Section>
+
         <Section label="Reminders">
           <Row icon="bell.fill" iconTint={palette.amber} iconWash={palette.amberWash} label="Daily reminders" sub="Morning pledge and evening check-in. Nothing else.">
             <Switch value={remindersOn.value} onValueChange={applyReminders} trackColor={{ true: palette.accentDeep, false: palette.surface3 }} thumbColor={palette.text} />

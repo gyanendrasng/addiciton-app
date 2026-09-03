@@ -68,6 +68,23 @@ export async function setQuitStartedAt(ms: number) {
   emit('profile');
 }
 
+/**
+ * Rewrite the onboarding answers (Settings → Your answers).
+ *
+ * The score is derived from the answers, so it is recomputed here rather than
+ * left stale. The quit date and freedom date are NOT touched — those belong to
+ * when the user started, not to what they said about themselves.
+ */
+export async function setAnswers(answers: Record<string, number[]>, score: number) {
+  const db = await getDb();
+  await db.runAsync(
+    'UPDATE profile SET answers = ?, score = ? WHERE id = 1',
+    JSON.stringify(answers),
+    score,
+  );
+  emit('profile');
+}
+
 export async function setHabits(habits: string[]) {
   const db = await getDb();
   await db.runAsync('UPDATE profile SET habits = ? WHERE id = 1', JSON.stringify(habits));
