@@ -11,7 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppLogo } from '@/components/ui/app-logo';
@@ -33,6 +33,7 @@ import {
 } from '@/features/account/sign-in';
 import { skipAuthForDev } from '@/features/settings/dev';
 import { useSession } from '@/lib/session';
+import { durations, stagger } from '@/theme/motion';
 import { palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
@@ -182,13 +183,31 @@ export default function SignInScreen() {
               gap value everywhere is what makes a block read flat: 36 under the
               mark, 12 from heading to its sentence (they're one unit), then a
               full break before the buttons. */}
+          {/* A short spacer above and a long one below: the hero sits about a
+              fifth down rather than jammed under the status bar, which halves
+              the dead space in the middle without centring the whole thing. */}
+          <View style={s.leadIn} />
+
           <View style={s.top}>
-            {pane === 'providers' ? <AppLogo size={104} /> : null}
-            <Text style={[s.h1, pane === 'providers' && s.h1AfterMark]}>{heading}</Text>
+            {pane === 'providers' ? <AppLogo size={104} animate /> : null}
+            {/* One hero per screen: the mark breaks, then the rest settles in
+                behind it. Entrances rise 10px — enough to read as arriving,
+                not enough to look like it fell. */}
+            <Animated.Text
+              entering={FadeInDown.delay(260).duration(durations.base).springify().damping(20)}
+              style={[s.h1, pane === 'providers' && s.h1AfterMark]}>
+              {heading}
+            </Animated.Text>
             {/* The provider pane doesn't need a sentence — the buttons say what
                 happens, and the fine print at the bottom covers the rest. The
                 email panes do: the user needs to know a code is coming. */}
-            {subheading ? <Text style={s.sub}>{subheading}</Text> : null}
+            {subheading ? (
+              <Animated.Text
+                entering={FadeInDown.delay(300).duration(durations.base).springify().damping(20)}
+                style={s.sub}>
+                {subheading}
+              </Animated.Text>
+            ) : null}
           </View>
 
           {pane === 'email' ? (
@@ -235,6 +254,8 @@ export default function SignInScreen() {
 
             {pane === 'providers' ? (
               <>
+                <Animated.View
+                  entering={FadeInDown.delay(340).duration(durations.base).springify().damping(20)}>
                 {showRealAppleButton ? (
                   <AppleButton
                     available
@@ -244,23 +265,36 @@ export default function SignInScreen() {
                 ) : showStandInAppleButton ? (
                   <AppleFallbackButton onPress={() => go('apple')} disabled={busy !== null} />
                 ) : null}
+                </Animated.View>
 
-                <GoogleButton
-                  onPress={() => go('google')}
-                  busy={busy === 'google'}
-                  disabled={busy !== null}
-                />
+                <Animated.View
+                  entering={FadeInDown.delay(340 + stagger)
+                    .duration(durations.base)
+                    .springify()
+                    .damping(20)}>
+                  <GoogleButton
+                    onPress={() => go('google')}
+                    busy={busy === 'google'}
+                    disabled={busy !== null}
+                  />
+                </Animated.View>
 
-                <Tap
-                  haptic="none"
-                  onPress={() => {
-                    setError(null);
-                    setPane('email');
-                  }}
-                  accessibilityRole="button"
-                  style={s.ghost}>
-                  <Text style={s.ghostLabel}>Use an email code instead</Text>
-                </Tap>
+                <Animated.View
+                  entering={FadeInDown.delay(340 + stagger * 2)
+                    .duration(durations.base)
+                    .springify()
+                    .damping(20)}>
+                  <Tap
+                    haptic="none"
+                    onPress={() => {
+                      setError(null);
+                      setPane('email');
+                    }}
+                    accessibilityRole="button"
+                    style={s.ghost}>
+                    <Text style={s.ghostLabel}>Use an email code instead</Text>
+                  </Tap>
+                </Animated.View>
 
                 {__DEV__ && mustSignIn ? (
                   <Tap
@@ -316,7 +350,8 @@ const s = StyleSheet.create({
   closeIcon: { width: 17, height: 17 },
   closeGlyph: { color: palette.textDim, fontSize: 22, fontFamily: type.bodyMed },
 
-  top: { paddingHorizontal: Spacing.four, paddingTop: Spacing.four },
+  leadIn: { flex: 0.55 },
+  top: { paddingHorizontal: Spacing.four },
   h1AfterMark: { marginTop: Spacing.five + 4 }, // 36 — the mark is its own block
   h1: {
     color: palette.text,
