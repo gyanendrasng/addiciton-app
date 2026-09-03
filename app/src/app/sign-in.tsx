@@ -148,11 +148,7 @@ export default function SignInScreen() {
           : 'Sign in.';
 
   const subheading =
-    pane === 'email'
-      ? 'We’ll send a 6-digit code.'
-      : pane === 'code'
-        ? `Sent to ${email}.`
-        : 'So your subscription follows you to a new phone.';
+    pane === 'email' ? 'We’ll send a 6-digit code.' : pane === 'code' ? `Sent to ${email}.` : null;
 
   return (
     <SafeAreaView style={s.root} edges={['top', 'bottom']}>
@@ -181,19 +177,18 @@ export default function SignInScreen() {
 
       <KeyboardAvoidingView style={s.fill} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <Animated.View entering={FadeIn.duration(280)} style={s.fill}>
-          {/* One centred composition. There's no content above to anchor to,
-              so the slack is split evenly rather than left as a hole in the
-              middle — the mark carries the top of the block. */}
-          <View style={s.spacer} />
-
-          {/* Vertical rhythm, deliberately uneven — a single gap value between
-              every element is what makes a block read flat. The mark is its own
-              thing (32 below it), the heading and its sentence belong together
-              (10 apart), and the actions are a separate group again (40). */}
+          {/* Hero at the top, actions in the thumb zone at the bottom, and the
+              slack between them. Vertical rhythm is deliberately uneven — one
+              gap value everywhere is what makes a block read flat: 36 under the
+              mark, 12 from heading to its sentence (they're one unit), then a
+              full break before the buttons. */}
           <View style={s.top}>
-            {pane === 'providers' ? <AppLogo size={60} /> : null}
+            {pane === 'providers' ? <AppLogo size={104} /> : null}
             <Text style={[s.h1, pane === 'providers' && s.h1AfterMark]}>{heading}</Text>
-            <Text style={s.sub}>{subheading}</Text>
+            {/* The provider pane doesn't need a sentence — the buttons say what
+                happens, and the fine print at the bottom covers the rest. The
+                email panes do: the user needs to know a code is coming. */}
+            {subheading ? <Text style={s.sub}>{subheading}</Text> : null}
           </View>
 
           {pane === 'email' ? (
@@ -232,6 +227,8 @@ export default function SignInScreen() {
               />
             </View>
           ) : null}
+
+          <View style={s.spacer} />
 
           <View style={s.actions}>
             {error ? <Notice>{error}</Notice> : null}
@@ -307,8 +304,6 @@ export default function SignInScreen() {
               </>
             )}
           </View>
-
-          <View style={s.spacer} />
         </Animated.View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -323,12 +318,14 @@ const s = StyleSheet.create({
   closeIcon: { width: 17, height: 17 },
   closeGlyph: { color: palette.textDim, fontSize: 22, fontFamily: type.bodyMed },
 
-  top: { paddingHorizontal: Spacing.four },
-  h1AfterMark: { marginTop: Spacing.five },
+  top: { paddingHorizontal: Spacing.four, paddingTop: Spacing.four },
+  h1AfterMark: { marginTop: Spacing.five + 4 }, // 36 — the mark is its own block
   h1: {
     color: palette.text,
+    // 32 rather than 36: "Create your account." holds one line here, and a
+    // two-line heading over an empty middle reads as an accident.
     fontSize: 32,
-    lineHeight: 37,
+    lineHeight: 38,
     letterSpacing: -0.7,
     fontFamily: type.display,
   },
@@ -337,7 +334,7 @@ const s = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     fontFamily: type.body,
-    marginTop: 10, // tight to its heading — they are one unit
+    marginTop: 12, // tight to its heading — they are one unit
   },
 
   form: { paddingHorizontal: Spacing.four, marginTop: Spacing.five },
@@ -354,11 +351,11 @@ const s = StyleSheet.create({
   },
   codeInput: { textAlign: 'center', fontSize: 26, letterSpacing: 10, fontFamily: type.bodySemi },
 
-  spacer: { flex: 1, minHeight: Spacing.four },
+  spacer: { flex: 1, minHeight: Spacing.five + Spacing.two }, // never less than 40
 
   actions: {
     paddingHorizontal: Spacing.four,
-    marginTop: Spacing.five + Spacing.two, // 40 — a clear break from the copy
+    paddingBottom: Spacing.two,
     gap: 12, // stacked 54pt buttons need more air than the 8pt step
   },
   btn: {
@@ -370,7 +367,7 @@ const s = StyleSheet.create({
   btnLabel: { color: palette.text, fontSize: 16, fontFamily: type.bodySemi },
   primary: { backgroundColor: palette.accent },
   dim: { opacity: 0.4 },
-  ghost: { alignSelf: 'center', paddingVertical: 12, paddingHorizontal: 20, marginTop: Spacing.one },
+  ghost: { alignSelf: 'center', paddingVertical: 12, paddingHorizontal: 20, marginTop: Spacing.two },
   ghostLabel: { color: palette.textDim, fontSize: 15, fontFamily: type.bodyMed },
   devLabel: { color: palette.amber, fontSize: 13, fontFamily: type.bodyMed },
   legal: {
