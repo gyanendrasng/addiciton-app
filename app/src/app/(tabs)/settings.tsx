@@ -10,7 +10,7 @@ import { SymbolChip } from '@/components/ui/symbol-chip';
 import type { SFSymbol } from 'expo-symbols';
 import { Tap } from '@/components/ui/tap';
 import { getDb } from '@/db/client';
-import { setHabits, useProfile } from '@/db/repo/profile';
+import { setHabits, setPremium, useProfile } from '@/db/repo/profile';
 import { setSetting, useSetting } from '@/db/repo/settings';
 import {
   cancelDailyReminders,
@@ -21,19 +21,20 @@ import {
 import { wipeEverything } from '@/features/onboarding/complete';
 import { habits as ALL_HABITS } from '@/features/onboarding/content';
 import { Eyebrow, Title } from '@/features/onboarding/components/chrome';
-import { clearToday, seedDemo, travel } from '@/features/settings/dev';
+import { clearToday, DEV_SKIP_AUTH_KEY, seedDemo, travel } from '@/features/settings/dev';
 import { TABLES } from '@/db/schema';
 import { getTimeOffset } from '@/lib/clock';
 import { hues, palette, type ThemePref } from '@/theme/palette';
 import { isExpoGo, setThemePref } from '@/theme/theme';
 import { useAccount } from '@/features/account/use-account';
+import { signOutEverywhere } from '@/features/account/sign-in';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { profile } = useProfile();
-  const { signedIn, user, premium } = useAccount();
+  const { signedIn, user, premium, refreshSession } = useAccount();
   const remindersOn = useSetting<boolean>('reminders.enabled', false);
   const morning = useSetting<number>('reminders.morning', 8);
   const evening = useSetting<number>('reminders.evening', 21);
@@ -59,6 +60,26 @@ export default function SettingsScreen() {
       await cancelDailyReminders();
     }
     await setSetting('reminders.enabled', on);
+  };
+
+  const confirmSignOut = () => {
+    const run = async () => {
+      setBusy(true);
+      await signOutEverywhere();
+      await refreshSession();
+      setBusy(false);
+      router.replace('/');
+    };
+    if (busy) return;
+    if (Platform.OS === 'web') return void run();
+    Alert.alert(
+      'Sign out?',
+      'Your subscription lives on your account, so you’ll need to sign back in to use Curb. Your streaks, slips and notes stay on this phone either way.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Sign out', style: 'destructive', onPress: run },
+      ],
+    );
   };
 
   const setHour = async (key: 'reminders.morning' | 'reminders.evening', delta: number) => {
@@ -121,6 +142,34 @@ export default function SettingsScreen() {
             onPress={() => router.push(signedIn ? '/account' : '/sign-in')}
             chevron
           />
+          {/* Sign out is one tap from here, not buried on the account screen —
+              it's the thing people look for in Settings. */}
+          {signedIn ? (
+            <Row
+              icon="rectangle.portrait.and.arrow.right"
+              iconTint={palette.text}
+              iconWash={palette.surface3}
+              label="Sign out"
+              sub="Premium goes with your account. Your on-device history stays."
+              onPress={confirmSignOut}
+            />
+          ) : null}
+          {__DEV__ ? (
+            <Row
+              icon="hammer.fill"
+              iconTint={palette.amber}
+              iconWash={palette.amberWash}
+              label="Reset the wall (dev)"
+              sub="Drops the dev skip and the local premium flag, so the gate runs again."
+              onPress={async () => {
+                // Both, not just the skip: the gate checks premium first, so
+                // clearing only the skip would leave the app open.
+                await setSetting(DEV_SKIP_AUTH_KEY, false);
+                await setPremium(false);
+                router.replace('/');
+              }}
+            />
+          ) : null}
         </Section>
 
         <Section label="Appearance">

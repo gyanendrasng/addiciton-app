@@ -77,8 +77,8 @@ export default function AccountScreen() {
     // The reactive session store doesn't notify on Expo (#10545) — pull it.
     await refreshSession();
     setBusy(false);
-    if (router.canGoBack()) router.back();
-    else router.replace('/');
+    // Premium went with the session, so the gate will show the wall again.
+    router.replace('/');
   };
 
   const revokeOthers = async () => {

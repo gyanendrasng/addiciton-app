@@ -23,6 +23,9 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { Platform } from 'react-native';
 
+import { setPremium } from '@/db/repo/profile';
+import { setSetting } from '@/db/repo/settings';
+import { DEV_SKIP_AUTH_KEY } from '@/features/settings/dev';
 import { track } from '@/lib/analytics';
 import { authClient } from '@/lib/auth-client';
 import { humanError } from '@/lib/errors';
@@ -146,6 +149,24 @@ export function signInWith(provider: Exclude<Provider, 'email'>): Promise<SignIn
   return provider === 'apple' ? signInWithApple() : signInWithGoogle();
 }
 
+/**
+ * Sign out, for real.
+ *
+ * The entitlement belongs to the account, so signing out has to drop the local
+ * premium mirror as well — otherwise "Sign out" is cosmetic: the session ends,
+ * the gate keeps seeing `premium: true` from SQLite, and the app stays unlocked
+ * forever. Clearing it puts the user back at the wall, where signing in again
+ * restores their subscription.
+ *
+ * On-device recovery data is untouched. It is never keyed to an account.
+ */
 export async function signOutEverywhere() {
-  await authClient.signOut();
+  try {
+    await authClient.signOut();
+  } catch {
+    // A failed network call must not strand a session locally — the local
+    // state below is what the gate reads, so clear it regardless.
+  }
+  await setPremium(false);
+  if (__DEV__) await setSetting(DEV_SKIP_AUTH_KEY, false);
 }
