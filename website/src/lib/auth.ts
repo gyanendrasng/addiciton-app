@@ -39,9 +39,24 @@ export const auth = betterAuth({
 
   socialProviders: {
     apple: {
-      clientId: process.env.APPLE_CLIENT_ID as string,
-      clientSecret: process.env.APPLE_CLIENT_SECRET as string,
-      // lets the native iOS flow (expo-apple-authentication) verify its idToken
+      /**
+       * Curb only ever uses Apple's NATIVE flow: expo-apple-authentication
+       * hands us an identity token and Better Auth verifies it. That path
+       * checks `idToken.audience`, which prefers `appBundleIdentifier` over
+       * `clientId` — so the bundle id below is the value that actually
+       * matters.
+       *
+       * `clientSecret` is deliberately absent. It is only read by
+       * createAuthorizationURL and validateAuthorizationCode, i.e. the web
+       * redirect flow, which we don't offer: Apple sign-in is iOS-only here
+       * and the website has no Apple button. Leaving it out also drops the
+       * six-monthly chore of regenerating Apple's client-secret JWT.
+       *
+       * `clientId` stays because the type requires it; it is never consulted
+       * while `appBundleIdentifier` is set. If Apple sign-in is ever added on
+       * the web, both it and a real `clientSecret` become required.
+       */
+      clientId: process.env.APPLE_CLIENT_ID ?? process.env.APPLE_BUNDLE_ID ?? 'app.joincurb.curb',
       appBundleIdentifier: process.env.APPLE_BUNDLE_ID ?? 'app.joincurb.curb',
       /**
        * Apple releases the `email` claim only on the FIRST authorization and
