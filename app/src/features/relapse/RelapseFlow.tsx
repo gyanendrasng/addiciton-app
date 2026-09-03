@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
@@ -14,6 +13,7 @@ import { durations } from '@/theme/motion';
 import { palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
+import { useRouter } from 'expo-router';
 
 const SUGGESTIONS = ['Drink a glass of water and walk for 10 minutes', 'Text someone who knows', 'Open this app tomorrow morning'];
 
@@ -124,6 +124,11 @@ export function RelapseFlow({ urgeId, presetHabit }: { urgeId: number | null; pr
           </View>
           <View style={{ flex: 1 }} />
           <Cta label={saving ? 'Saving…' : 'Start again'} disabled={saving} onPress={save} />
+          {/* Offered after a slip, where it's most likely to be wanted and
+              least likely to feel like a lecture. */}
+          <Tap haptic="none" onPress={() => router.push('/help')} accessibilityRole="button" style={s.help}>
+            <Text style={s.helpLabel}>Talk to someone</Text>
+          </Tap>
           <Text style={s.foot}>You can undo this from Home for the next 24 hours.</Text>
         </>
       )}
@@ -132,6 +137,8 @@ export function RelapseFlow({ urgeId, presetHabit }: { urgeId: number | null; pr
 }
 
 const s = StyleSheet.create({
+  help: { alignSelf: 'center', paddingVertical: 12, paddingHorizontal: 20 },
+  helpLabel: { color: palette.textDim, fontSize: 14, fontFamily: type.bodyMed },
   pane: { flex: 1, padding: Spacing.four, paddingTop: Spacing.two, gap: Spacing.three },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginTop: Spacing.two },
   chip: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 12, backgroundColor: palette.surface2, borderWidth: 1.5, borderColor: palette.surface2 },

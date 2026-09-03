@@ -9,6 +9,7 @@ import { palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
 import { shared, StepHeader } from './shared';
+import { useRouter } from 'expo-router';
 
 const triggerStep = steps.find((s) => s.kind === 'question' && s.id === 'trigger');
 export const TRIGGERS = [
@@ -24,6 +25,7 @@ export function Outcome({
   onSurvived: (d: { trigger: string | null; intensity: number | null }) => void;
   onSlipped: (d: { trigger: string | null; intensity: number | null }) => void;
 }) {
+  const router = useRouter();
   const [trigger, setTrigger] = useState<string | null>(null);
   const [intensity, setIntensity] = useState<number | null>(null);
   const data = { trigger, intensity };
@@ -58,11 +60,18 @@ export function Outcome({
         }}
       />
       <Cta label="I slipped" variant="ghost" onPress={() => onSlipped(data)} />
+      {/* The one place people most need a person rather than an app. Quiet, so
+          it isn't shouted at someone who's coping fine. */}
+      <Tap haptic="none" onPress={() => router.push('/help')} accessibilityRole="button" style={s.help}>
+        <Text style={s.helpLabel}>Talk to someone</Text>
+      </Tap>
     </View>
   );
 }
 
 const s = StyleSheet.create({
+  help: { alignSelf: 'center', paddingVertical: 12, paddingHorizontal: 20 },
+  helpLabel: { color: palette.textDim, fontSize: 14, fontFamily: type.bodyMed },
   label: { color: palette.textDim, fontSize: 13, fontFamily: type.bodySemi, letterSpacing: 0.3, marginTop: -Spacing.two },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   chip: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 12, backgroundColor: palette.surface2, borderWidth: 1.5, borderColor: palette.surface2 },

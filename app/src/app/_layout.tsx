@@ -81,6 +81,8 @@ export default function RootLayout() {
           <Stack.Screen name="checkin" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
           <Stack.Screen name="reasons" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="answers" options={{ animation: 'slide_from_right' }} />
+          {/* Not gated: someone in trouble reaches this paid or not. */}
+          <Stack.Screen name="help" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="recovery" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="savings" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="account" options={{ animation: 'slide_from_right' }} />

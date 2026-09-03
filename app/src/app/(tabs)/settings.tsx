@@ -237,6 +237,18 @@ export default function SettingsScreen() {
           <Row icon="heart.fill" iconTint={hues.reasons.solid} iconWash={hues.reasons.wash} label="Your reasons" sub="Shown when an urge hits." onPress={() => router.push('/reasons')} chevron />
         </Section>
 
+        <Section label="Support">
+          <Row
+            icon="lifepreserver"
+            iconTint={hues.urge.solid}
+            iconWash={hues.urge.wash}
+            label="Get help"
+            sub="Crisis and addiction lines, and what Curb isn’t."
+            onPress={() => router.push('/help')}
+            chevron
+          />
+        </Section>
+
         <Section label="Subscription">
           {/* Google Play requires an in-app route to cancelling. Shown to
               everyone, not just active subscribers: someone who thinks they're
