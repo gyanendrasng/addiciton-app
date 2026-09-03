@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import React, { useState } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Linking, Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Card } from '@/components/ui/card';
@@ -27,6 +27,8 @@ import { getTimeOffset } from '@/lib/clock';
 import { activeScheme, hues, palette, themePref, type ThemePref } from '@/theme/palette';
 import { isExpoGo, setThemePref } from '@/theme/theme';
 import { useAccount } from '@/features/account/use-account';
+import { openManageSubscription } from '@/features/premium/manage';
+import { PRIVACY_URL, TERMS_URL } from '@/features/premium/plans';
 import { signOutEverywhere } from '@/features/account/sign-in';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
@@ -233,6 +235,47 @@ export default function SettingsScreen() {
 
         <Section label="Motivation">
           <Row icon="heart.fill" iconTint={hues.reasons.solid} iconWash={hues.reasons.wash} label="Your reasons" sub="Shown when an urge hits." onPress={() => router.push('/reasons')} chevron />
+        </Section>
+
+        <Section label="Subscription">
+          {/* Google Play requires an in-app route to cancelling. Shown to
+              everyone, not just active subscribers: someone who thinks they're
+              being charged must be able to check without first proving it. */}
+          <Row
+            icon="creditcard"
+            iconTint={hues.premium.solid}
+            iconWash={hues.premium.wash}
+            label="Manage or cancel"
+            sub={Platform.OS === 'ios' ? 'Opens your Apple subscriptions.' : 'Opens Google Play.'}
+            onPress={async () => {
+              const ok = await openManageSubscription();
+              if (!ok) Alert.alert('Couldn’t open the store', 'Try again from your device settings.');
+            }}
+            chevron
+          />
+        </Section>
+
+        <Section label="Legal">
+          {/* Apple 3.1.2 wants Terms and Privacy reachable inside the app, not
+              only on the store listing or the paywall — a subscriber may never
+              see the paywall again. */}
+          <Row
+            icon="doc.text"
+            iconTint={palette.textDim}
+            iconWash={palette.surface3}
+            label="Terms of use"
+            onPress={() => Linking.openURL(TERMS_URL)}
+            chevron
+          />
+          <Row
+            icon="hand.raised"
+            iconTint={palette.textDim}
+            iconWash={palette.surface3}
+            label="Privacy policy"
+            sub="What we store, and what never leaves this phone."
+            onPress={() => Linking.openURL(PRIVACY_URL)}
+            chevron
+          />
         </Section>
 
         <Section label="Your data">

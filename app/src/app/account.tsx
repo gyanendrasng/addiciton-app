@@ -20,6 +20,7 @@ import { Cta, Eyebrow, Subtitle, Title } from '@/features/onboarding/components/
 import { Notice } from '@/components/ui/notice';
 import { authClient } from '@/lib/auth-client';
 import { humanError } from '@/lib/errors';
+import { openManageSubscription } from '@/features/premium/manage';
 import { track } from '@/lib/analytics';
 import { hues, palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
@@ -255,6 +256,30 @@ export default function AccountScreen() {
           </View>
           {checking ? <ActivityIndicator color={palette.textFaint} /> : null}
         </View>
+        <View style={s.sep} />
+        {/* Google Play's policy requires an in-app route to cancelling; the
+            store owns the actual cancellation, so this deep-links there. */}
+        <Tap
+          haptic="light"
+          onPress={async () => {
+            const ok = await openManageSubscription(entitlement.productId);
+            if (!ok) Alert.alert('Couldn’t open the store', 'Try again from your device settings.');
+          }}>
+          <View style={s.row}>
+            <SymbolChip
+              name="creditcard"
+              tint={palette.text}
+              wash={palette.surface3}
+            />
+            <View style={{ flex: 1 }}>
+              <Text style={s.rowLabel}>Manage or cancel</Text>
+              <Text style={s.rowSub}>
+                {Platform.OS === 'ios' ? 'Opens your Apple subscriptions.' : 'Opens Google Play.'}
+              </Text>
+            </View>
+            <Text style={s.chev}>›</Text>
+          </View>
+        </Tap>
         <View style={s.sep} />
         <Tap haptic="light" onPress={refresh}>
           <View style={s.row}>
