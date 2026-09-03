@@ -1,5 +1,6 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -11,14 +12,11 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SymbolView } from 'expo-symbols';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AppLogo } from '@/components/ui/app-logo';
-import { GoogleMark } from '@/components/ui/brand-marks';
+import { AppleMark, GoogleMark } from '@/components/ui/brand-marks';
 import { Notice } from '@/components/ui/notice';
-import { SymbolChip } from '@/components/ui/symbol-chip';
 import { Tap } from '@/components/ui/tap';
 import {
   availableProviders,
@@ -30,34 +28,20 @@ import {
 } from '@/features/account/sign-in';
 import { skipAuthForDev } from '@/features/settings/dev';
 import { useSession } from '@/lib/session';
-import { hues, palette } from '@/theme/palette';
+import { palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
 
 type Pane = 'providers' | 'email' | 'code';
 
-/** What signing in actually buys you. Concrete, not marketing. */
-const POINTS = [
-  {
-    symbol: 'iphone.and.arrow.forward' as const,
-    hue: hues.checkin,
-    label: 'Premium on a new phone',
-    sub: 'Restore in one tap instead of paying twice.',
-  },
-  {
-    symbol: 'lock.fill' as const,
-    hue: hues.pledge,
-    label: 'Your recovery stays here',
-    sub: 'Streaks, slips and notes are never uploaded.',
-  },
-  {
-    symbol: 'envelope.fill' as const,
-    hue: hues.reasons,
-    label: 'iPhone or Android',
-    sub: 'An email code works on both.',
-  },
-];
-
+/**
+ * Sign in / create an account.
+ *
+ * Kept deliberately short. In the required flow this lands straight after a
+ * dozen onboarding questions, so it is not the place for a second pitch — one
+ * heading, one line, three buttons. The reasons to have an account were made
+ * already; here the user just wants through.
+ */
 export default function SignInScreen() {
   const router = useRouter();
   /**
@@ -67,35 +51,44 @@ export default function SignInScreen() {
    */
   const { required } = useLocalSearchParams<{ required?: string }>();
   const mustSignIn = required === '1';
+
   const { refresh: refreshSession } = useSession();
   const [pane, setPane] = useState<Pane>('providers');
   const [busy, setBusy] = useState<Provider | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [appleOk, setAppleOk] = useState(Platform.OS === 'ios');
+  const [appleReady, setAppleReady] = useState(false);
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
 
   useEffect(() => {
-    isAppleAvailable().then(setAppleOk);
+    isAppleAvailable().then(setAppleReady);
   }, []);
 
-  const showApple = appleOk && availableProviders().includes('apple');
-
+  const onApplePlatform = availableProviders().includes('apple');
   /**
-   * The session store does not notify on Expo (better-auth #10545), so pull the
-   * session ourselves before leaving — otherwise Settings still says
-   * "Not signed in".
+   * Sign in with Apple runs on every real iPhone we support, but NOT on the
+   * Simulator — `isAvailableAsync()` reports false there and `signInAsync`
+   * always throws (Expo's docs say so outright). Hiding the button in that case
+   * made the screen look like Apple sign-in was missing, so in development we
+   * draw our own and let the tap fail with a readable message. Shipping builds
+   * always get Apple's real control, which their HIG requires.
    */
-  const finish = async () => {
-    await refreshSession();
-    leave();
-  };
+  const showRealAppleButton = onApplePlatform && appleReady;
+  const showStandInAppleButton = onApplePlatform && !appleReady && __DEV__;
 
-  /** This screen can be reached by deep link, so there may be no history. */
   const leave = () => {
     if (mustSignIn) return router.replace('/'); // let the gate decide what's next
     if (router.canGoBack()) router.back();
     else router.replace('/');
+  };
+
+  /**
+   * The session store doesn't notify on Expo (better-auth #10545), so pull the
+   * session ourselves before leaving — otherwise the gate still sees no account.
+   */
+  const finish = async () => {
+    await refreshSession();
+    leave();
   };
 
   const go = async (provider: 'apple' | 'google') => {
@@ -140,73 +133,106 @@ export default function SignInScreen() {
     else if (!mustSignIn) leave();
   };
 
+  const heading =
+    pane === 'email'
+      ? 'What’s your email?'
+      : pane === 'code'
+        ? 'Enter your code.'
+        : mustSignIn
+          ? 'Create your account.'
+          : 'Sign in.';
+
+  const subheading =
+    pane === 'email'
+      ? 'We’ll send a 6-digit code.'
+      : pane === 'code'
+        ? `Sent to ${email}.`
+        : 'So your subscription follows you to a new phone.';
+
   return (
     <SafeAreaView style={s.root} edges={['top', 'bottom']}>
       <View style={s.bar}>
         {mustSignIn && pane === 'providers' ? null : (
-        <Tap
-          haptic="none"
-          onPress={back}
-          accessibilityRole="button"
-          accessibilityLabel={pane === 'providers' ? 'Close' : 'Back'}
-          style={s.close}>
-          {Platform.OS === 'ios' ? (
-            <SymbolView
-              name={pane === 'providers' ? 'xmark' : 'chevron.left'}
-              size={17}
-              tintColor={palette.textDim}
-              weight="semibold"
-              style={s.closeIcon}
-            />
-          ) : (
-            <Text style={s.closeGlyph}>{pane === 'providers' ? '✕' : '‹'}</Text>
-          )}
-        </Tap>
+          <Tap
+            haptic="none"
+            onPress={back}
+            accessibilityRole="button"
+            accessibilityLabel={pane === 'providers' ? 'Close' : 'Back'}
+            style={s.close}>
+            {Platform.OS === 'ios' ? (
+              <SymbolView
+                name={pane === 'providers' ? 'xmark' : 'chevron.left'}
+                size={17}
+                tintColor={palette.textDim}
+                weight="semibold"
+                style={s.closeIcon}
+              />
+            ) : (
+              <Text style={s.closeGlyph}>{pane === 'providers' ? '✕' : '‹'}</Text>
+            )}
+          </Tap>
         )}
       </View>
 
-      <KeyboardAvoidingView
-        style={s.fill}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        {pane === 'providers' ? (
-          <Animated.View entering={FadeIn.duration(320)} style={s.fill}>
-            <View style={s.top}>
-              <AppLogo size={56} />
-              <Text style={s.h1}>
-                {mustSignIn ? 'Create your account.' : 'Keep your premium\non every device.'}
-              </Text>
-              <Text style={s.sub}>
-                {mustSignIn
-                  ? 'One account, used for one thing: holding your subscription so it follows you to a new phone.'
-                  : 'One account, used for one thing: proving you’ve paid.'}
-              </Text>
+      <KeyboardAvoidingView style={s.fill} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <Animated.View entering={FadeIn.duration(280)} style={s.fill}>
+          {/* The screen is three buttons and a sentence. Splitting those to
+              opposite ends of the phone leaves a hole in the middle, so the
+              slack goes above the block instead. */}
+          <View style={s.spacer} />
+
+          <View style={s.top}>
+            <Text style={s.h1}>{heading}</Text>
+            <Text style={s.sub}>{subheading}</Text>
+          </View>
+
+          {pane === 'email' ? (
+            <View style={s.form}>
+              <TextInput
+                style={s.input}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="you@example.com"
+                placeholderTextColor={palette.textFaint}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                textContentType="emailAddress"
+                autoCorrect={false}
+                autoFocus
+                returnKeyType="go"
+                onSubmitEditing={requestCode}
+              />
             </View>
-
-            <View style={s.middle}>
-              <View style={s.points}>
-                {POINTS.map((p) => (
-                  <View key={p.label} style={s.point}>
-                    <SymbolChip name={p.symbol} tint={p.hue.solid} wash={p.hue.wash} size={32} />
-                    <View style={s.pointText}>
-                      <Text style={s.pointLabel}>{p.label}</Text>
-                      <Text style={s.pointSub}>{p.sub}</Text>
-                    </View>
-                  </View>
-                ))}
-              </View>
+          ) : pane === 'code' ? (
+            <View style={s.form}>
+              <TextInput
+                style={[s.input, s.codeInput]}
+                value={code}
+                onChangeText={(t) => setCode(t.replace(/\D/g, '').slice(0, 6))}
+                placeholder="——————"
+                placeholderTextColor={palette.textFaint}
+                keyboardType="number-pad"
+                autoComplete="one-time-code"
+                textContentType="oneTimeCode"
+                autoFocus
+                maxLength={6}
+                returnKeyType="go"
+                onSubmitEditing={submitCode}
+              />
             </View>
+          ) : null}
 
-            <View style={s.actions}>
-              {error ? <Notice>{error}</Notice> : null}
+          <View style={s.actions}>
+            {error ? <Notice>{error}</Notice> : null}
 
-              {/* Apple's own control, not a copy of it: their HIG requires the
-                  real button wherever Sign in with Apple is offered. */}
-              {showApple ? (
-                busy === 'apple' ? (
-                  <View style={[s.btn, s.appleBusy]}>
-                    <ActivityIndicator color={palette.bg} />
+            {pane === 'providers' ? (
+              <>
+                {busy === 'apple' ? (
+                  <View style={[s.btn, s.apple]}>
+                    <ActivityIndicator color="#000000" />
                   </View>
-                ) : (
+                ) : showRealAppleButton ? (
                   <AppleAuthentication.AppleAuthenticationButton
                     buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
                     buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
@@ -214,139 +240,90 @@ export default function SignInScreen() {
                     style={s.btn}
                     onPress={() => go('apple')}
                   />
-                )
-              ) : null}
+                ) : showStandInAppleButton ? (
+                  <Tap
+                    haptic="light"
+                    onPress={() => go('apple')}
+                    accessibilityRole="button"
+                    accessibilityLabel="Continue with Apple"
+                    style={[s.btn, s.apple, busy !== null && s.dim]}>
+                    <View style={s.btnInner}>
+                      <AppleMark size={19} color="#000000" />
+                      <Text style={[s.btnLabel, { color: '#000000' }]}>Continue with Apple</Text>
+                    </View>
+                  </Tap>
+                ) : null}
 
-              <Tap
-                haptic="light"
-                onPress={() => go('google')}
-                accessibilityRole="button"
-                accessibilityLabel="Continue with Google"
-                style={[s.btn, s.google, busy !== null && s.dim]}>
-                {busy === 'google' ? (
-                  <ActivityIndicator color={palette.text} />
-                ) : (
-                  <View style={s.btnInner}>
-                    <GoogleMark size={19} />
-                    <Text style={s.googleLabel}>Continue with Google</Text>
-                  </View>
-                )}
-              </Tap>
+                <Tap
+                  haptic="light"
+                  onPress={() => go('google')}
+                  accessibilityRole="button"
+                  accessibilityLabel="Continue with Google"
+                  style={[s.btn, s.google, busy !== null && s.dim]}>
+                  {busy === 'google' ? (
+                    <ActivityIndicator color={palette.text} />
+                  ) : (
+                    <View style={s.btnInner}>
+                      <GoogleMark size={19} />
+                      <Text style={s.btnLabel}>Continue with Google</Text>
+                    </View>
+                  )}
+                </Tap>
 
-              <Tap
-                haptic="none"
-                onPress={() => {
-                  setError(null);
-                  setPane('email');
-                }}
-                accessibilityRole="button"
-                style={s.ghost}>
-                <Text style={s.ghostLabel}>Use an email code instead</Text>
-              </Tap>
-
-              <Text style={s.legal}>
-                We store your email address and whether your subscription is active. Nothing else.
-              </Text>
-
-              {/* Sign in with Apple can't run on the iOS Simulator —
-                  `isAvailableAsync()` reports false and `signInAsync` throws.
-                  It appears on a real device. */}
-              {__DEV__ && Platform.OS === 'ios' && !showApple ? (
-                <Text style={s.legal}>
-                  Dev note: Apple sign-in is hidden because this is the Simulator.
-                </Text>
-              ) : null}
-
-              {/* Real sign-in needs a deployed backend and a dev build. */}
-              {__DEV__ && mustSignIn ? (
                 <Tap
                   haptic="none"
-                  onPress={async () => {
-                    await skipAuthForDev();
-                    router.replace('/');
+                  onPress={() => {
+                    setError(null);
+                    setPane('email');
                   }}
+                  accessibilityRole="button"
                   style={s.ghost}>
-                  <Text style={s.ghostLabel}>Skip (dev only)</Text>
+                  <Text style={s.ghostLabel}>Use an email code instead</Text>
                 </Tap>
-              ) : null}
-            </View>
-          </Animated.View>
-        ) : (
-          <Animated.View entering={FadeIn.duration(240)} style={s.fill}>
-            <View style={s.top}>
-              <Text style={s.h1}>
-                {pane === 'email' ? 'What’s your email?' : 'Enter your code.'}
-              </Text>
-              <Text style={s.sub}>
-                {pane === 'email'
-                  ? 'We’ll send a six-digit code. No password to remember.'
-                  : `Sent to ${email}. It expires in five minutes.`}
-              </Text>
-            </View>
 
-            <View style={s.form}>
-              {pane === 'email' ? (
-                <TextInput
-                  style={s.input}
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="you@example.com"
-                  placeholderTextColor={palette.textFaint}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  textContentType="emailAddress"
-                  autoCorrect={false}
-                  autoFocus
-                  returnKeyType="go"
-                  onSubmitEditing={requestCode}
-                />
-              ) : (
-                <TextInput
-                  style={[s.input, s.codeInput]}
-                  value={code}
-                  onChangeText={(t) => setCode(t.replace(/\D/g, '').slice(0, 6))}
-                  placeholder="——————"
-                  placeholderTextColor={palette.textFaint}
-                  keyboardType="number-pad"
-                  autoComplete="one-time-code"
-                  textContentType="oneTimeCode"
-                  autoFocus
-                  maxLength={6}
-                  returnKeyType="go"
-                  onSubmitEditing={submitCode}
-                />
-              )}
-              {error ? <Notice>{error}</Notice> : null}
-            </View>
+                <Text style={s.legal}>Only your email and subscription status are stored.</Text>
 
-            <View style={s.spacer} />
-
-            <View style={s.actions}>
-              <Tap
-                haptic="light"
-                onPress={pane === 'email' ? requestCode : submitCode}
-                accessibilityRole="button"
-                style={[
-                  s.btn,
-                  s.primary,
-                  (busy !== null || (pane === 'code' && code.length !== 6)) && s.dim,
-                ]}>
-                {busy === 'email' ? (
-                  <ActivityIndicator color={palette.accentInk} />
-                ) : (
-                  <Text style={s.primaryLabel}>{pane === 'email' ? 'Send code' : 'Sign in'}</Text>
-                )}
-              </Tap>
-
-              {pane === 'code' ? (
-                <Tap haptic="none" onPress={requestCode} style={s.ghost}>
-                  <Text style={s.ghostLabel}>Send a new code</Text>
+                {__DEV__ && mustSignIn ? (
+                  <Tap
+                    haptic="none"
+                    onPress={async () => {
+                      await skipAuthForDev();
+                      router.replace('/');
+                    }}
+                    style={s.ghost}>
+                    <Text style={s.devLabel}>Skip (dev only)</Text>
+                  </Tap>
+                ) : null}
+              </>
+            ) : (
+              <>
+                <Tap
+                  haptic="light"
+                  onPress={pane === 'email' ? requestCode : submitCode}
+                  accessibilityRole="button"
+                  style={[
+                    s.btn,
+                    s.primary,
+                    (busy !== null || (pane === 'code' && code.length !== 6)) && s.dim,
+                  ]}>
+                  {busy === 'email' ? (
+                    <ActivityIndicator color={palette.accentInk} />
+                  ) : (
+                    <Text style={[s.btnLabel, { color: palette.accentInk }]}>
+                      {pane === 'email' ? 'Send code' : 'Sign in'}
+                    </Text>
+                  )}
                 </Tap>
-              ) : null}
-            </View>
-          </Animated.View>
-        )}
+
+                {pane === 'code' ? (
+                  <Tap haptic="none" onPress={requestCode} style={s.ghost}>
+                    <Text style={s.ghostLabel}>Send a new code</Text>
+                  </Tap>
+                ) : null}
+              </>
+            )}
+          </View>
+        </Animated.View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -360,7 +337,7 @@ const s = StyleSheet.create({
   closeIcon: { width: 17, height: 17 },
   closeGlyph: { color: palette.textDim, fontSize: 22, fontFamily: type.bodyMed },
 
-  top: { paddingHorizontal: Spacing.four, gap: Spacing.three },
+  top: { paddingHorizontal: Spacing.four, paddingBottom: Spacing.five, gap: Spacing.two },
   h1: {
     color: palette.text,
     fontSize: 32,
@@ -370,16 +347,7 @@ const s = StyleSheet.create({
   },
   sub: { color: palette.textDim, fontSize: 15, lineHeight: 22, fontFamily: type.body },
 
-  middle: { flex: 1, justifyContent: 'center' },
-  points: { paddingHorizontal: Spacing.four, gap: Spacing.four },
-  point: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two + 2 },
-  pointText: { flex: 1, gap: 2 },
-  pointLabel: { color: palette.text, fontSize: 15, fontFamily: type.bodySemi },
-  pointSub: { color: palette.textDim, fontSize: 13, lineHeight: 18, fontFamily: type.body },
-
-  spacer: { flex: 1, minHeight: Spacing.four },
-
-  form: { paddingHorizontal: Spacing.four, marginTop: Spacing.five, gap: Spacing.two },
+  form: { paddingHorizontal: Spacing.four, paddingBottom: Spacing.three },
   input: {
     height: 56,
     borderRadius: 16,
@@ -393,23 +361,24 @@ const s = StyleSheet.create({
   },
   codeInput: { textAlign: 'center', fontSize: 26, letterSpacing: 10, fontFamily: type.bodySemi },
 
+  spacer: { flex: 1, minHeight: Spacing.five },
+
   actions: { paddingHorizontal: Spacing.four, paddingBottom: Spacing.two, gap: Spacing.two },
   btn: { height: 54, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   btnInner: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  appleBusy: { backgroundColor: palette.bright },
+  btnLabel: { color: palette.text, fontSize: 16, fontFamily: type.bodySemi },
+  apple: { backgroundColor: '#FFFFFF' },
   google: { backgroundColor: palette.surface2, borderWidth: 1, borderColor: palette.line },
-  googleLabel: { color: palette.text, fontSize: 16, fontFamily: type.bodySemi },
   primary: { backgroundColor: palette.accent },
-  primaryLabel: { color: palette.accentInk, fontSize: 16, fontFamily: type.bodySemi },
   dim: { opacity: 0.4 },
-  ghost: { alignSelf: 'center', paddingVertical: 12, paddingHorizontal: 20 },
+  ghost: { alignSelf: 'center', paddingVertical: 10, paddingHorizontal: 20 },
   ghostLabel: { color: palette.textDim, fontSize: 15, fontFamily: type.bodyMed },
+  devLabel: { color: palette.amber, fontSize: 13, fontFamily: type.bodyMed },
   legal: {
     color: palette.textFaint,
     fontSize: 12,
     lineHeight: 17,
     fontFamily: type.body,
     textAlign: 'center',
-    marginTop: 4,
   },
 });
