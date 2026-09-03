@@ -44,7 +44,16 @@ const GROW = 1.6;
  * Box breathing 4-4-4-4 × 3. The disc breathes between two hairline guide rings;
  * a thin ring sweeps each 4s phase; the numeral counts the seconds down.
  */
-export function Breathe({ onDone, onSkip }: { onDone: () => void; onSkip: () => void }) {
+export function Breathe({
+  onDone,
+  onSkip,
+  opener,
+}: {
+  onDone: () => void;
+  onSkip: () => void;
+  /** The user's own trigger, from onboarding — see notifications/trigger-window. */
+  opener?: string | null;
+}) {
   const reduced = useReducedMotion();
   const scale = useSharedValue(1);
   const phaseP = useSharedValue(0);
@@ -105,6 +114,9 @@ export function Breathe({ onDone, onSkip }: { onDone: () => void; onSkip: () => 
         <Text style={s.kicker}>Breathe · {PHASE_S}-{PHASE_S}-{PHASE_S}-{PHASE_S}</Text>
         <Text style={s.phase}>{PHASES[phase].label}</Text>
         <Text style={s.hint}>{PHASES[phase].hint}</Text>
+        {/* Naming the trigger the user gave us is the difference between a
+            generic breathing timer and one that knows why they're here. */}
+        {opener ? <Text style={s.opener}>{opener}</Text> : null}
       </View>
 
       <View style={shared.center}>
@@ -151,6 +163,15 @@ const s = StyleSheet.create({
   top: { alignItems: 'center', gap: Spacing.one, marginTop: Spacing.two },
   kicker: { color: palette.textFaint, fontSize: 12, letterSpacing: 1.4, textTransform: 'uppercase', fontFamily: type.bodySemi },
   phase: { color: palette.bright, fontSize: 34, fontFamily: type.display, letterSpacing: -0.5, marginTop: Spacing.one },
+  opener: {
+    color: palette.textDim,
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+    fontFamily: type.body,
+    marginTop: Spacing.three,
+    paddingHorizontal: Spacing.four,
+  },
   hint: { color: palette.textDim, fontSize: 15, fontFamily: type.body },
   disc: {
     width: DISC,

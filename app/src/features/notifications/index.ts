@@ -119,6 +119,17 @@ export async function scheduleDailyReminders(
     },
   });
 
+  // The trigger nudge rides along with the daily pair — it's the same
+  // permission and the same channel, and it must be cancelled with them.
+  try {
+    const { getProfile } = await import('@/db/repo/profile');
+    const { scheduleTriggerNudge } = await import('./trigger-window');
+    const profile = await getProfile();
+    if (profile) await scheduleTriggerNudge(profile.answers);
+  } catch {
+    // no profile yet, or notifications unavailable — the pair still stands
+  }
+
   await AsyncStorage.setItem(
     SCHEDULED_KEY,
     JSON.stringify({ morningHour, eveningHour, at: Date.now() }),
@@ -128,7 +139,7 @@ export async function scheduleDailyReminders(
 
 export async function cancelDailyReminders() {
   await Promise.all(
-    ['reminder-morning', 'reminder-evening'].map((id) =>
+    ['reminder-morning', 'reminder-evening', 'reminder-trigger'].map((id) =>
       Notifications.cancelScheduledNotificationAsync(id).catch(() => undefined),
     ),
   );

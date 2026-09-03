@@ -190,6 +190,27 @@ export default function SettingsScreen() {
           </View>
         </Section>
 
+        <Section label="Your progress">
+          <Row
+            icon="heart.text.square.fill"
+            iconTint={hues.pledge.solid}
+            iconWash={hues.pledge.wash}
+            label="Your recovery"
+            sub="What tends to happen after you stop."
+            onPress={() => router.push('/recovery')}
+            chevron
+          />
+          <Row
+            icon="banknote.fill"
+            iconTint={hues.premium.solid}
+            iconWash={hues.premium.wash}
+            label="What you’ve kept"
+            sub="Money and time, and what one costs you."
+            onPress={() => router.push('/savings')}
+            chevron
+          />
+        </Section>
+
         <Section label="Your quiz">
           <Row
             icon="list.bullet.rectangle"

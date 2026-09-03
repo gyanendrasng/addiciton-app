@@ -81,6 +81,8 @@ export default function RootLayout() {
           <Stack.Screen name="checkin" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
           <Stack.Screen name="reasons" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="answers" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="recovery" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="savings" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="account" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="sign-in" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
           {/* The wall. No swipe-to-dismiss — there is no free tier to fall back to. */}

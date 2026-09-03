@@ -20,10 +20,14 @@ import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
 import { useDismiss } from '@/lib/nav';
 import { withAccess } from '@/features/premium/access';
+import { useProfile } from '@/db/repo/profile';
+import { triggerFrom } from '@/features/notifications/trigger-window';
 
 function UrgeScreen() {
   const router = useRouter();
   const dismiss = useDismiss();
+  const { profile } = useProfile();
+  const opener = profile ? (triggerFrom(profile.answers)?.opener ?? null) : null;
   const navigation = useNavigation();
   const [state, dispatch] = useReducer(urgeReducer, { step: 'breathe' as UrgeStep, completed: [], startedAt: now() });
   const urgeId = useRef<number | null>(null);
@@ -82,7 +86,7 @@ function UrgeScreen() {
         entering={FadeIn.duration(durations.base)}
         exiting={FadeOut.duration(durations.fast)}
         style={{ flex: 1 }}>
-        {state.step === 'breathe' && <Breathe onDone={() => next(true)} onSkip={() => next(false)} />}
+        {state.step === 'breathe' && <Breathe opener={opener} onDone={() => next(true)} onSkip={() => next(false)} />}
         {state.step === 'delay' && (
           <Delay onDone={() => next(true)} onSkip={() => next(false)} onBreatheAgain={() => dispatch({ type: 'goto', step: 'breathe' })} />
         )}

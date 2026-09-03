@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActionTile, HueIcon } from '@/components/ui/action-tile';
+import { SavingsCard } from '@/features/savings/savings-card';
 import { Tap } from '@/components/ui/tap';
 import { DayGrid } from '@/components/ui/day-grid';
 import { useCheckin } from '@/db/repo/checkins';
@@ -82,6 +83,8 @@ export default function HomeScreen() {
             onPress={() => router.push('/reasons')}
           />
         </View>
+
+        <SavingsCard />
 
         <Tap haptic="light" onPress={() => router.push('/milestones')} style={s.progressCard} accessibilityRole="button" accessibilityLabel="See all milestones">
           <View style={s.progressTop}>
