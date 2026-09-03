@@ -1,7 +1,5 @@
 import { Linking, Platform } from 'react-native';
 
-import { PLANS } from './plans';
-
 /**
  * Send the user to the store page where they can cancel.
  *
@@ -39,7 +37,10 @@ export function manageSubscriptionUrl(productId?: string | null): string {
  *   rather than appearing to do nothing.
  */
 export async function openManageSubscription(productId?: string | null): Promise<boolean> {
-  const url = manageSubscriptionUrl(productId ?? PLANS[0]?.productId);
+  // No guessing: an unknown product falls back to the full list, never to a
+  // plan the user might not be on. Deep-linking someone on the yearly plan to
+  // the weekly one shows them a subscription they don't have.
+  const url = manageSubscriptionUrl(productId);
   try {
     await Linking.openURL(url);
     return true;
