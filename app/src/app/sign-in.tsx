@@ -186,9 +186,13 @@ export default function SignInScreen() {
               middle — the mark carries the top of the block. */}
           <View style={s.spacer} />
 
+          {/* Vertical rhythm, deliberately uneven — a single gap value between
+              every element is what makes a block read flat. The mark is its own
+              thing (32 below it), the heading and its sentence belong together
+              (10 apart), and the actions are a separate group again (40). */}
           <View style={s.top}>
             {pane === 'providers' ? <AppLogo size={60} /> : null}
-            <Text style={s.h1}>{heading}</Text>
+            <Text style={[s.h1, pane === 'providers' && s.h1AfterMark]}>{heading}</Text>
             <Text style={s.sub}>{subheading}</Text>
           </View>
 
@@ -319,7 +323,8 @@ const s = StyleSheet.create({
   closeIcon: { width: 17, height: 17 },
   closeGlyph: { color: palette.textDim, fontSize: 22, fontFamily: type.bodyMed },
 
-  top: { paddingHorizontal: Spacing.four, paddingBottom: Spacing.five, gap: Spacing.three },
+  top: { paddingHorizontal: Spacing.four },
+  h1AfterMark: { marginTop: Spacing.five },
   h1: {
     color: palette.text,
     fontSize: 32,
@@ -327,9 +332,15 @@ const s = StyleSheet.create({
     letterSpacing: -0.7,
     fontFamily: type.display,
   },
-  sub: { color: palette.textDim, fontSize: 15, lineHeight: 22, fontFamily: type.body },
+  sub: {
+    color: palette.textDim,
+    fontSize: 15,
+    lineHeight: 22,
+    fontFamily: type.body,
+    marginTop: 10, // tight to its heading — they are one unit
+  },
 
-  form: { paddingHorizontal: Spacing.four, paddingBottom: Spacing.three },
+  form: { paddingHorizontal: Spacing.four, marginTop: Spacing.five },
   input: {
     height: 56,
     borderRadius: 16,
@@ -345,7 +356,11 @@ const s = StyleSheet.create({
 
   spacer: { flex: 1, minHeight: Spacing.four },
 
-  actions: { paddingHorizontal: Spacing.four, gap: Spacing.two },
+  actions: {
+    paddingHorizontal: Spacing.four,
+    marginTop: Spacing.five + Spacing.two, // 40 — a clear break from the copy
+    gap: 12, // stacked 54pt buttons need more air than the 8pt step
+  },
   btn: {
     height: PROVIDER_BUTTON_HEIGHT,
     borderRadius: 16,
@@ -355,7 +370,7 @@ const s = StyleSheet.create({
   btnLabel: { color: palette.text, fontSize: 16, fontFamily: type.bodySemi },
   primary: { backgroundColor: palette.accent },
   dim: { opacity: 0.4 },
-  ghost: { alignSelf: 'center', paddingVertical: 10, paddingHorizontal: 20 },
+  ghost: { alignSelf: 'center', paddingVertical: 12, paddingHorizontal: 20, marginTop: Spacing.one },
   ghostLabel: { color: palette.textDim, fontSize: 15, fontFamily: type.bodyMed },
   devLabel: { color: palette.amber, fontSize: 13, fontFamily: type.bodyMed },
   legal: {
@@ -364,5 +379,7 @@ const s = StyleSheet.create({
     lineHeight: 17,
     fontFamily: type.body,
     textAlign: 'center',
+    marginTop: Spacing.two,
+    paddingHorizontal: Spacing.three,
   },
 });
