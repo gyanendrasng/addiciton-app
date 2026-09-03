@@ -102,7 +102,7 @@ native or home-made. Both vendors publish rules, and both gate App Review.
 - Never make the user scroll to reach it.
 - Titles allowed: *Sign in with Apple*, *Sign up with Apple*, *Continue with Apple*. Nothing else.
 - Prefer Apple's own `AppleAuthenticationButton`; it supports `cornerRadius`, so it can match the app's radius. Custom buttons must set the logo height equal to the button height, with no cropping and no vertical padding.
-- It cannot run on the **iOS Simulator**: `isAvailableAsync()` returns false and `signInAsync` always throws. Development draws a stand-in so the screen looks like it ships.
+- `isAvailableAsync()` reports false when the device has **no Apple ID signed in** — common on a fresh Simulator, and fixable in its Settings. Sign in with Apple itself *does* work on the Simulator. Only `getCredentialStateAsync()` always throws there. Don't refuse the attempt on a false availability check; try it, and if it fails say the device needs an Apple ID.
 
 **Google** — Sign in with Google branding guidelines, exact values:
 

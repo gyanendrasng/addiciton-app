@@ -52,19 +52,6 @@ export async function isAppleAvailable(): Promise<boolean> {
 }
 
 async function signInWithApple(): Promise<SignInResult> {
-  /**
-   * `signInAsync` always throws on the iOS Simulator, so "please try again" is
-   * advice that cannot work. Say what's actually true instead — the generic
-   * retry message sent me chasing a bug that was just the Simulator.
-   */
-  if (!(await isAppleAvailable())) {
-    return {
-      ok: false,
-      message: __DEV__
-        ? 'Sign in with Apple can’t run on the Simulator. It works on a real device.'
-        : 'Sign in with Apple isn’t available on this device. Try Google or an email code.',
-    };
-  }
   try {
     const credential = await AppleAuthentication.signInAsync({
       requestedScopes: [
@@ -100,6 +87,17 @@ async function signInWithApple(): Promise<SignInResult> {
   } catch (e) {
     const err = e as { code?: string; message?: string };
     if (err.code === 'ERR_REQUEST_CANCELED') return { ok: false, cancelled: true };
+    /**
+     * The common cause of a failed Apple sign-in is no Apple ID on the device
+     * — including on the Simulator, where signing in under Settings makes it
+     * work. "Please try again" doesn't help anyone diagnose that.
+     */
+    if (!(await isAppleAvailable())) {
+      return {
+        ok: false,
+        message: 'Sign in with Apple needs an Apple ID signed in on this device.',
+      };
+    }
     return { ok: false, message: humanError(err, 'signin') };
   }
 }

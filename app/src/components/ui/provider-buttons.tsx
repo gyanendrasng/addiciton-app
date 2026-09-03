@@ -15,8 +15,8 @@ import { Tap } from './tap';
  * make it "no smaller than other sign-in buttons", don't make people scroll to
  * reach it, and title it only "Sign in with Apple", "Sign up with Apple" or
  * "Continue with Apple". Shipping builds use Apple's own control, which is why
- * it always looks right — the hand-drawn one below exists only because the
- * Simulator can't run Sign in with Apple at all.
+ * it always looks right — the hand-drawn one below is only a development
+ * stand-in for when `isAvailableAsync()` reports false.
  *
  * **Google** (Sign in with Google branding guidelines) publishes exact values:
  *   dark    fill #131314, 1px inside stroke #8E918F, text #E3E3E3
@@ -81,8 +81,8 @@ export function GoogleButton({
 /**
  * Apple's real control. Returns null off iOS.
  *
- * `available` comes from `isAvailableAsync()`. It is false on the Simulator,
- * where `signInAsync` always throws — see `AppleFallbackButton`.
+ * `available` comes from `isAvailableAsync()`, which reports false when no
+ * Apple ID is signed in on the device — see `AppleFallbackButton`.
  */
 export function AppleButton({
   available,
@@ -121,9 +121,10 @@ export function AppleButton({
  * A stand-in for Apple's button, drawn to their custom-button rules
  * (logo height matches the button, no cropping, approved title).
  *
- * Development only. It exists so the Simulator shows the screen as it ships
- * instead of appearing to be missing Apple sign-in; tapping it fails with a
- * readable message, because `signInAsync` genuinely cannot work there.
+ * Development only, for when `isAvailableAsync()` reports false — usually no
+ * Apple ID signed in on the device. It exists so the screen still looks like
+ * it ships rather than appearing to be missing Apple sign-in; tapping it
+ * attempts the real thing and reports why it didn't work.
  */
 export function AppleFallbackButton({ onPress, disabled }: { onPress: () => void; disabled?: boolean }) {
   const light = activeScheme === 'light';

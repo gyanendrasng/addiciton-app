@@ -72,12 +72,11 @@ export default function SignInScreen() {
 
   const onApplePlatform = availableProviders().includes('apple');
   /**
-   * Sign in with Apple runs on every real iPhone we support, but NOT on the
-   * Simulator — `isAvailableAsync()` reports false there and `signInAsync`
-   * always throws (Expo's docs say so outright). Hiding the button in that case
-   * made the screen look like Apple sign-in was missing, so in development we
-   * draw our own and let the tap fail with a readable message. Shipping builds
-   * always get Apple's real control, which their HIG requires.
+   * `isAvailableAsync()` reports false when the device has no Apple ID signed
+   * in — common on a fresh Simulator, and fixable in its Settings. Hiding the
+   * button in that case made the screen look like Apple sign-in was missing,
+   * so development draws our own; tapping it still attempts the real sign-in.
+   * Shipping builds always get Apple's own control, which their HIG requires.
    */
   const showRealAppleButton = onApplePlatform && appleReady;
   const showStandInAppleButton = onApplePlatform && !appleReady && __DEV__;
