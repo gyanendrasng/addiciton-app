@@ -42,9 +42,10 @@ async function send(to: string, subject: string, text: string, html: string) {
  * - **Tables, not flexbox.** Outlook renders with Word's engine; grid, flex
  *   and modern CSS silently collapse.
  * - **Every style inline.** Gmail strips <style> blocks in some clients.
- * - **No images.** A logo would need a hosted PNG (Gmail blocks SVG), images
- *   are off by default in many clients, and a broken box is worse than none.
- *   The wordmark is text.
+ * - **The one image degrades to text.** Many clients block images by default,
+ *   so the mark carries `alt="Curb"` with explicit width/height: blocked, it
+ *   collapses to the word rather than a broken box that shifts the layout.
+ *   It's a PNG, not the SVG — Gmail strips SVG.
  * - **Explicit colours on every element**, including the background, so dark
  *   mode inversion can't leave dark text on a dark card.
  * - **The code is selectable text**, never an image, so it can be copied — and
@@ -89,10 +90,12 @@ export function signInCodeEmail(code: string) {
                         border:1px solid #DDE1E4;">
             <tr>
               <td style="padding:32px 32px 0 32px;">
-                <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
-                            font-size:15px;font-weight:700;letter-spacing:-0.2px;color:#111519;">
-                  Curb
-                </div>
+                <img src="https://joincurb.app/email-mark.png" alt="Curb"
+                     width="44" height="44"
+                     style="display:block;width:44px;height:44px;border:0;
+                            border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,
+                            'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;
+                            font-weight:700;color:#111519;" />
               </td>
             </tr>
             <tr>
