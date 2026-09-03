@@ -341,7 +341,13 @@ const s = StyleSheet.create({
     fontFamily: type.bodySemi,
   },
 
-  actions: { paddingHorizontal: Spacing.four, paddingBottom: Spacing.two, gap: Spacing.two },
+  actions: {
+    paddingHorizontal: Spacing.four,
+    // No bottom padding: the safe-area inset already clears the home
+    // indicator, and stacking our own on top of it left a visible dead band
+    // under the legal links.
+    gap: Spacing.two,
+  },
   cta: {
     height: 54,
     borderRadius: 16,
@@ -358,7 +364,16 @@ const s = StyleSheet.create({
     fontFamily: type.body,
     textAlign: 'center',
   },
-  legal: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
+  legal: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    // Pull the row's own tap padding back out of the layout so the links sit
+    // closer to the disclosure while keeping a 44pt touch target.
+    marginTop: -6,
+    marginBottom: -8,
+  },
   legalTap: { paddingVertical: 10, paddingHorizontal: 6 },
   legalLink: { color: palette.textDim, fontSize: 13, fontFamily: type.bodyMed },
   legalDot: { color: palette.textFaint, fontSize: 13 },
