@@ -17,6 +17,7 @@ import { Appearance, AppState } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { DbProvider } from '@/db/provider';
+import { useNotificationRouting } from '@/features/notifications/use-notification-routing';
 import { loadDevOffset } from '@/features/settings/dev';
 import { SessionProvider } from '@/lib/session';
 import { activeScheme, palette } from '@/theme/palette';
@@ -75,6 +76,7 @@ export default function RootLayout() {
         }}>
       <DbProvider onReady={onDbReady}>
         <SessionProvider>
+        <NotificationRouting />
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.bg } }}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="onboarding" options={{ gestureEnabled: false, animation: 'fade' }} />
@@ -97,4 +99,13 @@ export default function RootLayout() {
       </ThemeProvider>
     </GestureHandlerRootView>
   );
+}
+
+/**
+ * Lives inside the navigator so `router.push` has somewhere to push to.
+ * Renders nothing.
+ */
+function NotificationRouting() {
+  useNotificationRouting();
+  return null;
 }

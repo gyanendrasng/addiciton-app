@@ -70,10 +70,11 @@ export const PLANS: Plan[] = [
  * The come-back offer.
  *
  * Shown when someone reaches the wall, leaves without subscribing, and comes
- * back — a real signal, not a timer we invented. Deliberately NOT dressed up
- * with a countdown or a fake "5 minutes left": the price is genuinely lower and
- * that can stand on its own. Inventing urgency in a recovery app is the wrong
- * trade for a few points of conversion.
+ * back — a real signal, not a timer we invented. It then runs for a real 12
+ * hours (see offer-window.ts): the countdown is on the *discount*, never on
+ * the standard price, and when it lapses the price genuinely returns to
+ * $59.99. A clock that silently restarts on every visit is the dishonest
+ * version of this, and it's the version App Review objects to.
  *
  * It needs a matching promotional/introductory offer in App Store Connect and
  * Google Play, wired through RevenueCat — a discounted price shown in-app with

@@ -27,7 +27,15 @@ import {
   TERMS_URL,
   type Plan,
 } from '@/features/premium/plans';
-import { setSetting, useSetting } from '@/db/repo/settings';
+import { getSetting, setSetting, useSetting } from '@/db/repo/settings';
+import { cancelOfferNudge, scheduleOfferNudge } from '@/features/premium/offer-nudge';
+import {
+  formatCountdown,
+  OFFER_OPENED_KEY,
+  openWindow,
+  windowFrom,
+} from '@/features/premium/offer-window';
+import { now } from '@/lib/clock';
 import { track } from '@/lib/analytics';
 import { humanError } from '@/lib/errors';
 import { hues, palette } from '@/theme/palette';
@@ -58,7 +66,10 @@ let countedThisLaunch = false;
 export default function PaywallScreen() {
   const router = useRouter();
   const { premium, refresh, checking } = usePremium();
-  const { value: views } = useSetting<number>(VIEWS_KEY, 0);
+  const { value: views, loading: viewsLoading } = useSetting<number>(VIEWS_KEY, 0);
+  const { value: openedAt } = useSetting<number | null>(OFFER_OPENED_KEY, null);
+  // Ticks the countdown. A second is the right resolution for a 12-hour clock.
+  const [, tick] = useState(0);
 
   /**
    * The gate decides *whether* the wall shows; the wall has to dismiss itself.
@@ -67,7 +78,10 @@ export default function PaywallScreen() {
    * restore and a background entitlement refresh too.
    */
   useEffect(() => {
-    if (premium) router.replace('/');
+    if (!premium) return;
+    // Nobody wants a discount notification for something they just bought.
+    void cancelOfferNudge();
+    router.replace('/');
   }, [premium, router]);
   const [selected, setSelected] = useState<Plan['id'] | null>(null);
   const [busy, setBusy] = useState<'buy' | 'restore' | null>(null);
@@ -81,12 +95,41 @@ export default function PaywallScreen() {
   useEffect(() => {
     if (premium || countedThisLaunch) return;
     countedThisLaunch = true;
-    void setSetting(VIEWS_KEY, (views ?? 0) + 1);
-    // Once per launch; `views` is read, not tracked.
+    void (async () => {
+      // Read straight from the database rather than from the hook. On the
+      // first render `useSetting` still holds its fallback, so
+      // `setSetting(views + 1)` wrote 1 every single time — the counter could
+      // never reach 2 and the offer could never fire.
+      const seen = (await getSetting<number>(VIEWS_KEY)) ?? 0;
+      await setSetting(VIEWS_KEY, seen + 1);
+      // Reached the wall and didn't buy: half an hour from now, one
+      // notification about the discounted year. No-ops if notifications aren't
+      // already allowed, and only ever schedules once.
+      await scheduleOfferNudge();
+    })();
+    // Once per launch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const offered = (views ?? 0) >= OFFER_AFTER_VIEWS;
+  // Don't decide while the setting is still loading, or the offer flickers in.
+  const earned = !viewsLoading && (views ?? 0) >= OFFER_AFTER_VIEWS;
+  const window = windowFrom(openedAt ?? null, now());
+  // Earned AND inside the 12 hours. Once it lapses the price really does go
+  // back — restarting the clock on every visit is what makes a countdown a lie.
+  const offered = earned && window.state !== 'expired';
+
+  // Open the window the first time the offer is actually shown, not when it's
+  // earned: a notification that arrives face-down shouldn't burn the 12 hours.
+  useEffect(() => {
+    if (!earned || premium || openedAt != null) return;
+    void openWindow();
+  }, [earned, openedAt, premium]);
+
+  useEffect(() => {
+    if (!offered || window.state !== 'open') return;
+    const id = setInterval(() => tick((n) => n + 1), 1000);
+    return () => clearInterval(id);
+  }, [offered, window.state]);
   // The offer replaces the standard yearly *in place* — two yearly rows at
   // different prices is a puzzle, and moving it to the top would break the
   // weekly → monthly → yearly reading order that makes the year look cheap.
@@ -171,10 +214,12 @@ export default function PaywallScreen() {
         </View>
 
         {offered ? (
-          <Text style={s.offer}>
-            You came back — so here’s half off the year. No timer, no catch; it’s yours whenever
-            you’re ready.
-          </Text>
+          <View style={s.offerRow}>
+            <Text style={s.offer}>You came back — so here’s half off the year.</Text>
+            {window.state === 'open' ? (
+              <Text style={s.countdown}>{formatCountdown(window.msLeft)} left</Text>
+            ) : null}
+          </View>
         ) : null}
 
         <View style={s.plans}>
@@ -290,12 +335,23 @@ const s = StyleSheet.create({
   },
   benefitText: { flex: 1, color: palette.textDim, fontSize: 14.5, lineHeight: 21, fontFamily: type.body },
 
-  offer: {
-    color: hues.premium.solid,
-    fontSize: 14,
-    lineHeight: 20,
-    fontFamily: type.bodyMed,
+  offerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
     marginTop: Spacing.five,
+  },
+  offer: { flex: 1, color: hues.premium.solid, fontSize: 14, lineHeight: 20, fontFamily: type.bodyMed },
+  countdown: {
+    color: hues.premium.ink,
+    backgroundColor: hues.premium.solid,
+    fontSize: 13,
+    fontFamily: type.bodySemi,
+    fontVariant: ['tabular-nums'],
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    overflow: 'hidden',
   },
   plans: { marginTop: Spacing.three, gap: Spacing.two },
   plan: {
