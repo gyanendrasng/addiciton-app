@@ -30,10 +30,27 @@ export function getDb(): Promise<SQLite.SQLiteDatabase> {
   return dbPromise;
 }
 
+/**
+ * Settings that survive a wipe.
+ *
+ * "Delete everything" means the user's recovery data — streaks, slips, moods,
+ * notes. It does not mean their appearance preference: silently flipping the
+ * app back to the system theme is a change nobody asked for, and it makes the
+ * wipe feel like something broke.
+ */
+const KEEP_SETTINGS = ['theme'];
+
 /** Delete every row in every table (used by "delete everything" and reset onboarding). */
 export async function wipeDb() {
   const db = await getDb();
+  const kept = await db.getAllAsync<{ key: string; value: string }>(
+    `SELECT key, value FROM settings WHERE key IN (${KEEP_SETTINGS.map(() => '?').join(',')})`,
+    ...KEEP_SETTINGS,
+  );
   await db.withTransactionAsync(async () => {
     for (const t of TABLES) await db.runAsync(`DELETE FROM ${t}`);
+    for (const row of kept) {
+      await db.runAsync('INSERT INTO settings (key, value) VALUES (?, ?)', row.key, row.value);
+    }
   });
 }

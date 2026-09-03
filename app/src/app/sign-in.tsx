@@ -262,8 +262,6 @@ export default function SignInScreen() {
                   <Text style={s.ghostLabel}>Use an email code instead</Text>
                 </Tap>
 
-                <Text style={s.legal}>Only your email and subscription status are stored.</Text>
-
                 {__DEV__ && mustSignIn ? (
                   <Tap
                     haptic="none"
@@ -370,13 +368,4 @@ const s = StyleSheet.create({
   ghost: { alignSelf: 'center', paddingVertical: 12, paddingHorizontal: 20, marginTop: Spacing.two },
   ghostLabel: { color: palette.textDim, fontSize: 15, fontFamily: type.bodyMed },
   devLabel: { color: palette.amber, fontSize: 13, fontFamily: type.bodyMed },
-  legal: {
-    color: palette.textFaint,
-    fontSize: 12,
-    lineHeight: 17,
-    fontFamily: type.body,
-    textAlign: 'center',
-    marginTop: Spacing.two,
-    paddingHorizontal: Spacing.three,
-  },
 });
