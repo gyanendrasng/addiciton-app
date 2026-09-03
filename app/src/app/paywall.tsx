@@ -18,7 +18,16 @@ import { Notice } from '@/components/ui/notice';
 import { Tap } from '@/components/ui/tap';
 import { setPremium } from '@/db/repo/profile';
 import { usePremium } from '@/features/premium/use-premium';
-import { BENEFITS, PLANS, PRIVACY_URL, TERMS_URL, type Plan } from '@/features/premium/plans';
+import {
+  BENEFITS,
+  OFFER_AFTER_VIEWS,
+  OFFER_PLAN,
+  PLANS,
+  PRIVACY_URL,
+  TERMS_URL,
+  type Plan,
+} from '@/features/premium/plans';
+import { setSetting, useSetting } from '@/db/repo/settings';
 import { track } from '@/lib/analytics';
 import { humanError } from '@/lib/errors';
 import { hues, palette } from '@/theme/palette';
@@ -33,9 +42,23 @@ import { type } from '@/theme/type';
  * the billing period and links to Terms and Privacy to be visible here, plus a
  * Restore control, so none of those are optional decoration.
  */
+/** How many times this user has landed on the wall without subscribing. */
+const VIEWS_KEY = 'paywall.views.v1';
+
+/**
+ * One count per app launch.
+ *
+ * The gate can remount this route several times in a session — navigating
+ * away and back, a state change re-running the redirect — and each of those is
+ * the same visit, not a fresh decision to walk away. Module scope resets when
+ * the app does, which is exactly the granularity "came back" means.
+ */
+let countedThisLaunch = false;
+
 export default function PaywallScreen() {
   const router = useRouter();
   const { premium, refresh, checking } = usePremium();
+  const { value: views } = useSetting<number>(VIEWS_KEY, 0);
 
   /**
    * The gate decides *whether* the wall shows; the wall has to dismiss itself.
@@ -46,11 +69,31 @@ export default function PaywallScreen() {
   useEffect(() => {
     if (premium) router.replace('/');
   }, [premium, router]);
-  const [selected, setSelected] = useState<Plan['id']>('yearly');
+  const [selected, setSelected] = useState<Plan['id'] | null>(null);
   const [busy, setBusy] = useState<'buy' | 'restore' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const plan = PLANS.find((p) => p.id === selected) ?? PLANS[0];
+  /**
+   * Count each arrival at the wall. Someone who saw it, left without paying and
+   * came back has genuinely hesitated — that, not a countdown we invented, is
+   * what earns the lower price.
+   */
+  useEffect(() => {
+    if (premium || countedThisLaunch) return;
+    countedThisLaunch = true;
+    void setSetting(VIEWS_KEY, (views ?? 0) + 1);
+    // Once per launch; `views` is read, not tracked.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const offered = (views ?? 0) >= OFFER_AFTER_VIEWS;
+  // The offer replaces the standard yearly *in place* — two yearly rows at
+  // different prices is a puzzle, and moving it to the top would break the
+  // weekly → monthly → yearly reading order that makes the year look cheap.
+  const plans = offered ? PLANS.map((p) => (p.id === 'yearly' ? OFFER_PLAN : p)) : PLANS;
+  // Yearly is preselected: it's the one we'd recommend, and defaulting to the
+  // top row would preselect the most expensive way to pay.
+  const plan = plans.find((p) => p.id === selected) ?? plans[plans.length - 1];
 
   const buy = async () => {
     if (busy) return;
@@ -128,9 +171,16 @@ export default function PaywallScreen() {
           ))}
         </View>
 
+        {offered ? (
+          <Text style={s.offer}>
+            You came back — so here’s half off the year. No timer, no catch; it’s yours whenever
+            you’re ready.
+          </Text>
+        ) : null}
+
         <View style={s.plans}>
-          {PLANS.map((p) => {
-            const on = p.id === selected;
+          {plans.map((p) => {
+            const on = p.id === plan.id;
             return (
               <Tap
                 key={p.id}
@@ -241,7 +291,14 @@ const s = StyleSheet.create({
   },
   benefitText: { flex: 1, color: palette.textDim, fontSize: 14.5, lineHeight: 21, fontFamily: type.body },
 
-  plans: { marginTop: Spacing.five, gap: Spacing.two },
+  offer: {
+    color: hues.premium.solid,
+    fontSize: 14,
+    lineHeight: 20,
+    fontFamily: type.bodyMed,
+    marginTop: Spacing.five,
+  },
+  plans: { marginTop: Spacing.three, gap: Spacing.two },
   plan: {
     minHeight: 72,
     borderRadius: 16,

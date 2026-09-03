@@ -11,7 +11,7 @@
  * duration be shown, so once RevenueCat is wired the store price wins.
  */
 export type Plan = {
-  id: 'yearly' | 'monthly' | 'lifetime';
+  id: 'weekly' | 'monthly' | 'yearly' | 'yearly_offer';
   /** RevenueCat / store product identifier */
   productId: string;
   name: string;
@@ -25,40 +25,74 @@ export type Plan = {
   recurring: boolean;
 };
 
+/**
+ * Order: shortest commitment first, best value last.
+ * The eye lands on weekly's $9.99 and then reads down to $59.99 for a whole
+ * year, which is the comparison that sells the year. Leading with the year
+ * makes it the expensive-looking number instead of the cheap one.
+ */
 export const PLANS: Plan[] = [
   {
-    id: 'yearly',
-    productId: 'curb.premium.yearly',
-    name: 'Yearly',
-    price: '$29.99',
-    period: '/year',
-    sub: 'Works out to $2.50 a month',
-    badge: 'SAVE 58%',
-    disclosure: '$29.99 per year, billed yearly. Renews until you cancel.',
+    id: 'weekly',
+    productId: 'curb.premium.weekly',
+    name: 'Weekly',
+    price: '$9.99',
+    period: '/week',
+    sub: 'Try it a week at a time',
+    disclosure: '$9.99 per week, billed weekly. Renews until you cancel.',
     recurring: true,
   },
   {
     id: 'monthly',
     productId: 'curb.premium.monthly',
     name: 'Monthly',
-    price: '$5.99',
+    price: '$14.99',
     period: '/month',
     sub: 'Cancel whenever you want',
-    disclosure: '$5.99 per month, billed monthly. Renews until you cancel.',
+    disclosure: '$14.99 per month, billed monthly. Renews until you cancel.',
     recurring: true,
   },
   {
-    id: 'lifetime',
-    productId: 'curb.premium.lifetime',
-    name: 'Lifetime',
-    price: '$79.99',
-    period: ' once',
-    sub: 'One payment, yours for good',
-    badge: 'BEST VALUE',
-    disclosure: '$79.99 once. No subscription, nothing to cancel.',
-    recurring: false,
+    id: 'yearly',
+    productId: 'curb.premium.yearly',
+    name: 'Yearly',
+    price: '$59.99',
+    period: '/year',
+    // $59.99 ÷ 12 = $5.00; against $14.99/mo that's 67% off, computed not guessed.
+    sub: 'Works out to $5 a month',
+    badge: 'SAVE 67%',
+    disclosure: '$59.99 per year, billed yearly. Renews until you cancel.',
+    recurring: true,
   },
 ];
+
+/**
+ * The come-back offer.
+ *
+ * Shown when someone reaches the wall, leaves without subscribing, and comes
+ * back — a real signal, not a timer we invented. Deliberately NOT dressed up
+ * with a countdown or a fake "5 minutes left": the price is genuinely lower and
+ * that can stand on its own. Inventing urgency in a recovery app is the wrong
+ * trade for a few points of conversion.
+ *
+ * It needs a matching promotional/introductory offer in App Store Connect and
+ * Google Play, wired through RevenueCat — a discounted price shown in-app with
+ * no real offer behind it fails review.
+ */
+export const OFFER_PLAN: Plan = {
+  id: 'yearly_offer',
+  productId: 'curb.premium.yearly.offer',
+  name: 'Yearly',
+  price: '$29.99',
+  period: '/year',
+  sub: 'Half the usual $59.99 — about $2.50 a month',
+  badge: 'SAVE 83%',
+  disclosure: '$29.99 for the first year, then $59.99 per year. Cancel any time.',
+  recurring: true,
+};
+
+/** How many times the wall must have been seen before the offer appears. */
+export const OFFER_AFTER_VIEWS = 2;
 
 /** What the money buys. Concrete features, no promised outcomes. */
 export const BENEFITS = [
@@ -66,7 +100,7 @@ export const BENEFITS = [
   'The urge toolkit — breathing, a 2-minute delay, your reasons, games',
   'A slip log that resets the streak without the shame, and an undo',
   'Milestones, calendar history and mood trends',
-  'Daily reminders, and everything works offline',
+  'What you’ve saved, and what stopping is doing for you',
 ];
 
 export const TERMS_URL = 'https://joincurb.app/terms';
