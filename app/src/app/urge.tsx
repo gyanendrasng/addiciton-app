@@ -19,8 +19,9 @@ import { palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
 import { useDismiss } from '@/lib/nav';
+import { withAccess } from '@/features/premium/access';
 
-export default function UrgeScreen() {
+function UrgeScreen() {
   const router = useRouter();
   const dismiss = useDismiss();
   const navigation = useNavigation();
@@ -109,3 +110,6 @@ const s = StyleSheet.create({
   },
   closeGlyph: { color: palette.text, fontSize: 22, fontFamily: type.body, lineHeight: 24 },
 });
+
+// Not reachable without an account and a subscription — see features/premium/access.
+export default withAccess(UrgeScreen);

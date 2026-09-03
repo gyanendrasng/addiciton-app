@@ -26,7 +26,6 @@ export function Welcome({ onNext }: { onNext: () => void }) {
         </Animated.View>
       </View>
       <Cta label="Start the 2-minute quiz" onPress={onNext} />
-      <Text style={s.legal}>Private by design — your answers stay on this device.</Text>
     </View>
   );
 }
@@ -120,7 +119,6 @@ const s = StyleSheet.create({
   markWrap: { marginBottom: Spacing.five },
   centered: { alignItems: 'center' },
   centerText: { textAlign: 'center' },
-  legal: { color: palette.textFaint, fontSize: 11, textAlign: 'center', marginTop: Spacing.three, fontFamily: type.body },
   footnote: { color: palette.accent, fontSize: 15, fontFamily: type.bodySemi, marginTop: Spacing.three },
   planRow: { flexDirection: 'row', gap: Spacing.three, alignItems: 'flex-start' },
   planDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: palette.accent, marginTop: 7 },

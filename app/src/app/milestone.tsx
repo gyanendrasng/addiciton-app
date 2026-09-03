@@ -23,6 +23,7 @@ import { curves, springs, stagger } from '@/theme/motion';
 import { palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
+import { withAccess } from '@/features/premium/access';
 
 const AnimatedLine = Animated.createAnimatedComponent(Line);
 const RAYS = 12;
@@ -31,7 +32,7 @@ const R0 = 96;
 const R1 = 140;
 
 /** The one earned celebration: badge enters, container squash-stretches, rays draw, number counts. */
-export default function MilestoneScreen() {
+function MilestoneScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const reduced = useReducedMotion();
@@ -169,3 +170,6 @@ const s = StyleSheet.create({
   name: { color: palette.bright, fontSize: 40, fontFamily: type.display, letterSpacing: -0.8 },
   sub: { color: palette.textDim, fontSize: 15, fontFamily: type.body, textAlign: 'center', lineHeight: 22, marginTop: Spacing.one },
 });
+
+// Not reachable without an account and a subscription — see features/premium/access.
+export default withAccess(MilestoneScreen);

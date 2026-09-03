@@ -6,8 +6,9 @@ import { CheckinForm } from '@/features/checkin/CheckinForm';
 import { useDayKey } from '@/lib/clock';
 import { Spacing } from '@/theme/spacing';
 import { useDismiss } from '@/lib/nav';
+import { withAccess } from '@/features/premium/access';
 
-export default function CheckinScreen() {
+function CheckinScreen() {
   const dismiss = useDismiss();
   const date = useDayKey();
   const { checkin, loading } = useCheckin(date);
@@ -20,3 +21,6 @@ export default function CheckinScreen() {
     </Screen>
   );
 }
+
+// Not reachable without an account and a subscription — see features/premium/access.
+export default withAccess(CheckinScreen);

@@ -9,8 +9,9 @@ import { palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
 import { useDismiss } from '@/lib/nav';
+import { withAccess } from '@/features/premium/access';
 
-export default function RelapseScreen() {
+function RelapseScreen() {
   const dismiss = useDismiss();
   const insets = useSafeAreaInsets();
   const { profile } = useProfile();
@@ -38,3 +39,6 @@ const s = StyleSheet.create({
   close: { width: 40, height: 40, borderRadius: 20, backgroundColor: palette.surface3, borderWidth: 1, borderColor: palette.line, alignItems: 'center', justifyContent: 'center' },
   closeGlyph: { color: palette.text, fontSize: 22, fontFamily: type.body, lineHeight: 24 },
 });
+
+// Not reachable without an account and a subscription — see features/premium/access.
+export default withAccess(RelapseScreen);

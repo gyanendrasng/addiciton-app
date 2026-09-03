@@ -7,9 +7,10 @@ import { useStreak } from '@/features/streak/use-streak';
 import { palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
+import { withAccess } from '@/features/premium/access';
 
 /** The whole ladder: where you are, what's behind you, what each name means. */
-export default function MilestonesScreen() {
+function MilestonesScreen() {
   const { state } = useStreak();
   const days = state?.streak.days ?? 0;
   const nextIdx = TIERS.findIndex((t) => t.days > days);
@@ -79,3 +80,6 @@ const s = StyleSheet.create({
   check: { color: palette.accent, fontSize: 18, fontFamily: type.bodySemi },
   eta: { color: palette.accent, fontSize: 14, fontFamily: type.bodySemi, fontVariant: ['tabular-nums'] },
 });
+
+// Not reachable without an account and a subscription — see features/premium/access.
+export default withAccess(MilestonesScreen);

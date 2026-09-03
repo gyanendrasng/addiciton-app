@@ -1,8 +1,9 @@
 import { Screen } from '@/components/ui/screen';
 import { Subtitle, Title } from '@/features/onboarding/components/chrome';
 import { ReasonsList } from '@/features/reasons/ReasonsList';
+import { withAccess } from '@/features/premium/access';
 
-export default function ReasonsScreen() {
+function ReasonsScreen() {
   return (
     <Screen>
       <Title>Your reasons</Title>
@@ -11,3 +12,6 @@ export default function ReasonsScreen() {
     </Screen>
   );
 }
+
+// Not reachable without an account and a subscription — see features/premium/access.
+export default withAccess(ReasonsScreen);
