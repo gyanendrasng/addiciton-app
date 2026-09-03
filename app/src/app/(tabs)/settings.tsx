@@ -24,7 +24,7 @@ import { Eyebrow, Title } from '@/features/onboarding/components/chrome';
 import { clearToday, DEV_SKIP_AUTH_KEY, seedDemo, travel } from '@/features/settings/dev';
 import { TABLES } from '@/db/schema';
 import { getTimeOffset } from '@/lib/clock';
-import { hues, palette, type ThemePref } from '@/theme/palette';
+import { activeScheme, hues, palette, themePref, type ThemePref } from '@/theme/palette';
 import { isExpoGo, setThemePref } from '@/theme/theme';
 import { useAccount } from '@/features/account/use-account';
 import { signOutEverywhere } from '@/features/account/sign-in';
@@ -34,7 +34,7 @@ import { type } from '@/theme/type';
 export default function SettingsScreen() {
   const router = useRouter();
   const { profile } = useProfile();
-  const { signedIn, user, premium, refreshSession } = useAccount();
+  const { signedIn, user, refreshSession } = useAccount();
   const remindersOn = useSetting<boolean>('reminders.enabled', false);
   const morning = useSetting<number>('reminders.morning', 8);
   const evening = useSetting<number>('reminders.evening', 21);
@@ -131,13 +131,14 @@ export default function SettingsScreen() {
             icon={signedIn ? 'person.crop.circle.fill' : 'person.crop.circle'}
             iconTint={signedIn ? palette.accent : palette.textFaint}
             iconWash={signedIn ? palette.accentWash : palette.surface3}
-            label={signedIn ? (user?.email ?? 'Signed in') : 'Sign in'}
+            /* The gate means a signed-out user can't reach Settings in a
+               shipping build — that state is only possible behind the dev
+               skip, so "Sign in" is a development affordance, not a feature. */
+            label={signedIn ? 'Manage account' : 'Sign in (dev)'}
             sub={
               signedIn
-                ? premium
-                  ? 'Premium · synced across your devices'
-                  : 'Signed in · no active subscription'
-                : 'Carry your premium to a new phone'
+                ? (user?.email ?? 'Your name, devices and subscription')
+                : 'Only reachable because the dev skip is on.'
             }
             onPress={() => router.push(signedIn ? '/account' : '/sign-in')}
             chevron
@@ -253,12 +254,24 @@ function ThemeRow() {
     { id: 'light', label: 'Light' },
     { id: 'dark', label: 'Dark' },
   ];
+  /**
+   * The palette resolves once at launch, so a change can't take effect until
+   * the next open. Saying that unconditionally is misleading, though — most of
+   * the time the selection already IS what you're looking at. Only say it when
+   * the choice and the running theme actually differ.
+   */
+  const pending = value !== themePref;
+  const sub = !isExpoGo
+    ? 'Switches instantly.'
+    : pending
+      ? 'Applies next time you open Curb.'
+      : `Using ${activeScheme === 'light' ? 'light' : 'dark'}.`;
   return (
     <View style={s.row}>
       <SymbolChip name="circle.lefthalf.filled" tint={hues.progress.solid} wash={hues.progress.wash} />
       <View style={{ flex: 1 }}>
         <Text style={s.rowLabel}>Theme</Text>
-        <Text style={s.rowSub}>{isExpoGo ? "Applies next time you open the app." : "Switches instantly."}</Text>
+        <Text style={[s.rowSub, pending && { color: palette.amber }]}>{sub}</Text>
       </View>
       <View style={s.segment}>
         {opts.map((o) => {

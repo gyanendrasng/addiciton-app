@@ -1,6 +1,14 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Platform, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 
 import { Card } from '@/components/ui/card';
 import { Screen } from '@/components/ui/screen';
@@ -9,7 +17,9 @@ import { Tap } from '@/components/ui/tap';
 import { useAccount } from '@/features/account/use-account';
 import { signOutEverywhere } from '@/features/account/sign-in';
 import { Cta, Eyebrow, Subtitle, Title } from '@/features/onboarding/components/chrome';
+import { Notice } from '@/components/ui/notice';
 import { authClient } from '@/lib/auth-client';
+import { humanError } from '@/lib/errors';
 import { track } from '@/lib/analytics';
 import { hues, palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
@@ -23,6 +33,9 @@ export default function AccountScreen() {
     useAccount();
   const [sessions, setSessions] = useState<SessionRow[] | null>(null);
   const [busy, setBusy] = useState(false);
+  /** null = not editing; a string = the draft being typed. */
+  const [nameDraft, setNameDraft] = useState<string | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
 
   const loadSessions = useCallback(async () => {
     try {
@@ -127,6 +140,24 @@ export default function AccountScreen() {
     );
   };
 
+  const saveName = async () => {
+    const next = (nameDraft ?? '').trim();
+    if (!next) {
+      setNameError('Give yourself a name, or leave it as it was.');
+      return;
+    }
+    setBusy(true);
+    setNameError(null);
+    try {
+      await authClient.updateUser({ name: next });
+      await refreshSession();
+      setNameDraft(null);
+    } catch (e) {
+      setNameError(humanError(e, 'generic'));
+    }
+    setBusy(false);
+  };
+
   const expiry = entitlement.expiresAt
     ? new Date(entitlement.expiresAt).toLocaleDateString()
     : null;
@@ -140,6 +171,65 @@ export default function AccountScreen() {
         notes.
       </Subtitle>
 
+      <Text style={s.section}>Profile</Text>
+      <Card style={s.card}>
+        {nameDraft === null ? (
+          <Tap haptic="light" onPress={() => setNameDraft(user?.name ?? '')}>
+            <View style={s.row}>
+              <SymbolChip
+                name="person.text.rectangle"
+                tint={hues.checkin.solid}
+                wash={hues.checkin.wash}
+              />
+              <View style={{ flex: 1 }}>
+                <Text style={s.rowLabel}>{user?.name?.trim() || 'Add your name'}</Text>
+                <Text style={s.rowSub}>
+                  {user?.name?.trim() ? 'Tap to change it.' : 'Only you ever see it.'}
+                </Text>
+              </View>
+              <Text style={s.chev}>›</Text>
+            </View>
+          </Tap>
+        ) : (
+          <View style={s.editRow}>
+            <TextInput
+              style={s.input}
+              value={nameDraft}
+              onChangeText={setNameDraft}
+              placeholder="Your name"
+              placeholderTextColor={palette.textFaint}
+              autoCapitalize="words"
+              autoComplete="name"
+              textContentType="name"
+              autoFocus
+              maxLength={60}
+              returnKeyType="done"
+              onSubmitEditing={saveName}
+            />
+            {nameError ? <Notice>{nameError}</Notice> : null}
+            <View style={s.editActions}>
+              <Tap
+                haptic="none"
+                onPress={() => {
+                  setNameDraft(null);
+                  setNameError(null);
+                }}
+                style={s.ghostBtn}>
+                <Text style={s.ghostLabel}>Cancel</Text>
+              </Tap>
+              <Tap haptic="light" onPress={busy ? undefined : saveName} style={s.saveBtn}>
+                {busy ? (
+                  <ActivityIndicator color={palette.accentInk} />
+                ) : (
+                  <Text style={s.saveLabel}>Save</Text>
+                )}
+              </Tap>
+            </View>
+          </View>
+        )}
+      </Card>
+
+      <Text style={s.section}>Subscription</Text>
       <Card style={s.card}>
         <View style={s.row}>
           {/* Champagne, not the accent green — subscription surfaces are the
@@ -261,6 +351,31 @@ const s = StyleSheet.create({
     letterSpacing: 0.3,
     marginTop: Spacing.four,
   },
+  chev: { color: palette.textFaint, fontSize: 22, fontFamily: type.body },
+  editRow: { padding: Spacing.three, gap: Spacing.two },
+  input: {
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: palette.surface2,
+    borderWidth: 1,
+    borderColor: palette.line,
+    paddingHorizontal: Spacing.three,
+    color: palette.text,
+    fontSize: 16,
+    fontFamily: type.bodyMed,
+  },
+  editActions: { flexDirection: 'row', gap: Spacing.two, justifyContent: 'flex-end' },
+  ghostBtn: { height: 44, justifyContent: 'center', paddingHorizontal: Spacing.three },
+  ghostLabel: { color: palette.textDim, fontSize: 15, fontFamily: type.bodyMed },
+  saveBtn: {
+    height: 44,
+    minWidth: 92,
+    borderRadius: 12,
+    backgroundColor: palette.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveLabel: { color: palette.accentInk, fontSize: 15, fontFamily: type.bodySemi },
   foot: {
     color: palette.textFaint,
     fontSize: 13,

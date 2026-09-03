@@ -13,7 +13,7 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useCallback, useEffect } from 'react';
-import { Appearance } from 'react-native';
+import { Appearance, AppState } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { DbProvider } from '@/db/provider';
@@ -32,9 +32,26 @@ export default function RootLayout() {
     Figtree_600SemiBold,
     Figtree_700Bold,
   });
+  /**
+   * Keep native chrome pinned to the theme the JS palette is actually using.
+   *
+   * The iOS tab bar is a system material: it takes its colour from the app's
+   * interface style, not from the `backgroundColor` we hand it. Setting this
+   * once on mount wasn't enough — anything that re-evaluates the palette
+   * without remounting the root (a theme change, a Fast Refresh, the OS
+   * appearance flipping under a `system` preference) left the two disagreeing,
+   * and you'd get a dark floating tab bar sitting on a light screen.
+   *
+   * `activeScheme` is fixed for the session, so re-asserting it on every
+   * foreground is both safe and self-healing.
+   */
   useEffect(() => {
-    // Force native chrome (tab bar, sheets, alerts) to match the chosen theme.
-    Appearance.setColorScheme?.(activeScheme);
+    const apply = () => Appearance.setColorScheme?.(activeScheme);
+    apply();
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') apply();
+    });
+    return () => sub.remove();
   }, []);
   const onDbReady = useCallback(() => {
     if (__DEV__) loadDevOffset();
