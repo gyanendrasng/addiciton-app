@@ -91,9 +91,8 @@ export default function PaywallScreen() {
   // different prices is a puzzle, and moving it to the top would break the
   // weekly → monthly → yearly reading order that makes the year look cheap.
   const plans = offered ? PLANS.map((p) => (p.id === 'yearly' ? OFFER_PLAN : p)) : PLANS;
-  // Yearly is preselected: it's the one we'd recommend, and defaulting to the
-  // top row would preselect the most expensive way to pay.
-  const plan = plans.find((p) => p.id === selected) ?? plans[plans.length - 1];
+  // Weekly is preselected — the lowest number to say yes to.
+  const plan = plans.find((p) => p.id === selected) ?? plans[0];
 
   const buy = async () => {
     if (busy) return;
