@@ -1,0 +1,195 @@
+import Link from 'next/link';
+import { LegalPage, Callout } from '@/components/legal';
+
+export const metadata = {
+  title: 'Privacy Policy',
+  description: 'How Curb handles your data: recovery data stays on your device, no accounts, no analytics, no tracking.',
+};
+
+export default function Page() {
+  return (
+    <LegalPage title={'Privacy Policy'} updated={'Effective 3 September 2026 · Version 1.0'}>
+<Callout>
+    <p><strong>The short version.</strong> Everything you record in Curb — what you’re
+    quitting, your streaks, slips, mood check-ins, journal notes and reasons — is stored
+    in a database <strong>on your device</strong> and is never transmitted to us or anyone
+    else. Curb has no user accounts and no servers that receive your entries. We do not
+    use analytics or advertising trackers. The only network activity is for{' '}
+    <a href="#purchases">subscription purchases</a> and{' '}
+    <a href="#updates">app updates</a>, described below.</p>
+  </Callout>
+
+  <div className="my-8 rounded-2xl bg-surface px-6 py-5">
+    <ol>
+      <li><a href="#who">Who we are</a></li>
+      <li><a href="#ondevice">Data that stays on your device</a></li>
+      <li><a href="#leaves">Data that leaves your device</a></li>
+      <li><a href="#notifications">Notifications</a></li>
+      <li><a href="#export">Exporting your data</a></li>
+      <li><a href="#nosale">No selling, sharing or advertising</a></li>
+      <li><a href="#rights">Your rights</a></li>
+      <li><a href="#legal-basis">Legal basis for processing</a></li>
+      <li><a href="#children">Children</a></li>
+      <li><a href="#retention">Retention and deletion</a></li>
+      <li><a href="#security">Security</a></li>
+      <li><a href="#changes">Changes to this policy</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ol>
+  </div>
+
+  <h2 id="who">1. Who we are</h2>
+  <p>Curb (“Curb”, “we”, “us”) is a mobile application that helps people track and reduce
+  addictive habits. This policy explains how the app handles information. It applies to
+  the Curb iOS and Android apps and to this website, <strong>joincurb.app</strong>.</p>
+  <p>
+    <strong>Data controller:</strong> [LEGAL ENTITY NAME]<br />
+    <strong>Postal address:</strong> [REGISTERED ADDRESS]<br />
+    <strong>Email:</strong> <a href="mailto:privacy@joincurb.app">privacy@joincurb.app</a>
+  </p>
+
+  <h2 id="ondevice">2. Data that stays on your device</h2>
+  <p>Curb stores the following in a local database inside the app’s private storage area
+  on your phone. <strong>None of it is transmitted to us, and we have no ability to access
+  it.</strong></p>
+  <table>
+    <thead><tr><th>What</th><th>Examples</th></tr></thead>
+    <tbody>
+      <tr><td>Habits you track</td><td>Porn, alcohol, smoking, vaping, weed, social media, gambling, other</td></tr>
+      <tr><td>Onboarding quiz answers</td><td>Frequency, how long, triggers, symptoms you selected, age range, goal</td></tr>
+      <tr><td>Streak &amp; program data</td><td>Quit date, current and longest streaks, milestones reached</td></tr>
+      <tr><td>Daily activity</td><td>Pledges, evening check-ins (mood and difficulty ratings), optional notes</td></tr>
+      <tr><td>Urge records</td><td>When an urge occurred, its trigger and intensity, the outcome, how long it lasted</td></tr>
+      <tr><td>Slip records</td><td>Which habit, the trigger, your notes, the next actions you chose</td></tr>
+      <tr><td>Your reasons</td><td>The free-text reasons you wrote for quitting</td></tr>
+      <tr><td>Preferences</td><td>Reminder times, theme, whether reminders are on</td></tr>
+    </tbody>
+  </table>
+  <p>Some of this is sensitive information about health and behaviour. We have designed
+  Curb so that this category of data is never collected by us in the first place.</p>
+  <Callout tone="warn">
+    <p><strong>Because your data is only on your device, it is only as durable as your
+    device.</strong> If you delete the app, reset your phone, or lose it, your Curb history
+    is permanently gone and cannot be recovered by us. Use{' '}
+    <em>Settings → Export everything</em> to keep your own copy.</p>
+  </Callout>
+
+  <h2 id="leaves">3. Data that leaves your device</h2>
+  <p>Three narrow exceptions, none of which involve your recovery entries.</p>
+
+  <h3 id="purchases">a. Subscription purchases</h3>
+  <p>Curb offers a paid subscription and a one-time lifetime option. Payment is handled
+  entirely by <strong>Apple</strong> or <strong>Google</strong> — we never see or receive
+  your card details, billing address, or Apple/Google account credentials.</p>
+  <p>To know whether your subscription is active, the app uses{' '}
+  <strong>RevenueCat</strong>, a subscription-management service. RevenueCat receives a
+  randomly generated, pseudonymous app-user identifier together with the purchase receipt
+  and subscription status issued by the store. It does not receive your name, email, or any
+  of the recovery data listed above. See{' '}
+  <a href="https://www.revenuecat.com/privacy" rel="noopener noreferrer" target="_blank">RevenueCat’s privacy policy</a>.</p>
+  <p>For store-privacy purposes this is disclosed as <em>Purchases → Purchase history</em>,
+  used for app functionality and analytics, not linked to your identity, and not used to
+  track you across apps or websites.</p>
+
+  <h3 id="updates">b. App updates</h3>
+  <p>Curb can receive improvements and fixes without a full store update, using{' '}
+  <strong>Expo Application Services (EAS Update)</strong>. When the app launches it asks
+  Expo’s servers whether a newer version of the app’s code is available. That request
+  contains only technical details — platform (iOS/Android), the app’s runtime version, the
+  update channel, the identifier of the version currently installed — and, as with any
+  internet request, your IP address. It contains none of your content. See{' '}
+  <a href="https://expo.dev/privacy" rel="noopener noreferrer" target="_blank">Expo’s privacy policy</a>.</p>
+
+  <h3>c. This website</h3>
+  <p>joincurb.app is a static site. It sets no cookies and runs no advertising or analytics
+  scripts. Fonts are loaded from Google Fonts, which receives your IP address as part of
+  serving the font files.</p>
+
+  <h2 id="notifications">4. Notifications</h2>
+  <p>Curb’s reminders (a morning pledge and an evening check-in) are <strong>local
+  notifications</strong> — scheduled by the app and delivered by your phone’s operating
+  system. There is no push server and no push token; nothing is transmitted to us or to
+  Apple/Google beyond what the OS does to display a local alert. Reminders are optional,
+  can be declined during onboarding, and can be turned off at any time in Settings or in
+  your device settings.</p>
+
+  <h2 id="export">5. Exporting your data</h2>
+  <p>Settings → <em>Export everything</em> writes a JSON file containing your Curb data and
+  hands it to your device’s standard share sheet. We do not receive this file. Once you
+  send it somewhere — email, cloud storage, another app — that destination’s own privacy
+  policy governs it.</p>
+
+  <h2 id="nosale">6. No selling, sharing or advertising</h2>
+  <p><strong>We do not sell or share personal information</strong> as those terms are
+  defined by the California Consumer Privacy Act as amended by the CPRA, and we do not
+  process personal information for cross-context behavioural advertising. Curb contains no
+  advertising SDKs, no analytics SDKs, and no social-media SDKs. We do not use sensitive
+  personal information to infer characteristics about you, so the CPRA right to “limit the
+  use of my sensitive personal information” does not arise. We have never sold or shared
+  personal information, including in the preceding twelve months.</p>
+  <p>Curb does not track you across other companies’ apps or websites, and does not request
+  permission to do so.</p>
+
+  <h2 id="rights">7. Your rights</h2>
+  <p>Depending on where you live you may have rights to access, correct, delete, port,
+  restrict or object to the processing of your personal information, and to opt out of its
+  sale or sharing (CCPA/CPRA and other US state laws), or the equivalent rights under the
+  UK/EU GDPR.</p>
+  <p>Because your Curb data lives on your own device and is never sent to us, most of these
+  rights are exercised directly by you and immediately:</p>
+  <ul>
+    <li><strong>Access and portability</strong> — Settings → Export everything.</li>
+    <li><strong>Correction</strong> — edit or delete individual entries in the app; undo a
+        logged slip within 24 hours.</li>
+    <li><strong>Erasure</strong> — Settings → Delete everything, or delete the app. See{' '}
+        <Link href="/delete-data">Delete my data</Link>.</li>
+    <li><strong>Objection / restriction</strong> — stop using the app; nothing of yours is
+        held elsewhere.</li>
+  </ul>
+  <p>For the limited purchase data held by RevenueCat, or for any question about this
+  policy, email <a href="mailto:privacy@joincurb.app">privacy@joincurb.app</a>. We will
+  respond within 30 days. You will never be treated differently for exercising a privacy
+  right. If you are in the UK or EEA you also have the right to complain to your data
+  protection authority (in the UK, the Information Commissioner’s Office).</p>
+
+  <h2 id="legal-basis">8. Legal basis for processing</h2>
+  <p>For users in the UK/EEA: because your recovery entries never reach us and we hold no
+  means of identifying you from them, we do not act as a controller of that data. For the
+  on-device processing the app performs at your direction, the basis is your{' '}
+  <strong>consent</strong> (Article 6(1)(a)), and for health-related entries your{' '}
+  <strong>explicit consent</strong> (Article 9(2)(a)), given by choosing to record them.
+  For purchase data the basis is <strong>performance of a contract</strong> (Article
+  6(1)(b)). You may withdraw consent at any time by deleting your data or the app.</p>
+
+  <h2 id="children">9. Children</h2>
+  <p>Curb is not directed to children. It is rated 16+/18+ and is intended for adults. We do
+  not knowingly collect personal information from children under 13 (or under 16 where
+  local law sets that threshold). If you believe a child has provided us with information,
+  contact us and we will act on it — though in practice the app collects nothing from
+  anyone.</p>
+
+  <h2 id="retention">10. Retention and deletion</h2>
+  <p>We retain nothing, because we receive nothing. Your data persists on your device until
+  you delete it or remove the app. Purchase records held by Apple, Google and RevenueCat
+  are retained under their own policies and applicable tax and accounting law.</p>
+
+  <h2 id="security">11. Security</h2>
+  <p>Curb’s database is stored inside the app’s private container, protected by your
+  device’s operating-system sandbox and, on modern devices, by full-disk encryption tied to
+  your passcode or biometrics. Network requests use HTTPS. Because we hold no copy of your
+  data, there is no server of ours that can be breached — but keeping your device locked and
+  updated remains the most important protection.</p>
+
+  <h2 id="changes">12. Changes to this policy</h2>
+  <p>If we change this policy we will update the effective date above and, for material
+  changes, notify you in the app. Continuing to use Curb after a change means you accept
+  the updated policy. Previous versions are available on request.</p>
+
+  <h2 id="contact">13. Contact</h2>
+  <p>
+    Privacy questions: <a href="mailto:privacy@joincurb.app">privacy@joincurb.app</a><br />
+    General support: <a href="mailto:support@joincurb.app">support@joincurb.app</a><br />
+    Postal: [LEGAL ENTITY NAME], [REGISTERED ADDRESS]
+  </p>
+    </LegalPage>
+  );
+}

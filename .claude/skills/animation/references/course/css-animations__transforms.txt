@@ -1,0 +1,96 @@
+TransformsMost animations that go beyond simple hover effects use the transform property. Before we dive deep into the world of writing animations in code, let’s first understand how transform works.
+The CSS transform property allows us to change how a given element looks. It’s very powerful, because it’s not only about moving the element on the y or x axis. We can move it, rotate it, scale it, and translate it. This unlocks a lot of possibilities when it comes to animations.
+We’ll go over the transform functions and cover some nuances related to them.
+Translation
+The translate function allows us to move an element around. Positive values move an element down and to the right, negative values move up and to the left.
+transform: translate(0px, 0px)xy
+We can either use translate(x, y), or, if we only want to move the element on one axis, translateX(x) or translateY(y). I usually use the latter because it’s more readable.
+Using translate doesn’t change its position in the document flow. This means that other elements will still be laid out as if the element hadn’t moved at all.
+transform: translate(0px, 0px)xy
+Unlike margin or padding, when using percentages, the element will be moved relative to its own size. Setting translateY(100%) for example, will move the element down by its own height.
+transform: translate(0%, 0%)xy
+Animations in Sonner are done exclusively using translateY() with percentages. Toasts can vary in height, so by using translateY(100%) I know that the toast will always move down by its own height, regardless of its size.
+Add toast
+Vaul uses translateY() for the same reason. The drawer can vary in height, so by using translateY(100%) it’ll always be hidden before animating in. A hardcoded value of 300px would only work if the drawer was 300px tall. In general, I prefer to use percentages for all animations, even if the dimensions are hardcoded. Percentages are less error prone.
+ 
+Scale
+scale allows us to resize an element. It works as a multiplier, scale(2) will make the element twice as big, scale(0.5) will make it half as big.
+transform: scale(1)scale
+We can also use scaleX and scaleY to only scale the element on one axis, or just use scale with two values to scale on both axes (scale(x, y)). This is less common as it’ll usually look bad.
+transform: scale(1, 1)scaleXscaleY
+Unlike width and height, scaling an element scales its children as well, which is a good thing. When scaling a button on click we want its font size, icons, etc. to scale as well.
+You can see this effect being used often for button presses, or for enter transitions. I also used it during my Linear work trial for the QR code button below. It scales down when you click it, and the text that comes in scales up.
+ 
+A subtle scale down effect when a button is pressed is also a nice way to make your interface feel more responsive. In this case, I applied a scale(0.97) to the button’s :active pseudo-class.
+CompleteCompleteNotice how different both of these button feel.
+The Tailwind classes from above are just these two: transition-transform active:scale-[0.97].
+If you want to do the same in plain CSS, it would look roughly like this:
+
+```
+button {
+  transition: transform 150ms ease;
+}
+ 
+button:active {
+  transform: scale(0.97);
+}
+```
+
+Another cool use case for scale is a zoom effect. I built this lightbox component for Linear’s marketing pages. It simply performs a calculation that returns the scale value so that the image fits the screen. A subtle benefit of using scale here is that it scales the border radius correctly as well.
+ 
+A tip for using scale() is to (almost) never animate from scale(0). Such animations just don’t look good and feel weird. Nothing in the world around us can disappear and reappear like that. Instead, you can combine an initial scale like 0.5 with opacity animation like I did for Clerk’s toast.
+ You almost can’t notice the initial scale, but it makes the animation feel better.
+Rotate
+Used less often than the two previous functions, but as the name suggests, rotate allows us to rotate an element.
+transform: rotate(0deg)rotation
+We will use this property for the trash interaction later in the course. When you select a few images and press the "Trash" button you will see the images animate into the bin. It’s a combination of translate and rotate functions.
+
+Pure rotation with no other transform functions looks best with an ease-in-out type of easing. It feels natural, like a car that accelerates and decelerates. Do you remember this example?
+Built-inCustom easing here feels more energetic.
+3D Transforms
+We can also use rotateX and rotateY in combination with transform-style: preserve-3d to rotate an element around a specific axis. This is useful for creating 3D effects. Here’s an interesting loading animation:
+ A loader animation that Yann and I worked on at Linear.
+You have to see rotateX and rotateY like screws. If you screw a screw into a piece of wood, and then rotate the screw, the piece of wood will rotate as well. If you screw it from top and rotate it’s essentially like rotateY. Think of a revolving door.
+rotateYrotateY180° is the back of the element.
+rotateX works exactly the same, but in the other direction. It’s like a rotisserie chicken.
+rotateXrotateX180° is the back of the element, upside down.
+translateZ moves the element along the z-axis. Positive values bring the element closer to the viewer, while negative values push it farther away. You won’t see its effect unless you add perspective to the parent element though.
+transform-style: preserve-3d property enables an element to position its children in 3D space, rather than flattening them into a 2D plane. We wouldn’t be able to create the 3D effect in the example above without it.
+perspective defines the distance between the viewer and the z value, creating depth perception. The closer the viewer is to z0, the more pronounced the 3D effect will be. Small changes will appear huge, but as the distance increases, the changes will appear smaller.
+Perspectivez
+3D Transforms in action
+This may seem useless at first, but once you get a good grasp of it, you can create some really unique effects that seem impossible to achieve with just CSS at first sight. Like Aavara’s coin animation. It may seem like it’s a real 3D object, but this animation is actually using rotateY as well.
+ 
+Once you get creative with it you can achieve some great animations. We will practice 3d transforms in the Keyframe animations chapter to understand these properties better.
+Transform origin
+Every element has an anchor that transform animations are executed from. By default it’s the center of the element, but we can change it to influence how our animations are performed.
+transform: rotate(0deg)transform-origin: centerrotateTransform Origincenter 
+All kinds of popovers should animate from the trigger, not from the center. This makes it feel more natural as it won’t appear out of nowhere. That’s where setting the right transform-origin comes in handy for example. Radix supports this out of the box via a css variable.
+AwareUnawareAware slowedUnaware slowedOptionstransform-origin: top center
+Order of transforms
+The order of transforms matters. In the demo below we first apply rotate and then translateX. Try switching them around by clicking on the button to see how the order affects the animation.
+transform: rotate(0deg) translateX(0px)rotationtranslateXSwap order
+Exercise
+Let’s try and apply what we’ve just learned. We’ll try and recreate Sonner’s stacking layout. This is not only a good layout for this specific toast component, but you can use it for a stack of cards, like Campsite is doing, or even for nested dialogs!
+A stack of cards, campsite.com.
+Unlike the Campsite example above, we will stack our cards upwards. The end result should look like this:
+
+Our starting point is a set of 3 cards stacked on top of each other with a neat grid trick, but without the stacking effect. Your job will be to apply the correct transform values to make it look like the example above.
+App.jsstyles.css
+```
+import "./styles.css";
+
+const LENGTH = 3;
+
+export default function StackedComponent() {
+  return (
+    <div className="wrapper">
+      {new Array(LENGTH).fill(0).map((_, i) => (
+        <div className="card" key={i} />
+      ))}
+    </div>
+  );
+}
+```
+
+View SolutionCopy page

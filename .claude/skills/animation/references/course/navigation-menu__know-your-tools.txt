@@ -1,0 +1,17 @@
+FundamentalsWalkthroughsModule 01Family DrawerThe analysisFirst animationsCrossfadeThe finishing touchModule 02Dynamic IslandThe DesignRing viewTimer viewMorph effectModule 03Navigation menuKnow your toolsAnimating the menuClosing thoughtsModule 04Hero illustrationSVG introductionLines and dashesRotationClick animationClock animationPolishKnow your toolsLet’s assume we work on the marketing team at a company and we are tasked with creating a navigation menu with multiple dropdowns. How should we go about this?
+What I usually do in such cases, is go and look how other companies do it. I actually created a navigation menu before, and what I did before I built it is I looked at how other companies do it and decided to build something similar to Stripe’s.
+ This was my inspiration for Vercel’s navigation menu.
+This is how I usually work. Nothing is done in isolation, I get inspired by other products. Most of the time, you shouldn’t try to invent new patterns, but rather use existing ones, because they are battle tested and proven to work.
+This is especially useful early-on in your animation journey when you don’t have the intuition yet. Look at great products and companies, see how they do things, and then try to create something inspired by that. Steal like an artist.
+“It comes down to trying to expose yourself to the best things that humans have done and then try to bring those things into what you’re doing.”Steve Jobs,  Apple
+Knowing what to use
+A menu like this is actually quite a complex component. Keyboard navigation, accessibility, correct focus management, are all things that we need to get right. While we could do all of this from scratch, we can also look at existing solutions like Radix’s primitives or Base UI.
+Making a dropdown accessible is actually quite challenging, same goes for a custom select component or a toast. Components like Radix’s primitives offer all that accessibility out of the box, but at the same time, they are unstyled which gives us a lot of freedom. These libraries essentially do the "boring" work for us.
+When I was working on Vercel’s design system I used Radix’s primitives as the base for lots of components, because it saved me a lot of time, but also because the developer experience of these components is great. I also used it recently for Linear’s navigation:
+ Linear’s navigation menu.
+Radix also happens to have a navigation menu component, which is exactly what we need. This is the importance of knowing your tools. Don’t blindly jump into code straight away. Look around, see what’s out there, what libraries or components could make your life easier.
+Radix makes animating the navigation menu easy as well, which is another reason why it makes sense to use it. It exposes data attributes like data-motion which will even allow us to ensure that the animation is direction aware.
+When to use a 3rd party dependency
+You should obviously carefully consider whether a 3rd party dependency is worth it. But for something like a navigation menu, you have to consider that it would take you a lot of time to get this right. Someone has spent weeks working on such component already. Not only will it save you time, but the quality of the component will also be hard to beat.
+ Radix’s navigation menu component.
+It’s also used by many amazing companies and individuals (shadcn) in the industry, which reaffirms the quality of the component and encourages me to use it.Copy page

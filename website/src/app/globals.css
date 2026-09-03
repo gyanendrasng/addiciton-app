@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+/* Curb — design tokens, matched to the app */
+@theme {
+  --color-bg: #000000;
+  --color-surface: #111214;
+  --color-surface2: #1A1B1E;
+  --color-surface3: #232528;
+  --color-line: #2A2C30;
+  --color-ink: #F2F3F5;
+  --color-dim: #9A9FA8;
+  --color-faint: #5F646D;
+  --color-accent: #3FDE9C;
+  --color-accent-deep: #1E8A64;
+  --color-accent-ink: #06120D;
+  --color-urge: #FF8A4C;
+  --color-danger: #F0645A;
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Long-form legal/prose pages */
+.prose-legal { max-width: 42rem; }
+.prose-legal p, .prose-legal li { color: var(--color-dim); line-height: 1.65; }
+.prose-legal p { margin: 0 0 1rem; }
+.prose-legal ul, .prose-legal ol { margin: 0 0 1.15rem; padding-left: 1.4rem; }
+.prose-legal ul { list-style: disc; }
+.prose-legal ol { list-style: decimal; }
+.prose-legal li { margin-bottom: 0.55rem; }
+.prose-legal strong { color: var(--color-ink); font-weight: 600; }
+.prose-legal a { color: var(--color-accent); }
+.prose-legal a:hover { text-decoration: underline; }
+.prose-legal h2 {
+  font-size: 1.44rem; font-weight: 700; margin: 2.75rem 0 0.75rem;
+  padding-top: 1.25rem; border-top: 1px solid var(--color-line);
+}
+.prose-legal h3 { font-size: 1.12rem; font-weight: 700; margin: 1.75rem 0 0.5rem; color: var(--color-ink); }
+.prose-legal table { width: 100%; border-collapse: collapse; margin: 1.15rem 0 1.5rem; font-size: 0.94rem; }
+.prose-legal th, .prose-legal td {
+  text-align: left; padding: 0.7rem 0.75rem;
+  border-bottom: 1px solid var(--color-line); vertical-align: top; color: var(--color-dim);
+}
+.prose-legal th {
+  color: var(--color-ink); font-weight: 600; font-size: 0.8rem;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}

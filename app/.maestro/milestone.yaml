@@ -1,0 +1,32 @@
+# Dev time travel +7d triggers the Momentum celebration
+appId: host.exp.Exponent
+---
+- openLink: exp://localhost:8090
+- tapOn:
+    text: "Keep going"
+    optional: true
+- tapOn:
+    text: "×"
+    optional: true
+- tapOn:
+    text: "Home"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*clean, and counting.*"
+    timeout: 40000
+- tapOn: "Settings"
+- scrollUntilVisible:
+    element:
+      text: "\\+7d"
+    direction: DOWN
+- tapOn: "\\+7d"
+- extendedWaitUntil:
+    visible: "Milestone reached"
+    timeout: 15000
+- tapOn: "Keep going"
+- tapOn: "Settings"
+- scrollUntilVisible:
+    element:
+      text: "reset"
+    direction: DOWN
+- tapOn: "reset"

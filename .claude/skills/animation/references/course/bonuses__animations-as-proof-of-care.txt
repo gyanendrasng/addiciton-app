@@ -1,0 +1,56 @@
+Animations as Proof of CareWho is Josh?
+Josh has been designing products for startups and mentoring designers for nearly 20 years. He’s compiled a broad range of lessons, walkthroughs, and tools to help everyone apply uncommon care to their work at Interface Craft. This lesson is his take on care in animations.
+
+When you use a product or interface, you quickly get a sense for how much someone cared about it. The way the features work, the refinement of interface controls, the speed with which you can use the app.
+These all contribute to a feeling that shows how much (or little!) the person making software cared about you as the user. Animations are in many ways the purest form of this.
+They aren’t required, and by default don’t exist in most frameworks. They don’t appear in screenshots, and you can’t capture them in static drawing tools. They exist only in the reality of use. In this way, they can be a powerful tool to demonstrate care.
+“It is not enough to know your craft,  you have to have feeling.”Eduardo Chillida,  Spanish Basque sculptor
+An opportunity to differentiate
+I often find that how much care someone put into something, whether a meal, a book, or a software interface, is one of the simplest ways to stand out. When I can tell something was created with care, I value it more and am more likely to share it.
+It’s surprising how often just taking a little bit more time, even taking just one more pass, helps take something from good to great.
+This is true with animations as well. A product that features tasteful interface transitions and interactions will be differentiated from those that largely feel static.
+But you can also take it further, and use animations as a tool to demonstrate uncommon care even amongst apps that are well designed and have animated the basics. You can use animation to both communicate purpose, and also to foster a feeling.
+Here are some examples of what I’ve noticed recently.
+GT Standard Microsite
+Grilli Type has a wonderful site for their font GT Standard.
+One section features an interactive tool that allows users to explore the width and weight combinations within the typeface. You can imagine that the basic version of this could have just been a nicely designed chart. But this interactive version features subtle animations that are both delightful to use, and also help demonstrate the power and potential of variable font capabilities.
+ 
+Emil.md
+Emil has a lovely micro animation that you may not have even noticed: the nav item for his emil.md skill has a very subtle, very tasteful animation loop that has gentle sparkles appearing.
+This is both an elegant way to highlight this as new and help draw your attention, and also reinforce everything he teaches on this course, which is to use animation with intent and care.
+ 
+Torph
+Torph is an animating text component, specifically morphing characters that change within a given string. The creator, Lochie Axon, demonstrates it wonderfully in the installs section, where the package name animates subtly when you change your target framework.
+This not only shows yet another example of how it works, but also builds your confidence that this is a thoughtful and well-crafted component.
+ 
+Easing.dev
+Lochie also has a nice resource in easing.dev, which features a variety of easing curves and springs. A great little detail is that the logo for the site is interactive; you can drag the handles to change the easing curve, which quickly animates back to its default state.
+ 
+Interface Craft Cafe
+For an event I was hosting, I wanted to create a simple page instead of using an event platform. I was inspired by the architectural work of Gaudi, who often uses incredible organic curves and shapes in his work.
+So I animated some illustrations (hand drawn by my co-host Juli) with an effect that looks as if the ink is melting or spilling on the page, similar to the lines of Gaudi’s buildings.
+I also let users draw their own shapes on the page, with the same effect. Just a little something to demonstrate the thought and care that went into this.
+ 
+The weight of paper
+Marijana Pavlinić has a beautiful interactive stamp collection on her personal website. One of the wonderful details is her feedback form. A postcard animates onto the page using a genie effect, and returns to the same place when you dismiss. The collection is full of small details like this where she took things just one step further than necessary.
+ 
+Vercel Ship 26
+On the RSVP page for Vercel’s developer conference, their design team created a fun little personalization detail where you can place a variety of stickers onto a suitcase.
+It’s a delightful little addition, but the detail that jumped out to me is how they took the time to craft a “peel off” animation that mimics, in a somewhat cartoonish way, the physics of peeling off a sticker from a surface.
+The fact that they put this much care into a simple RSVP page gives me confidence that their team puts even more care into their developer tools and platform.
+ 
+Family table view cells
+Amongst the many wonderful details in Family, the humble animation behavior of their table view cells is a study in both delight and restraint. When you favorite a cryptocurrency by swiping the row, the favorite icon gently appears to give you confirmation of your action. It’s a very subtle, purposeful effect.
+ 
+DialKit slider component
+DialKit is a framework to help you tweak parameters for your animations, interfaces, or components in any web app. One of the features is a slider. Rather than use a standard slider, I wanted to create something that felt more usable and considered.
+By default, the drag handle is hidden. When you hover, the value fill and drag handle subtly animate to present themselves. If you click around, the handle gently glides to your position. When you drag closer to the ends, the handle shrinks and fades out under the label, and pins itself to the end of the range. And finally, when you drag beyond the bounds of the panel, the whole control stretches with a rubber banding effect, snapping back when you release your gesture.
+ 
+All of these small decisions and details were intentionally chosen to help the whole framework feel thoughtful and durable.
+Honkish Easter Egg
+There are several easter eggs in Benji Taylor’s writeup of Honk, but perhaps my favorite, implemented by Lochie Axon, is when you play every single sound in the Honkish sound pad, a honk avatar appears on screen. When you click it, an avalanche of Honks shower down and fill up the screen.
+ 
+A beautiful animation for those who take the time to fully explore the article, and a wonderful memento to the care and love the team had in creating the app. It both teaches you, as the reader, that this team went above and beyond, and also encourages you to explore and approach software with almost a sense of childlike curiosity.
+A chance to go beyond
+All of these examples share one thing in common: their creators took the opportunity to apply an uncommon level of care in pushing just past where most might stop. The result in all cases is a moment or interaction that feels crafted, memorable, and gives the user confidence and trust in the product and maker.
+I hope you look for opportunities and take the chance to demonstrate care in the work that you do!ResourcesJosh’s personal siteInterface CraftCopy page

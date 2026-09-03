@@ -1,0 +1,269 @@
+FundamentalsWalkthroughsModule 01Family DrawerThe analysisFirst animationsCrossfadeThe finishing touchModule 02Dynamic IslandThe DesignRing viewTimer viewMorph effectModule 03Navigation menuKnow your toolsAnimating the menuClosing thoughtsModule 04Hero illustrationSVG introductionLines and dashesRotationClick animationClock animationPolishPolishThe clock works. It responds to hover, animates the hands to the current time, handles all the interactions. But something’s missing. That subtle aliveness you see in UIs that truly stand out. Let’s improve it!
+We’ll work on subtle movement, better interaction feel, mobile support, accessibility, and performance optimization for complex scenes.
+Subtle life
+When idle, everything is completely still. It works, but it doesn’t feel alive. We need some barely-noticeable movement to make the scene feel more organic.
+We’ll add gentle floating to the illustrations and subtle rotation to the backgrounds. Instead of writing animation logic in useEffect hooks, we’ll create helper functions that return animation props we can spread directly onto motion.g elements.
+
+```
+export const createFloatingAnimation = ({ to = 2, duration = 2.5 }) => {
+  return {
+    initial: { transform: "translateY(0px)" },
+    animate: {
+      transform: ["translateY(0px)", `translateY(${to}px)`],
+    },
+    transition: {
+      duration,
+      ease: "easeInOut",
+      repeat: Infinity,
+      repeatType: "reverse",
+    },
+  };
+};
+ 
+export const createRotationAnimation = ({ to = 2, duration = 5 }) => {
+  return {
+    initial: { transform: "rotate(0deg)" },
+    animate: {
+      transform: ["rotate(0deg)", `rotate(${to}deg)`],
+    },
+    transition: {
+      duration,
+      ease: "easeInOut",
+      repeat: Infinity,
+      repeatType: "reverse",
+    },
+  };
+};
+```
+
+Now we can apply them directly:
+
+```
+<motion.g
+  {...createFloatingAnimation({
+    to: 1.5,
+    duration: 3,
+  })}
+>
+  <motion.g
+    {...createRotationAnimation({
+      to: 1,
+      duration: 4,
+    })}
+  >
+    {/* background path */}
+  </motion.g>
+  {/* other elements */}
+</motion.g>
+```
+
+The outer group floats the entire illustration with translateY(1.5px) over 3 seconds. The inner group rotates just the background with rotate(2deg) over 4 seconds. Different timings mean they never sync up. That’s why it feels organic and not mechanical.
+Grid lines were added to emphasize the subtle movement.
+It’s very subtle, but once all elements in the scene are animated in this subtle way, it creates a sense of life and movement. Especially when all the elements have some special, unique movement to them too from time to time, like the lightbulb blinking.
+
+Preventing accidental triggers
+Try moving your mouse quickly across the clock below. The animation triggers way too quickly, it’s jittery and annoying. That’s why tooltips have slight delays to them for example, to prevent accidental triggers.
+
+The fix is to simply trigger the hover only if the mouse stays for a tiny bit.
+There are a few ways to do this, but a simple approach is debouncing the hover with a useHoverTimeout hook. This ensures that the hover will be triggered only after you hovered for at least 100ms. You can see the full implementation of the hook here.
+It accepts a delay prop, which in our case is 100ms and two callbacks, onHoverStart and onHoverEnd that fire when the hover starts (after the delay) and ends. We can then use this hook and apply it to each of the interactions.
+
+```
+const { handleMouseEnter, handleMouseLeave } = useHoverTimeout({
+  delay: 100,
+  onHoverStart: () => {
+    // play hover animations
+  },
+  onHoverEnd: () => {
+    // return to idle animations
+  },
+});
+ 
+return (
+  <g onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+    {/* illustration */}
+  </g>
+);
+```
+
+100ms is short enough to feel responsive, long enough to prevent accidental triggers. Try rapid mouse movements below and see how it feels.
+
+Mobile support
+Our clock animation works great on desktop, but on mobile, there’s a problem. Hover and click handlers fire at once on touch devices. The demo below emulates the behavior a mobile user will experience with our current implementation. Try interacting with it.
+Emulation of mobile interaction without handling hover state
+There’s no hover feedback as there is no hover on mobile. And a single click triggers both the hover and click animations immediately – you can even see the background glitch slightly as it quickly transitions from the hover to the click animation. There’s also no mouse leave event – the hover state only resets when you tap outside the illustration.
+To fix this, we will need a two-tap pattern on mobile devices: first tap to trigger the hover animation and second tap to trigger the click animation.
+To build this, we need to detect touch devices and track tap state. Let’s start with a media query to detect touch devices:
+
+```
+import { useMediaQuery } from "usehooks-ts";
+ 
+// inside component
+const isMobile = useMediaQuery("(pointer: coarse)");
+```
+
+The pointer: coarse media query detects if the primary input device has limited pointing accuracy – touch screens. A narrow desktop browser window still returns false because it has a precise pointer.
+On mobile, we want: tap once to trigger the hover animation, and tap again to trigger the click animation. We can create a simple hook to help us implement this behaviour across many components:
+
+```
+import { useMediaQuery } from "usehooks-ts";
+import { useEffect, useRef, useCallback } from "react";
+ 
+export function useMobileTap() {
+  const isMobile = useMediaQuery("(pointer: coarse)");
+  const isReadyForClickRef = useRef(true);
+ 
+  useEffect(() => {
+    if (isMobile) {
+      isReadyForClickRef.current = false;
+    }
+  }, [isMobile]);
+ 
+  const markTapped = useCallback(() => {
+    if (isMobile) {
+      isReadyForClickRef.current = true;
+    }
+  }, [isMobile]);
+ 
+  const resetTap = useCallback(() => {
+    if (isMobile) {
+      isReadyForClickRef.current = false;
+    }
+  }, [isMobile]);
+ 
+  return {
+    isReadyForClickRef,
+    markTapped,
+    resetTap,
+  };
+}
+```
+
+On desktop, isReadyForClick is always true. On mobile, it starts as false. First tap calls markTapped() to enable the click, second tap proceeds with the click animation.
+Now let’s connect this to our hover and click handlers. The trick is making handleClick return early on the first tap, which allows handleMouseEnter to fire and play the hover animation:
+
+```
+const isMobile = useMediaQuery("(pointer: coarse)");
+const { isReadyForClickRef, markTapped, resetTap } = useMobileTap();
+ 
+const handleClick = () => {
+  if (!isReadyForClickRef.current) {
+    markTapped(); // First tap on mobile
+    return; // Return early to trigger the hover animation
+  }
+  // Only trigger click animation on second tap
+};
+ 
+const { handleMouseEnter, handleMouseLeave } = useHoverTimeout({
+  delay: isMobile ? 0 : 100, // No delay on mobile
+  onHoverStart: () => {
+    // Hover animation plays because of early return in handleClick
+    playWaveAnimation();
+  },
+  onHoverEnd: () => {
+    resetTap();
+    returnToIdle();
+  },
+});
+ 
+return (
+  <motion.div
+    onMouseEnter={handleMouseEnter}
+    onMouseLeave={handleMouseLeave}
+    onClick={handleClick}
+  >
+    {/* clock */}
+  </motion.div>
+);
+```
+
+First tap: handleClick returns early, handleMouseEnter fires. Second tap: isReadyForClick is true, click animation runs. When the user taps outside, handleMouseLeave calls resetTap() to prepare for the next interaction.
+We also set the delay to 0 in useHoverTimeout for mobile devices because the first tap should trigger the hover animation immediately as there’s no mouse movement to debounce.
+Try it below. The first click triggers the hover animation, second one triggers the click animation and updates the time. Subsequent clicks give scale feedback.
+Emulation of mobile interaction with hover state handled
+Respecting motion preferences
+To prevent people from feeling sick or getting distracted, our animations need to be changed based on whether they have prefers-reduced-motion set in their OS. motion/react gives us a useReducedMotion hook to tell us exactly that.
+
+```
+import { useReducedMotion } from "motion/react";
+ 
+const shouldReduceMotion = useReducedMotion();
+```
+
+When shouldReduceMotion is true, we disable all animations, floating, rotation, hover and click interactions. The asset becomes static.
+Enable reduced motion
+You might think disabling all animations is too drastic, but to me with this type of decorative animations, it’s either all or nothing. We could’ve kept the floating animation, but that hints that the whole thing is interactive, which it wouldn’t be if reduced motion is enabled.
+To disable the floating animation for example, we can pass shouldReduceMotion to the createFloatingAnimation and simply return the initial and animate keys to be exactly the same so no movement occurs.
+
+```
+export const createFloatingAnimation = ({
+  to = 2,
+  duration = 2.5,
+  delay = 0,
+  shouldReduceMotion,
+}: {
+  to?: number;
+  duration?: number;
+  delay?: number;
+  shouldReduceMotion?: boolean | null;
+} = {}): FloatingAnimationProps | undefined => {
+  if (shouldReduceMotion) {
+    return {
+      initial: { transform: "translateY(0px)" },
+      animate: { transform: "translateY(0px)" },
+    };
+  }
+ 
+  // ... normal animation
+};
+```
+
+For animations that rely on clicks or hovers, we can return early in those functions if shouldReduceMotion is true. This will prevent any animation from playing.
+
+```
+const handleClick = () => {
+  if (shouldReduceMotion) return;
+ 
+  // ...click handler logic
+};
+```
+
+Below is the full implementation of the clock component with all motion disabled if the user has prefers-reduced-motion set.
+You can test it by disabling reducing motion in your OS settings (macOS: System Settings → Accessibility → Motion → Reduce motion) or Chrome DevTools: open Command Palette (Cmd+Shift+P), search “Emulate CSS prefers-reduced-motion: reduce”.
+Optimizing performance
+We animate a lot of elements at once. The floating animation of all 6 illustrations alone is constantly updating the DOM. That’s a lot of work for the browser, so you might see dropped frames. This might happen especially if you’re using lots of SVG filters.
+ Notice how many elements are constantly being updated.
+We hit this exact issue, the animation felt janky. It didn’t drop to 5fps, but it was noticeable, especially when some hover interactions were happening while all other illustrations were floating. The video below shows the issue:
+ Notice slight frame drops as the hover animation plays.
+Usually when you hit performance issues with SVGs there are a few things you can do. Here’s what worked in this case:
+
+```
+/* Performance optimizations for animations */
+svg [data-animate] {
+  will-change: transform, opacity, stroke-dashoffset;
+  contain: layout style paint;
+}
+ 
+/* Optimize elements with expensive filters */
+svg .filter-animated {
+  will-change: transform;
+  transform: translateZ(0);
+}
+```
+
+will-change tells the browser which properties we’ll animate. The browser promotes these elements to their own GPU layer, which gets animated separately without recalculating the entire page on every frame.
+contain: layout style paint isolates the element’s rendering – changes here won’t trigger repaints of sibling elements.
+transform: translateZ(0) forces GPU layer creation as a fallback, especially useful for filtered elements where blur calculations are expensive.
+Don’t add these preemptively, GPU layers use memory. Too many layers hurt performance instead of helping. Build your animation, test it, and only add will-change when you see dropped frames. We’re targeting [data-animate] specifically, not every element.
+For a deeper dive into performance, you can view the performance lesson.
+Wrapping it up
+The clock animation is complete. We went from a basic interaction to something that feels more intentional and polished.
+The key additions:
+
+Subtle life: Floating and rotation make idle states feel alive.
+Better interactions: Hover debouncing prevents accidental triggers.
+Mobile support: Two-tap pattern handles touch properly.
+Accessibility: Respects prefers-reduced-motion.
+Performance: CSS hints for smooth animation at scale.
+
+We only covered two of the 6 interactive elements in this illustration to keep this walkthrough focused, but you can view the full implementation of it on GitHubResourcesFull animation source codeCopy page

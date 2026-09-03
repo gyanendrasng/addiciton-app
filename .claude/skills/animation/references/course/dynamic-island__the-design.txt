@@ -1,0 +1,22 @@
+FundamentalsWalkthroughsModule 01Family DrawerThe analysisFirst animationsCrossfadeThe finishing touchModule 02Dynamic IslandThe DesignRing viewTimer viewMorph effectModule 03Navigation menuKnow your toolsAnimating the menuClosing thoughtsModule 04Hero illustrationSVG introductionLines and dashesRotationClick animationClock animationPolishThe DesignThe Dynamic Island will be our most challenging component in this course. At least it was the hardest one for me when I initially built it. Before we start, let’s study the design and understand why and how Apple made it.
+Studying the design
+When I first started working on this component, I didn’t have the latest iPhone and therefore no Dynamic Island. Luckily, Apple uploaded a video called Design Dynamic Live Activities, which was filled with lots of Dynamic Island examples.
+ 
+This talk is also a great resource for understanding how Apple thinks about the Dynamic Island. This quote stood out to me when I first watched it:
+“Inspired by biological form and motion, it is designed to feel like a living organism. With a deliberate elasticity that serves as a playful contrast to the fixed nature of the hardware it embodies.”Chan Karunamuni,  Apple Design Team
+It indicates that we’ll need to use spring animations with bounce to give it an elastic, natural feel. Understanding the motion behind the Dynamic Island is crucial. If we mess up the spring animation, we’ll lose the illusion of a living organism, which is key here.
+Video reference
+I recorded a video reference for myself to easily view and compare my animations. This is essential for recreating any component. You need to watch it repeatedly, basically to the point where you are sick of it. Rewatch it every time you make a change and compare it with the original to see if your changes are moving in the right direction.
+ 
+Morphing
+The way the Dynamic Island transitions between views is interesting. They don’t crossfade but wait until the old view is animated out before animating the new view in. Animating both simultaneously is definitely harder, at least with Framer Motion.
+I think crossfade-like transition looks better, so we’ll build it that way, even though it’s harder.
+ 
+The exiting and entering items are also scaled down or up, depending on the size change of the Island. This tells me that a simple layout animation from Framer Motion won’t give us enough control. I didn’t know what would work when I first analyzed it for myself, but we’ll figure it out together.
+Views
+We’ll use two views of the Dynamic Island: ‘ring’ and ‘timer’. This will serve as an opportunity to practice what we’ve learned so far and explore some new Framer Motion features as well. You can see the final version of our component below.
+idleringtimer
+There are also tons of other views that you could build. It would be a great way to practice your craft, as these views are beautifully designed and animated.
+ 
+I highly recommend watching the "Design dynamic Live Activities" talk. You’ll see more great UI examples there and understand how Apple thinks about the Dynamic Island.
+ ResourcesDesign dynamic Live ActivitiesCopy page

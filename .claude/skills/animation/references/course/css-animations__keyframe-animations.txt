@@ -1,0 +1,203 @@
+Keyframe AnimationsSimilar to transitions, keyframe animations offer another way to interpolate between states. Before we dive deeper, let’s first understand when you should use keyframe animations over transitions.
+Keyframe animations vs transitions
+I’ll simply list scenarios where one option is more suitable than the other.
+Use keyframe animations when:
+
+You need infinite loops (marquee, spinner)
+The animation runs automatically (intro animation on a page)
+You need multiple steps/states (pulse animation)
+Simple enter or exit transitions that don’t need to support interruptions (dialog, popup)
+
+We’ll go in-depth on the examples later.
+Use CSS transitions when:
+
+User interaction triggers the change (hover, click, etc.)
+You need smooth interruption handling (Sonner)
+
+You can see more examples of CSS transitions in the previous lesson.
+Creating keyframe animations
+We define a keyframe animation using the @keyframes at-rule. It consists of a name and a set of keyframes. Each keyframe consists of a percentage and a set of CSS properties.
+
+```
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+```
+
+We can then use the animation on an element using the animation property. The code below means that we will interpolate the opacity from 0 to 1 over 1 second using ease as our easing.
+
+```
+.element {
+  animation: fade-in 1s ease;
+}
+```
+
+The animation property is a shorthand for lots of other properties. I use animation for only the first 3 properties. That is animation-name, animation-duration, and animation-timing-function. I declare the rest of the properties separately for readability.
+Let’s now cover a few use cases/properties for keyframe animations.
+Iteration count
+The animation-iteration-count property defines how many times the animation should run. The default value is 1. You can set it to infinite to run the animation forever for example.
+animation: marquee 26s linear; animation-iteration-count: infinite;A marquee is a good use case for infinite iteration count.
+When it comes to values higher than 1, but not infinite, I rarely use them. It’s usually either infinite or I just leave it as the default.
+Multiple steps
+We can define multiple steps within a @keyframe. This is useful when you need to animate an element through multiple states. A very simple, but nice example is a blinking cursor.
+
+This can be done with your @keyframes looking like this:
+
+```
+@keyframes blink {
+  0% {
+    visibility: visible;
+  }
+  50% {
+    visibility: hidden;
+  }
+  100% {
+    visibility: visible;
+  }
+}
+```
+
+We can actually simplify the keyframes above. If keyframes are not specified for 0% and 100%, CSS automatically uses the element’s existing properties at those points. So by default, the element starts and ends with its natural visibility state (visible) in this case.
+
+```
+@keyframes blink {
+  50% {
+    visibility: hidden;
+  }
+}
+```
+
+Usually though, animations with multiple steps can get quite complex. That’s why I often just reach for Motion in these cases. The movement of the purple ball in the video below could be done with keyframes, but I’d reach out for Motion instead in this case.
+ 
+Maintaining end state
+By default, the animation resets to the initial state after it finishes. Below you can see how a keyframe animation that goes from scale(1) to scale(2) and resets back to scale(1) after the animation finishes. Take a look at the animation below to see it in action:
+Run animation
+Often times we want to maintain the end state of our animation, think of a dialog or a popover. We can do it by adjusting the animation-fill-mode. This property describes how a CSS animation applies styles to its target before and after its execution. In our case we want to maintain the end state, so we set it to forwards.
+Run animation
+There are also other values for animation-fill-mode like backwards or both, but forwards is definitely the most common one.
+How is this animation triggered?I increment a state variable when the button is clicked. This variable is then used as the key prop on our box. This forces React to re-render the element and thus trigger the animation again.
+backwards can be useful when we want to set the initial styles of our element to be the same as the first keyframe. This can be useful when we have a delayed enter animation. We then don’t have to adjust the initial styles of the element, we can simply change the animation-fill-mode to backwards instead. You can see the difference in this delayed animation below:
+With backwardsWithout backwards
+Notice that when you click on the "With backwards" button, the box is invisible initially. That’s because the first keyframe sets the opacity to 0. backwards applies this style to the element before the animation starts.
+Pausing animations
+A unique feature of keyframe animations that transitions don’t have is that we can pause them. We can do this by setting the animation-play-state property to paused. I’ve never used it actually, but it’s good to keep it in mind when choosing between keyframe animations and transitions.
+Click to pause
+I use animation-direction: alternate to animate the box back and forth. Otherwise, the box would just teleport back to the start. I’m also using ease-in-out-cubic from the blueprint as the element as our box is already on the screen and just moves to a new position.
+
+```
+/* This is how the animation looks like in code */
+.box {
+  animation: xTranslate 2s cubic-bezier(0.645, 0.045, 0.355, 1);
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+ 
+@keyframes xTranslate {
+  0% {
+    transform: translateX(-150px);
+  }
+  100% {
+    transform: translateX(150px);
+  }
+}
+```
+
+Text reveal
+Our first exercise will be a text reveal. Each letter in the word is shown with a slight delay. The end result will look like this:
+A n i m a t i o n s Replay animation
+We start with a static version, a centered <h1 />. Good luck!
+App.jsstyles.css
+```
+import "./styles.css";
+import { useState } from "react";
+
+export default function TextReveal() {
+  const [reset, setReset] = useState(0);
+
+  return (
+    <div>
+      <div key={reset}>
+        <h1 className="h1">Animations</h1>
+      </div>
+      {/* Use this button to replay your animation */}
+      <button className="button" onClick={() => setReset(reset + 1)}>
+        Replay animation
+      </button>
+    </div>
+  );
+}
+```
+
+View Solution
+Orbiting animation
+We’ve talked about 3D transforms in the transforms lesson. Let’s now combine the newly acquired keyframe animations knowledge with 3D transforms. We’ll animate an element orbiting around another element. The end result will look like this:
+
+Our starting point will be a circle and another, smaller circle positioned absolutely on top of it. Your job will be to make the smaller circle orbit around the bigger one using keyframe animations and 3D transforms. Bonus points if you can make it grow and shrink depending on the distance between the viewer and the circle.
+Show Hint
+App.jsstyles.css
+```
+import "./styles.css";
+
+export default function Orbit() {
+  return (
+    <div>
+      <div className="circle" />
+      <div className="orbitingCircle" />
+    </div>
+  );
+}
+```
+
+View Solution
+An orbiting animation like the one above is not a work of art. I’m just giving you the tools here to create something beautiful. The loader I showed you earlier also uses this orbiting technique, it’s just a different design and an extra animation at the end. You just need to get creative.
+ A loader animation that Yann and I worked on at Linear.
+Reverse engineering
+In the previous module, we talked about surrounding yourself with great work to develop taste. Remember this quote?
+“It comes down to trying to expose yourself to the best things that humans have done and then try to bring those things into what you’re doing.”Steve Jobs,  Apple
+This can also be applied to coding. If you like an animation, you can inspect the code and see how it was done. Essentially reverse engineering it.
+If the animation is done with CSS, you can literally see everything you need in the dev tools. If it’s involving JS, you won’t see the exact easing values, duration, etc. but you can still see which properties are animated and how the element is styled.
+Just like with taste, it’s important to pick the right things to be inspired by. A few good places that I like to visit and see how things are implemented are:
+
+Vercel’s marketing pages and their design system
+Linear’s marketing pages
+Aave’s site, their docs are also full of pleasant surprises
+
+These 4 sites are usually enough in my case. Curate a list for yourself and be very selective.
+This will be a homework exercise in which you’ll reverse engineer an animation from Aave’s docs. You can find it on this page. This might look very hard at first, but you’ll find all the answers in the dev tools.
+ 
+You can see how the end result should look like below.
+
+A small tip is that the approach here is similar to our orbiting animation exercise. Good luck!
+App.jsstyles.css
+```
+import "./styles.css";
+
+export default function Orbit() {
+  return (
+    <div className="coin">
+      <CoinIcon />
+    </div>
+  );
+}
+
+function CoinIcon() {
+  return (
+    <svg viewBox="0 0 718 718" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M170 119H548V599H170V119Z" fill="#F8A400" />
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M0 359C0 160.73 160.73 0 359 0C557.269 0 718 160.73 718 359C718 557.269 557.269 718 359 718C160.73 718 0 557.269 0 359ZM359 129.14C373.87 129.14 385.925 141.195 385.925 156.065V187.06C416.681 193.03 443.789 209.116 460.723 232.531C469.436 244.582 466.729 261.414 454.681 270.127C442.629 278.84 425.796 276.135 417.083 264.085C406.923 250.034 385.821 238.336 359 238.336H348.751C312.42 238.336 293.684 260.945 293.684 277.006V279.822C293.684 292.136 302.644 307.458 324.026 316.013L413.97 351.989C450.531 366.611 478.166 398.669 478.166 438.177C478.166 489.148 434.641 524.215 385.925 531.916V561.936C385.925 576.805 373.87 588.861 359 588.861C344.13 588.861 332.075 576.805 332.075 561.936V530.94C301.319 524.969 274.21 508.883 257.279 485.469C248.566 473.417 251.271 456.587 263.321 447.874C275.371 439.161 292.204 441.864 300.917 453.916C311.077 467.967 332.179 479.664 359 479.664H365.728C404.004 479.664 424.316 455.794 424.316 438.177C424.316 425.864 415.356 410.542 393.974 401.987L304.03 366.011C267.471 351.389 239.832 319.331 239.832 279.822V277.006C239.832 226.408 283.852 192.125 332.075 185.613V156.065C332.075 141.195 344.13 129.14 359 129.14Z"
+        fill="#FFCD6C"
+      />
+    </svg>
+  );
+}
+```
+
+View SolutionCopy page

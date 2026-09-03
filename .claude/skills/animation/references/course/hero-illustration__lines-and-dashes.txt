@@ -1,0 +1,119 @@
+FundamentalsWalkthroughsModule 01Family DrawerThe analysisFirst animationsCrossfadeThe finishing touchModule 02Dynamic IslandThe DesignRing viewTimer viewMorph effectModule 03Navigation menuKnow your toolsAnimating the menuClosing thoughtsModule 04Hero illustrationSVG introductionLines and dashesRotationClick animationClock animationPolishLines and dashesYou’ve probably seen this effect before, a path that looks like it’s drawing itself. Loading spinners, signature animations, icon reveals. It’s everywhere. In this case, it’s the hand’s rays.
+
+The technique is surprisingly simple once you know the trick.
+Dash patterns
+SVG paths can have dashed strokes using strokeDasharray. This property takes two values: the dash length and the gap length.
+
+```
+<line strokeDasharray="20 10" /> // 20 units dash, 10 units gap
+```
+
+Notice how in the demo below, the pattern automatically repeats along the entire path. This works on any SVG element with a stroke - lines, circles, rectangles, complex paths - the pattern tiles across its full length.
+
+```
+<svg viewBox="0 0 100 100">
+  <path
+    d="M 10 50 L 90 50"
+    strokeDasharray="20 10"
+    stroke="hsl(47, 94%, 66%)"
+    strokeWidth="1.5"
+  />
+</svg>
+```
+Toggle guidesdash lengthgap length
+Shifting with dash offset
+Now that we have a dash pattern, we can shift it along the path using strokeDashoffset. Positive values shift the pattern backward, negative values shift it forward.
+
+```
+<line strokeDashoffset="30" /> // Shift pattern 30 units backward
+```
+
+This shifting is what makes drawing animations possible - by animating the offset, we can control which part of the pattern is visible.
+
+```
+<svg viewBox="0 0 100 100">
+  <path
+    d="M 10 50 L 90 50"
+    strokeDasharray="20 10"
+    strokeDashoffset="0"
+    stroke="hsl(47, 94%, 66%)"
+    strokeWidth="1.5"
+  />
+</svg>
+```
+Toggle guidesdash lengthgap lengthdash offset
+Bringing it together
+By combining these two properties in a specific way, we can create the line drawing effect:
+
+Set the dash length to the path’s full length (one continuous dash)
+Set a large gap so only one dash is visible
+Offset the dash by the path length to hide it completely
+Animate the offset back to 0 to reveal the line
+
+Here’s what that looks like in action:
+
+```
+<svg viewBox="0 0 100 100">
+    <path
+      d="M 10 50 L 90 50"
+      strokeDasharray="100 100"
+      strokeDashoffset="100"
+      pathLength="100"
+      stroke="hsl(47, 94%, 66%)"
+      strokeWidth="1.5"
+    />
+  </svg>
+```
+Toggle guidesdash offsetAnimate
+The path starts hidden because the dash is offset by its full length. As strokeDashoffset animates from 100 to 0, the line appears to draw itself.
+This is the exact technique we’ll use to animate the hand rays in the next lesson.
+A note on pathLengthIn the animation above, the path uses pathLength="100". This property overrides the path’s actual pixel length - the browser uses your custom value for all stroke calculations.This is useful for normalizing paths to round numbers. Set it to 100 to work in percentages, or use the same value across multiple paths so they can share animation values regardless of their actual sizes.
+Exercise: Animate a checkbox
+Let’s practice the line drawing technique. Below is a checkbox with a square and checkmark - both have pathLength="100" already set.
+Your task: Make both elements draw themselves when you click the button, with the square completing before the checkmark starts.
+Success criteria:
+
+Both shapes start hidden
+Square draws itself first
+Checkmark draws after the square finishes
+
+Hint
+App.jsstyles.css
+```
+import "./styles.css";
+import { useState } from "react";
+
+export default function CheckboxAnimation() {
+  const [reset, setReset] = useState(0);
+
+  return (
+    <div className="container">
+      <svg key={reset} viewBox="0 0 100 100">
+        {/* Square */}
+        <path
+          d="M 50,30 L 70,30 L 70,70 L 30,70 L 30,30 Z"
+          fill="none"
+          stroke="#000"
+          strokeWidth="2"
+          className="square"
+        />
+
+        {/* Checkmark */}
+        <path
+          d="M 40,51 L 48,60 L 61,41"
+          fill="none"
+          stroke="#000"
+          strokeWidth="2"
+          className="checkmark"
+        />
+      </svg>
+
+      <button className="button" onClick={() => setReset(reset + 1)}>
+        Complete task
+      </button>
+    </div>
+  );
+}
+```
+
+View SolutionCopy page

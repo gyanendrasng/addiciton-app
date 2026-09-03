@@ -1,0 +1,118 @@
+Train your judgementAI can write animation code. What it can’t do is see. It doesn’t know that ease-in shouldn’t be used for entry animations, or that 500ms enter transition on a dialog is probably too slow.
+It produces motion that works, but feels mediocre, and if you can’t tell the difference, you’ll ship it. You’ll settle for good enough, and that’s not good enough.
+This lesson trains your ability to spot what’s wrong, name it, and fix it. Each exercise shows two animations side by side. Your job is to pick the better one, write down why you chose it, then see my breakdown.
+Choosing A or B is easy, but putting into words why one is better trains your ability to articulate your judgement, and that will be incredibly valuable in the future. So take your time and take this lesson seriously. It will pay off.
+There are a few categories, let’s start with easing.
+Easing
+Easing is the single biggest factor in whether an animation feels right or wrong. We covered the rules in The Easing Blueprint lesson, let’s now put them into practice to make the right choices below.
+Toast entry
+Which toast animation feels better?
+Show toastSelect AShow toastSelect B
+Dropdown animation
+Which dropdown opening feels better?
+OptionsSelect AOptionsSelect B
+Symmetric curves
+Which drawer animation feels better?
+Open drawerSelect AOpen drawerSelect B
+What to look for in easing
+
+Entries should decelerate (ease-out), not accelerate (ease-in).
+Built-in CSS curves are almost never strong enough. Use custom curves.
+Asymmetric curves feel more alive than symmetric ones.
+When an animation feels flat, the curve is probably too weak.
+
+Duration
+The right duration depends on the element’s size, how often it’s used, whether it’s entering or exiting, and what easing it uses. A lot of variables to consider, but a few rules work most of the time, let’s explore them.
+Frequency of use
+Hover through both lists. Which feels better for something you’d use frequently?
+OptionsEditCopy LinkMove to…DuplicateArchiveDeleteSelect AOptionsEditCopy LinkMove to…DuplicateArchiveDeleteSelect B
+Enter and exit
+Open and dismiss both modals. Which feels better?
+Open dialogSelect AOpen dialogSelect B
+Size of an element
+Which mobile menu animation feels better?
+AcmePage contentSelect AAcmePage contentSelect B
+What to look for in duration
+
+Too fast is as bad as too slow. There’s a trackability threshold.
+Frequency of use matters. Something used 50x a day needs speed, not delight.
+Exits should be shorter and simpler than entries.
+Duration scales with element size and distance traveled.
+
+Hover & tap
+Hover and tap are the interactions you’ll encounter more than anything else, so it’s important to get them right. Let’s look at a few examples.
+The inflated card
+Which card hover feels better?
+Design SystemComponents and guidelinesSelect ADesign SystemComponents and guidelinesSelect B
+The lift
+Hover over both cards from the bottom. Which feels better?
+Project Alpha3 tasks remainingSelect AProject Alpha3 tasks remainingSelect B
+Button press
+Click both buttons. Which feels better?
+SubscribeSelect ASubscribeSelect B
+The heavy press
+Click both buttons. Which press feels better?
+SubscribeSelect ASubscribeSelect B
+What to look for in hover & tap
+
+hover:scale-105 is almost always too much. 1-2% is enough.
+300ms is too slow for hovers. Use 100-150ms.
+translateY on hover should be on a child element, not the target itself.
+Buttons usually benefit the most when they have both hover and press feedback.
+Press scale: 0.97, not 0.9.
+
+Springs & interruptibility
+We covered the theory of springs in the Spring Animations lesson. Now let’s see if you can spot when springs help and when they do the opposite.
+Handling interruptions
+Open and close each menu rapidly. Which handles interruptions better?
+AcmePage contentSelect AAcmePage contentSelect B
+Being intentional
+Which accordion animation feels better?
+How does billing work?You'll be billed monthly based on your usage. Cancel anytime with no penalties.Select AHow does billing work?You'll be billed monthly based on your usage. Cancel anytime with no penalties.Select B
+Spatial awareness
+Spatial awareness is what makes an interface feel like a coherent space rather than a series of disconnected screens. The user can then build a mental model of where things live. This consistency makes the interface more predictable and easier to use.
+Where did it come from?
+Tap a photo, then tap again to close. Which transition feels better?
+Select ASelect B
+The sidebar goodbye
+Open and close the side panel. Which feels better?
+DashboardSelect ADashboardSelect B
+Animating popovers
+Click the button on both sides. Which popover feels better?
+Show detailsSelect AShow detailsSelect B
+The confused step form
+Click Next and Back on both. Which feels better?
+1. Account2. Profile3. ReviewAccountSet up your email and password.BackNextSelect A1. Account2. Profile3. ReviewAccountSet up your email and password.BackNextSelect B
+The dialog entrance
+Click both buttons. Which entrance feels better?
+Open dialogSelect AOpen dialogSelect B
+What to look for in spatial awareness
+
+Exit direction should match entry direction.
+Transform-origin should be on the trigger, not center.
+Navigation direction should match the mental model.
+Don’t start from scale(0). Use 0.85-0.95.
+
+Hierarchy & polish
+AI generates motion that technically works but lacks the small decisions that make it feel intentional. Let’s cover a few of those details below.
+The hero entrance
+Which entrance feels more intentional?
+New–Collaborative workspaces→Ship products that matterFrom prototype to production.One workflow for your whole team.Get startedExploreSelect ANew–Collaborative workspaces→Ship products that matterFrom prototype to production.One workflow for your whole team.Get startedExploreSelect B
+Layered motion
+Open the side panel on both. Which feels better?
+DashboardSelect ADashboardSelect B
+The nav transition
+Click Settings on both sides, then go back. Which transition feels better?
+DashboardHomeProjectsTeamSettingsSelect ADashboardHomeProjectsTeamSettingsSelect B
+The chip removal
+Remove chips on both sides. Which feels smoother?
+ReactNext.jsTailwindMotionSelect AReactNext.jsTailwindMotionSelect B
+What to look for in hierarchy & polish
+
+Not all elements deserve the same animation. Vary timing by visual importance.
+One entrance per container. Don't animate the parent and stagger the children.
+
+
+Being aware of all the rules
+We’ve covered a lot of rules so far in this course. It’s easy to get overwhelmed. Remember that AI can help us follow all these rules and make sure we’re making the right choices through a skill file and other tools, as we covered in the Animations and AI lesson.
+That wraps up the theory. Next, we’ll put it into practice and start coding animations with CSS!Copy page

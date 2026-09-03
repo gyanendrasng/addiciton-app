@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "maestro": {
+      "type": "stdio",
+      "command": "/Users/gyanendrasingh/.maestro/bin/maestro",
+      "args": [
+        "mcp"
+      ],
+      "env": {}
+    }
+  }
+}

@@ -1,0 +1,134 @@
+FundamentalsWalkthroughsModule 01Family DrawerThe analysisFirst animationsCrossfadeThe finishing touchModule 02Dynamic IslandThe DesignRing viewTimer viewMorph effectModule 03Navigation menuKnow your toolsAnimating the menuClosing thoughtsModule 04Hero illustrationSVG introductionLines and dashesRotationClick animationClock animationPolishFirst animationsThis component might look a bit overwhelming at first, that’s why we’ll break it down into smaller parts. I’ve also done it when I first built it.
+Using existing solutions
+Our starting point is the component below. Upon opening, you’ll see the drawer appear instantly. It’s not draggable, you can’t close it with the Escape key, and focus is not trapped within the drawer, which is an accessibility issue.
+Try it out
+We could either code these features ourselves, or use an existing solution. While enter and exit animation and focus trapping are relatively easy to implement, dragging is a bit more complex. Especially if we want to do it right, meaning momentum-based dragging, matching overlay’s opacity with the drag progress, and more. It’s time-consuming and we already have a lot on our plate.
+I built an open-source drawer component in 2023 called Vaul. It mimics the iOS Sheet component and, in my opinion, is perfect for our use case. Let’s implement it. You can read the basic documentation and see examples here.
+Although this part of the build process is not strictly related to animations, I believe learning how to integrate a third-party library into your projects can be valuable.
+TipIf you are using Vaul version 1.1.0 or higher, you can use the --initial-transform variable to adjust the animation offset which is useful in this case as the drawer doesn’t touch the bottom. You can read more about it here.
+
+```
+"use client";
+
+import { useState } from "react";
+import { Drawer } from "vaul";
+
+export default function FamilyDrawer() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <button
+        className="focus-visible:shadow-focus-ring-button fixed top-1/2 left-1/2 h-[44px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-gray-200 bg-white px-6 py-2 font-medium text-black transition-colors hover:bg-[#F9F9F8] md:font-medium"
+        onClick={() => setIsOpen(true)}
+      >
+        Try it out
+      </button>
+      {isOpen ? (
+        <>
+          <div
+            className="fixed inset-0 z-10 bg-black/30"
+            onClick={() => setIsOpen(false)}
+          />
+          <div className="fixed inset-x-4 bottom-4 z-10 mx-auto h-64 max-w-[361px] overflow-hidden rounded-[36px] bg-[#FEFFFE] outline-hidden md:mx-auto md:w-full"></div>
+        </>
+      ) : null}
+    </>
+  );
+}
+```
+
+View Solution
+This way, we get basic animations and natural dragging behavior for free. We can now focus on the more complex parts of the component.
+ 
+Height animation
+I’ve added one state variable called view, which is responsible for rendering the right content. In this demo, we’ll have 4 views: default, remove, phrase, and key. For now, these views contain text of various lengths so that we get a difference in height, we’ll add actual content later.
+Clicking on different buttons will change the view, but the height changes instantly, this is obviously not what we want. Let’s animate it!
+Show hint
+
+```
+"use client";
+
+import { useMemo, useState } from "react";
+import { Drawer } from "vaul";
+import useMeasure from "react-use-measure";
+import { motion } from "motion/react";
+
+export default function FamilyDrawer() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [view, setView] = useState("default");
+
+  const content = useMemo(() => {
+    switch (view) {
+      case "default":
+        return (
+          <div>
+            <p>This is the default case</p>
+            <div className="mt-6 flex flex-col items-start gap-2">
+              <button onClick={() => setView("key")}>Key</button>
+              <button onClick={() => setView("phrase")}>Phrase</button>
+              <button onClick={() => setView("remove")}>Remove</button>
+            </div>
+          </div>
+        );
+      case "remove":
+        return (
+          <div>
+            <p>
+              You haven’t backed up your wallet yet. If you remove it, you could
+              lose access forever. We suggest tapping and backing up your wallet
+              first with a valid recovery method.
+            </p>
+            <button onClick={() => setView("default")}>Go back</button>
+          </div>
+        );
+
+      case "phrase":
+        return (
+          <div>
+            <p>
+              Keep your Secret Phrase safe. Don’t share it with anyone else. If
+              you lose it, we can’t recover it.
+            </p>
+            <button onClick={() => setView("default")}>Go back</button>
+          </div>
+        );
+      case "key":
+        return (
+          <div>
+            <p>
+              Your Private Key is the key used to back up your wallet. Keep it
+              secret and secure at all times.
+            </p>
+            <button onClick={() => setView("default")}>Go back</button>
+          </div>
+        );
+    }
+  }, [view]);
+
+  return (
+    <>
+      <button
+        className="focus-visible:shadow-focus-ring-button fixed top-1/2 left-1/2 h-[44px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-gray-200 bg-white px-4 py-2 font-medium text-black transition-colors hover:bg-[#F9F9F8] md:font-medium"
+        onClick={() => setIsOpen(true)}
+      >
+        Try it out
+      </button>
+      <Drawer.Root open={isOpen} onOpenChange={setIsOpen}>
+        <Drawer.Portal>
+          <Drawer.Overlay
+            className="fixed inset-0 z-10 bg-black/30"
+            onClick={() => setIsOpen(false)}
+          />
+          <Drawer.Content className="fixed inset-x-4 bottom-4 z-10 mx-auto max-w-[361px] overflow-hidden rounded-[36px] bg-[#FEFFFE] p-6 outline-hidden md:mx-auto md:w-full">
+            {content}
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
+    </>
+  );
+}
+```
+
+View Solution
+In the next part, we’ll focus on the cross fade animation.Copy page

@@ -1,0 +1,109 @@
+FundamentalsWalkthroughsModule 01Family DrawerThe analysisFirst animationsCrossfadeThe finishing touchModule 02Dynamic IslandThe DesignRing viewTimer viewMorph effectModule 03Navigation menuKnow your toolsAnimating the menuClosing thoughtsModule 04Hero illustrationSVG introductionLines and dashesRotationClick animationClock animationPolishTimer viewThis view is less complicated than the ring view. It has one constant animation and 1 button animation on the left in which we animate the pause button into a play button.
+ 
+Our starting point will be this static, working version. The countdown uses a setInterval function inside a useEffect to go from 60 to 0, then it resets the timer. One thing worth mentioning is that we use tabular-nums for our numbers, which keeps them monospaced and their sizes consistent. Otherwise, they would slightly shift each time the number changes.
+App.jstimer.js
+```
+"use client";
+
+import { useMemo, useState } from "react";
+import { Timer } from "./timer";
+
+export default function DynamicIsland() {
+  const [view, setView] = useState("timer");
+
+  const content = useMemo(() => {
+    switch (view) {
+      case "ring":
+        return <Ring />;
+      case "timer":
+        return <Timer />;
+      case "idle":
+        return <div className="h-7" />;
+    }
+  }, [view]);
+
+  return (
+    <div>
+      <div className="flex h-[160px] justify-center">
+        <div className="h-fit min-w-[100px] overflow-hidden rounded-full bg-black">
+          {content}
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+Countdown animation
+This is a great use case for AnimatePresence, as each number is rendered separately with a unique key. Let’s wrap our countArray with AnimatePresence and set initial={false} and mode="popLayout". We don’t want to animate on the initial render, and we want the elements to exit and enter simultaneously, which is why we use the popLayout mode.
+When it comes to the animation itself, we want the numbers to come from the bottom and disappear to the top, both with a slight blur and bounce.
+
+```
+ <motion.div
+  className="inline-block tabular-nums"
+  key={n + i}
+  initial={{ y: "12px", filter: "blur(2px)", opacity: 0 }}
+  animate={{ y: "0", filter: "blur(0px)", opacity: 1 }}
+  exit={{ y: "-12px", filter: "blur(2px)", opacity: 0 }}
+  transition={{ type: "spring", bounce: 0.35 }}
+>
+  {n}
+</motion.div>
+```
+
+The combination of AnimatePresence and our animation gives us the following result:
+Timer0:60
+Play button animation
+The only thing left now is the button animation. You might have seen a very similar animation before in this course. Do you remember it?
+
+This uses the wait mode in AnimatePresence, which is what we want here as well. We want to wait until the play button is gone before we show the pause button.
+We’ll wrap our ternary that decides which icon to render with AnimatePresence, add initial={false} and mode="wait" to it. For the animation itself, we want to animate the scale, opacity, and blur. After some experimentation I came up with the following values:
+
+```
+<motion.svg
+  key="play"
+  initial={{ opacity: 0, scale: 0.5, filter: "blur(4px)" }}
+  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+  exit={{ opacity: 0, scale: 0.5, filter: "blur(4px)" }}
+  transition={{ duration: 0.1 }}
+  viewBox="0 0 12 14"
+>
+  ...
+</motion.svg>
+```
+
+In my opinion, scaling down all the way to 0 doesn’t look good in this type of animation, so I default to 0.5. The blur value is consistent with other Dynamic Island blur animations. Animating higher blur values creates a big spread, which is usually undesirable. Additionally, larger blur values can negatively impact performance, especially in Safari. A duration of 0.1 seconds strikes a nice balance between speed and smoothness.
+I’ve also added a whileTap prop to our button. This prop defines an animation target when the element is pressed, providing a nice responsive feel.
+App.jstimer.js
+```
+"use client";
+
+import { useMemo, useState } from "react";
+import { Timer } from "./timer";
+
+export default function DynamicIsland() {
+  const [view, setView] = useState("timer");
+
+  const content = useMemo(() => {
+    switch (view) {
+      case "ring":
+        return <Ring />;
+      case "timer":
+        return <Timer />;
+      case "idle":
+        return <div className="h-7" />;
+    }
+  }, [view]);
+
+  return (
+    <div>
+      <div className="flex h-[160px] justify-center">
+        <div className="h-fit min-w-[100px] overflow-hidden rounded-full bg-black">
+          {content}
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+Copy page

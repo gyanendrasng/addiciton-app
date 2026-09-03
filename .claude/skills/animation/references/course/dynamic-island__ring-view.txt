@@ -1,0 +1,240 @@
+FundamentalsWalkthroughsModule 01Family DrawerThe analysisFirst animationsCrossfadeThe finishing touchModule 02Dynamic IslandThe DesignRing viewTimer viewMorph effectModule 03Navigation menuKnow your toolsAnimating the menuClosing thoughtsModule 04Hero illustrationSVG introductionLines and dashesRotationClick animationClock animationPolishRing viewOur approach to building the Dynamic Island will differ from previous exercises. Instead of step-by-step exercises, I’ll show you how I built each piece. This component is quite unusual, and some solutions are equally unconventional.
+You are, of course, welcome to try and build each piece yourself, but I have to say that this component is more challenging than the previous ones.
+Starter code
+We’ll start by animating our views. The first one will be the "ring". Before we jump into it, let’s first walk through our starter code.
+We change the active view through two buttons that set the view state to either "ring" or "idle". The current view is then rendered via a useMemo hook, the same way as we did for the Family Drawer.
+
+```
+const content = useMemo(() => {
+  switch (view) {
+    case "ring":
+      return <Ring />;
+    case "idle":
+      return <div className="h-7" />;
+  }
+}, [view]);
+```
+
+When it comes to the ring component we basically render a few things conditionally and slightly adjust the styling based on the isSilent value which changes automatically every 2 seconds through a useEffect hook.
+App.jsring.js
+```
+"use client";
+
+import { useMemo, useState } from "react";
+import { Ring } from "./ring";
+
+export default function DynamicIslandStarter() {
+  const [view, setView] = useState("idle");
+
+  const content = useMemo(() => {
+    switch (view) {
+      case "ring":
+        return <Ring />;
+      case "idle":
+        return <div className="h-7" />;
+    }
+  }, [view]);
+
+  return (
+    <div>
+      <div className="flex h-[160px] justify-center">
+        <div className="h-fit min-w-[100px] overflow-hidden rounded-full bg-black">
+          {content}
+        </div>
+      </div>
+      <div className="flex justify-center gap-4">
+        <button
+          type="button"
+          className="h-10 w-32 rounded-full bg-white px-2.5 py-1.5 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
+          onClick={() => setView("idle")}
+        >
+          Idle
+        </button>
+        <button
+          type="button"
+          className="h-10 w-32 rounded-full bg-white px-2.5 py-1.5 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
+          onClick={() => setView("ring")}
+        >
+          Ring
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+What do we animate?
+Our point of reference will be the video below. Before we jump into the code, let’s analyze it and see what we’ll need to do.
+ 
+When switching to "Silent" mode, the Island slightly enlarges. A red background appears behind the bell icon, expanding from the left. A line is drawn across the icon, and the bell shakes slightly during the animation. Timing is crucial here, it has to feel as if the bell "pops" into its new state.
+The text on the right is simple, but satisfying. It’s a combination of scale, blur, and opacity transition.
+Animating width
+Let’s start by animating our Island, which is the core of our component. In this case we don’t animate between auto values like we did in Family Drawer’s case. The values here are fixed, because we want full control over the animation to ensure that it feels right.
+With that being said, we can simply turn our wrapper div in our ring component into a motion.div and animate the width depending on the isSilent value. We can also remove the width classes and clsx function altogether, as we only need one string as the class name.
+
+```
+<motion.div
+  className="relative flex h-7 items-center justify-between px-2.5"
+  animate={{ width: isSilent ? 148 : 128 }}
+>
+  ...
+</motion.div>
+```
+
+This works, but the animation will feel a bit lifeless. We talked about adding bounce, so let’s add it with a value of 0.5. It works for now, it’s not perfect, but it’ll get better once we add the crossfade-like animation between views later.
+If we now go back to the previous view, there’s no width transition, and that’s because we are missing the layout prop on our Island. This looks a lot better now, but there is one small issue, and I’m curious whether you can spot it.
+IdleRing
+There is a small border radius distortion happening. That’s because layout animations are done with transform, which can distort properties like border-radius and box-shadow. Framer Motion is able to fix such distortions, but only if our border radius value is in pixels. Currently, we use tailwind, which defaults to rem values. Let’s convert our border radius to pixels using inline styles.
+
+```
+<motion.div
+  layout
+  style={{ borderRadius: 9999 }}
+  className="h-fit min-w-[100px] overflow-hidden bg-black"
+>
+  {content}
+</motion.div>
+```
+
+Animating text
+We need to use AnimatePresence with popLayout mode here. Let’s not forget the key prop for each text node. We should also change the transform origin for the "Ring" text to right, otherwise, it would exit to the left, which is the opposite of what we want.
+App.jsring.js
+```
+"use client";
+
+import { useMemo, useState } from "react";
+import { Ring } from "./ring";
+import { motion } from "motion/react";
+
+export default function DynamicIslandStarter() {
+  const [view, setView] = useState("idle");
+
+  const content = useMemo(() => {
+    switch (view) {
+      case "ring":
+        return <Ring />;
+      case "idle":
+        return <div className="h-7" />;
+    }
+  }, [view]);
+
+  return (
+    <div>
+      <div className="flex h-[160px] justify-center">
+        <motion.div
+          layout
+          style={{ borderRadius: 9999 }}
+          className="h-fit min-w-[100px] overflow-hidden bg-black"
+        >
+          {content}
+        </motion.div>
+      </div>
+      <div className="flex justify-center gap-4">
+        <button
+          type="button"
+          className="h-10 w-32 rounded-full bg-white px-2.5 py-1.5 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
+          onClick={() => setView("idle")}
+        >
+          Idle
+        </button>
+        <button
+          type="button"
+          className="h-10 w-32 rounded-full bg-white px-2.5 py-1.5 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
+          onClick={() => setView("ring")}
+        >
+          Ring
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+Animating the bell
+The bell animation is a bit more complex as it consists of multiple smaller animations. Let’s start with the red background. There are multiple ways to do this, you can use scale, scaleX, but after some experimentation I decided to use width. We’ll go from 0 to 40px so that our bell icon is in the center of the background.
+This red background is positioned absolutely, so the performance impact of us animating its width is not that big.
+We’ll also animate opacity and blur. Most of the elements in the Dynamic Island have a slight blur transition, which fits the overall design and vibe perfectly.
+The combination of these three properties and a spring animation with 0.35 bounce gives us the following effect.
+Ring
+Now, all that is left is our shake animation. Whenever I have to craft a shake-like animation I reach for keyframes. Fortunately, Framer Motion has keyframes as well.
+We are looking to slightly adjust the rotate property going from negative to positive each time. This way it goes from left to right and back, each time with a smaller angle. The keyframes look as follows:
+
+```
+[0, 20, -15, 12.5, -10, 10, -7.5, 7.5, -5, 5, 0]
+```
+
+This is exactly what we want! Last thing we can do here is change the X position of our bell so that it is centered in the background. A change in the x property by 9px will be our sweet spot.
+
+```
+<motion.div
+  className="absolute inset-0"
+  initial={false}
+  animate={{
+    rotate: silent
+      ? [0, -15, 5, -2, 0]
+	  : [0, 20, -15, 12.5, -10, 10, -7.5, 7.5, -5, 5, 0],
+	  x: silent ? 8.5 : 0,
+    }}
+>
+  ...
+</motion.div>
+```
+
+Because we added the rotate animation to the wrapping div rather than the bell svg we get a free shake animation on our line that goes across the bell. This is exactly what we want, except we want that line to be hidden when our view is not in silent mode.
+We want some sort of "draw" animation for it. We can do that by animating the height property from 0 to, in our case, 16px. I also played around with the transition prop so that the easing, duration and delay play well together with the rest of the animations.
+It might look like a lot for a pretty small component, but all of our work here gives us a very satisfying result.
+App.jsring.js
+```
+"use client";
+
+import { useMemo, useState } from "react";
+import { Ring } from "./ring";
+import { motion } from "motion/react";
+
+export default function DynamicIslandStarter() {
+  const [view, setView] = useState("idle");
+
+  const content = useMemo(() => {
+    switch (view) {
+      case "ring":
+        return <Ring />;
+      case "idle":
+        return <div className="h-7" />;
+    }
+  }, [view]);
+
+  return (
+    <div>
+      <div className="flex h-[160px] justify-center">
+        <motion.div
+          layout
+          style={{ borderRadius: 9999 }}
+          className="h-fit min-w-[100px] overflow-hidden bg-black"
+        >
+          {content}
+        </motion.div>
+      </div>
+      <div className="flex justify-center gap-4">
+        <button
+          type="button"
+          className="h-10 w-32 rounded-full bg-white px-2.5 py-1.5 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
+          onClick={() => setView("idle")}
+        >
+          Idle
+        </button>
+        <button
+          type="button"
+          className="h-10 w-32 rounded-full bg-white px-2.5 py-1.5 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
+          onClick={() => setView("ring")}
+        >
+          Ring
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+A small detail
+If you inspect Apple’s animation closely, you can see that the clapper (the thing inside the bell, I’ve looked it up) is moving independently from the bell. This makes the whole animation even more natural. I haven’t implemented it, but it could be a nice homework exercise for you!
+ Copy page

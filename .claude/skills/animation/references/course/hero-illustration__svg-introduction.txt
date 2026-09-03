@@ -1,0 +1,197 @@
+FundamentalsWalkthroughsModule 01Family DrawerThe analysisFirst animationsCrossfadeThe finishing touchModule 02Dynamic IslandThe DesignRing viewTimer viewMorph effectModule 03Navigation menuKnow your toolsAnimating the menuClosing thoughtsModule 04Hero illustrationSVG introductionLines and dashesRotationClick animationClock animationPolishSVG Introduction
+A while back me and dimi worked together on some animations of the illustrations on animations.dev. Hover on each of the boxes above to see the animations in action. This walkthrough will cover how we animated some of them.
+Before we dive into the actual animations of that illustration, let’s cover some SVG fundamentals.
+By the end of the three SVG fundamentals lessons, you’ll understand:
+
+The SVG coordinate system and viewBox
+Basic SVG path syntax
+Stroke properties for line drawing animations
+How to use transform origins correctly for SVG transforms
+
+Let’s dive into it!
+Coordinates, not flow
+SVG uses coordinate-based positioning. Every element is placed at specific coordinates using geometric attributes like x, y, cx, and cy.
+In HTML, elements are part of the document flow. Block elements stack vertically, inline elements flow horizontally. The browser automatically positions elements based on the content around them.
+SVG has no concept of flow. Elements sit exactly where you tell them to. If you create multiple elements without specifying coordinates, they’ll all render at the origin point (0, 0), stacked on top of each other.
+Try switching between shapes and moving them around. Notice the differences in the coordinate arguments for each shape and how they behave:
+
+```
+<svg viewBox="0 0 100 100">
+  <rect
+    x="30"
+    y="30"
+    width="40"
+    height="40"
+    fill="hsl(47, 94%, 66%)"
+  />
+</svg>
+```
+xywidthheight
+Shapes can also disappear. Try dragging the rectangle’s width or height to 0 in the demo above – it vanishes completely. The same happens with lines if the start and end coordinates match, or circles with a radius of 0.
+
+```
+// These shapes won't render
+<rect x="30" y="30" width="0" height="40" />
+<line x1="50" y1="50" x2="50" y2="50" />
+<circle cx="50" cy="50" r="0" />
+```
+
+The SVG spec calls these “degenerate shapes”. Shapes that collapse into a point or line aren’t considered valid and won’t render. This is different from opacity="0" or fill="transparent", where the shape still exists but isn’t visible.
+Making SVGs responsive
+Now here’s the interesting part. Those coordinates aren’t pixel values. They’re values in SVG’s internal coordinate system, defined by the viewBox attribute. This is what we use to make our SVGs responsive.
+Think of the viewBox as a camera looking at an infinite SVG canvas. It determines which portion of the coordinate space is visible and at what zoom level.
+Without a viewBox, SVGs don’t scale properly. Try resizing the SVG below without viewBox, the shapes get cropped because their coordinates are fixed.
+viewBox OFF
+```
+<svg
+  width="300"
+  height="300"
+>
+  <rect
+    x="90"
+    y="90"
+    width="120"
+    height="120"
+    fill="hsl(47, 94%, 66%)"
+  />
+</svg>
+ 
+```
+widthheightToggle viewBox
+Now toggle viewBox on and resize again. The SVG scales to fit because the
+browser scales the entire coordinate system.
+The viewBox attribute takes four values: x, y, width, and height.
+The first two values set the x and y coordinates of the top-left corner of the visible area.
+The last two values set the width and height of the visible area. They determine how many coordinate units fit horizontally and vertically.
+
+```
+<svg viewBox="0 0 300 300">{/* ... */}</svg>
+```
+
+The viewBox above starts at coordinate (0, 0) and shows a 300×300 unit area.
+Try adjusting the values below. Changing x and y pans the view. Changing the width & height will adjust the zoom/visible area.
+
+```
+<svg
+  width="300"
+  height="300"
+  viewBox="-70 -70 340 340"
+>
+  <rect
+    x="50"
+    y="50"
+    width="200"
+    height="200"
+    fill="hsl(47, 94%, 66%)"
+  />
+  <rect
+    x="-350"
+    y="-350"
+    width="150"
+    height="150"
+    fill="hsl(47, 94%, 66%)"
+  />
+  <rect
+    x="500"
+    y="-450"
+    width="150"
+    height="150"
+    fill="hsl(47, 94%, 66%)"
+  />
+  <rect
+    x="-400"
+    y="300"
+    width="150"
+    height="150"
+    fill="hsl(47, 94%, 66%)"
+  />
+</svg>
+```
+xywidth & heightResetAnimate
+You can even animate these values to create smooth panning and zooming effects. Hit the “Animate” button above to see it in action.
+In the hero animation, the SVG uses viewBox="0 0 622 319". The shapes work with this coordinate system, but the SVG displays at different sizes depending on the screen. This is why we can use consistent animation values at any size.
+Drawing with an invisible cursor
+SVG paths let you draw complex shapes using drawing commands in the d attribute.
+Think of paths like drawing with a pen. There’s an invisible cursor that starts at (0, 0). Commands move this cursor around or draw lines from its current position.
+Use the arrow buttons below to step through each command and watch the path being drawn:
+
+```
+<svg viewBox="0 0 100 100">
+  <path
+    d=""
+    stroke="hsl(47, 94%, 66%)"
+    strokeWidth="1.5"
+  />
+</svg>
+```
+PreviousNext
+This draws a square using two commands:
+
+M (move) - moves the cursor to a starting point without drawing anything.
+L (line) - draws a line from the cursor’s current position to a new point.
+
+Path commands can be uppercase or lowercase, and this changes how coordinates work:
+
+Uppercase L 40,60: Go to coordinate (40, 60) in the viewBox.
+Lowercase l 40,60: Move 40 units right and 60 units down from the current cursor position. It’s relative to the cursor.
+
+For a path that starts at M 30,20:
+
+L 40,60 draws to (40, 60).
+l 10,40 draws to (40, 60) as well, because 30+10=40 and 20+40=60.
+
+Try adjusting the coordinates below. Toggle between L (absolute) and l (relative) to see the difference.
+
+```
+<svg viewBox="0 0 100 100">
+  <path
+    d="M 30,20 L 40,60"
+    stroke="hsl(47, 94%, 66%)"
+    strokeWidth="1.5"
+  />
+</svg>
+```
+Path CommandToggle l
+Try it yourself: Draw a triangle.
+Using the path command field in the demo above, try drawing a triangle. Start at coordinate (50, 30) and make it about 40 units tall.
+View Solution
+Those of you with sharper eyes might’ve spotted something odd - both the triangle you just drew and the square from earlier have the same problem. There’s an awkward corner where the path ends. When a path’s start and end points meet without being properly closed, you get this visual defect.
+Zoom in on the corner below to see it more clearly.
+
+```
+<svg viewBox="0 0 100 100">
+  <path
+    d="
+      M 30,30
+      L 30,70
+      L 70,70
+      L 70,30
+      L 30,30
+    "
+    stroke="hsl(47, 94%, 66%)"
+    strokeWidth="1.5"
+  />
+</svg>
+```
+Zoom in
+The fix is the Z command which draws a straight line back to the starting point and properly closes the path. Click the “Toggle” button above to see the difference.
+The Z command is handy because:
+
+It’s shorter than typing out the end coordinates
+It ensures the path is properly closed
+It works with both absolute and relative commands (though z and Z do the same thing)
+
+So the triangle from earlier could be simplified to:
+
+```
+M 50,30 L 30,70 L 70,70 Z
+```
+
+Or with relative coordinates:
+
+```
+M 50,30 l -20,40 l 40,0 Z
+```
+
+In practice, you rarely write paths by hand. Design tools like Figma export them for you. But understanding the basics helps when you need to animate or modify them.
+For a deeper dive into path syntax, check out Nanda’s A Deep Dive Into SVG Path Commands guide.Copy page

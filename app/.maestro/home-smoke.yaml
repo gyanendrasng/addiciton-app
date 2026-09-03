@@ -1,0 +1,19 @@
+# Home renders the daily loop after onboarding (run against a profile that exists)
+appId: host.exp.Exponent
+---
+- openLink: exp://localhost:8090
+- tapOn:
+    text: "Keep going"
+    optional: true
+- tapOn:
+    text: "×"
+    optional: true
+- tapOn:
+    text: "Home"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*clean, and counting.*"
+    timeout: 40000
+- assertVisible: ".*I have an urge.*"
+- assertVisible: ".*(Hold to pledge|Pledged for today).*"
+- assertVisible: ".*(Evening check-in|Checked in).*"

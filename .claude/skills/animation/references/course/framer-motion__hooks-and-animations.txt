@@ -1,0 +1,166 @@
+Hooks and animationsWe’ve now animated things mainly using initial, animate and exit props. While these props are very powerful, and I personally use Framer Motion this way ~90% of the time, this library has more to offer.
+Hooks like useSpring or useTransform can help us in cases where the animate prop is not enough. But before we dive into these hooks, we need to understand what motion values are.
+Motion values
+Motion values are primitives from Framer Motion that update their value outside of React’s render cycle. That’s what allows us to animate at 60 frames per second as we are not triggering any re-renders each time the transform value changes for example.
+In the recording below the transform property changes its value multiple times per second, but because it’s not caused by a change in the state, but rather a change in the motion value, the component won’t re-render.
+ 
+To create a motion value we can use the useMotionValue hook. The string or number passed to the hook will act as its initial state. motion components can consume a motion value through the style property. The translateX value of the div below will be 100px for example.
+
+```
+const x = useMotionValue(100);
+ 
+<motion.div style={{ x }} />
+```
+
+We can update our motion values with the set method and read their value with the get method. Notice how in the demo below when we click on the button, the motion value updates, but the rendered value is not changed. That’s because these updates are happening outside of React’s render cycle like we discussed.
+App.jsstyles.css
+```
+"use client";
+
+import { motion, useMotionValue } from "motion/react";
+
+export default function MotionValueBasics() {
+  const x = useMotionValue(0);
+
+  return (
+    <div className="wrapper">
+      <p>Motion value: {x.get()}</p>
+      <motion.div style={{ x }} className="element" />
+      <button className="button" onClick={() => x.set(x.get() + 50)}>
+        Increment by 50px
+      </button>
+    </div>
+  );
+}
+```
+
+This is nice, but we are here for animations and these updates are instant. Let’s see how we can add some motion to our motion values.
+Animating motion values
+The useSpring hook creates a motion value that animates to the new value with a spring animation. To make our yellow rectangle animate, we can simply replace useMotionValue with useSpring.
+
+```
+const x = useSpring(0);
+```
+
+Increment by 50px
+The type of spring can be changed by passing a second argument to the hook. Whenever I use useSpring multiple times in a component, I usually create a variable for the spring values.
+
+```
+const SPRING = {
+  type: "spring",
+  damping: 10,
+  mass: 0.75,
+  stiffness: 100,
+};
+ 
+const x = useSpring(0, SPRING);
+```
+
+This hook might not feel ground breaking, but let’s think about a component that renders a circle that follows your mouse position. How would you do it with the animate prop?
+We would need to add an event listener for pointermove and a state variable to store the mouse position which would trigger a re-render each time the mouse moves and assign that as the x and y values in the animate prop. This is okay-ish, but the performance is not great.
+
+```
+// This component can re-render even 60 times per second
+const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+ 
+return (
+  <div onPointerMove={(e) => setMousePosition({ x: e.clientX, y: e.clientY })}>
+    <motion.div style={{ left: mousePosition.x, top: mousePosition.y }} />
+  </div>
+)
+```
+
+How would the code for this look like if we were to use motion values? Would it be better or worse? Let’s find out! Your job will be to animate the circle to follow the mouse position using the hooks we’ve learned so far. The end result should look like this:
+
+App.jsstyles.css
+```
+"use client";
+
+export default function MotionValueBasics() {
+  return (
+    <div className="wrapper">
+      <div className="element" />
+    </div>
+  );
+}
+```
+
+View Solution
+The interaction above is relatively simple, but the same technique is used in this illustration below that I once made for Linear. It’s basically the same approach, we are following the mouse, the visual does most of the work here to make it look good.
+ We will build a similar component in the next lesson.
+Using useSpring for this type of interactions really does make a difference. You can experience it yourself in the example below, try to toggle the animation on and off. No motion in this case feels lifeless while the spring animation makes it very satisfying.
+Toggle animation
+Transforming motion values
+Let’s say we want our circle that follows the cursor to change its size based on the distance from the top of the wrapping div. How can we do that? We have to transform the y motion value. The useTransform hook can help us with that.
+
+This hook creates a new motion value that transforms the output of one or more other motion values. Before I dive deeper into explaining how it works, let’s try to implement this effect in our component. We want our circle to scale up to 1.5 when it’s 300px (or more) from top of the screen, when it’s at the top it should be 1.
+App.jsstyles.css
+```
+"use client";
+
+import { motion, useSpring } from "motion/react";
+
+const SPRING = {
+  mass: 0.1,
+  damping: 16,
+  stiffness: 71,
+};
+
+export default function MotionValueBasics() {
+  const x = useSpring(0, SPRING);
+  const y = useSpring(0, SPRING);
+  const opacity = useSpring(0);
+
+  return (
+    <div
+      onPointerMove={(e) => {
+        const bounds = e.currentTarget.getBoundingClientRect();
+        x.set(e.clientX - bounds.left - 24);
+        y.set(e.clientY - bounds.top - 24);
+      }}
+      onPointerEnter={() => opacity.set(1)}
+      onPointerLeave={() => opacity.set(0)}
+      className="wrapper"
+    >
+      <motion.div style={{ x, y, opacity }} className="element" />
+    </div>
+  );
+}
+```
+
+View Solution
+When I first started using useTransform I remember it as confusing, 2 arrays right after each other, it was a bit hard to wrap my head around the syntax. But that’s why we start with easy examples, and by no means beautiful examples.
+Once you get comfortable with it, you will be able to use it to your advantage often. The Linear illustration I showed you earlier uses useTransform as well. It transforms the distance in pixels to percentages for the offsetDistance property so that the grey and yellow circles follow the mouse.
+ 
+Another Linear illustration uses useTransform to transform the x value that is based on cursor position into width. The change in width is what makes the bars push each other so that it creates a momentum-like effect.
+ 
+But a motion value doesn’t necessarily have to be something that you’d use in the style prop. You can also use it to animate numbers for example. In the intro animation below I set the motion value to 45 with a delay. It then interpolates it with a spring animation.
+ 
+It’s the degree value on the left of the logo, it’s very subtle, but I did that on purpose as there was already a lot happening in this animation. The code for this would look roughly like this:
+
+```
+const angleValue = useSpring(1, {
+  stiffness: 185,
+  damping: 25,
+});
+ 
+const angleDisplay = useTransform(angleValue,
+  value => `${Math.round(value)}°`
+);
+ 
+useEffect(() => {
+  const timer = setTimeout(() => {
+    angleValue.set(45);
+  }, 2600);
+ 
+  return () => clearTimeout(timer);
+}, []);
+```
+
+This introduces a different way of using useTransform. Instead of mapping a motion value, we are transforming the output of it. This is useful as it makes the useTransform hook subscribe to angleValue which is why when we render angleDisplay in our component it would show the up-to-date value unlike a plain useMotionValue hook.
+When to use which hook?
+You might think that useSpring should be used for all animations because useMotionValue changes are instant. While I personally use useSpring more often, there are definitely cases in which useMotionValue is useful. Here’s one real-world use case.
+Remember the app store gesture we’ve seen a while ago? Dragging to dismiss also changes the scale of the card. We transform the drag distance into a scale value using useTransform, but we want it to correspond directly to the drag distance. useSpring would feel disconnected from the gesture, because it would animate, so we use useMotionValue to directly update the scale.
+ useMotionValue becomes useful when working with gestures.
+Practice
+These are the hooks that I use the most in my work. Let’s now practice them and discover a few additional ones by building some realistic examples.ResourcesMotion values overviewuseTransform docsuseSpring docsCopy page

@@ -1,0 +1,56 @@
+The big little detailsWe’ve talked about the theory behind good animations and how to actually code them. Now it’s time to talk about the details that separate good animations from great animations. And we’ll start with feeling.
+Feeling
+Design has its rules for making a website appear luxurious, whimsical, or geeky. Using a serif font can make a website feel more premium, while using a monospace font indicates that the website is related to tech. Blue color is often used for trust, think of PayPal or Goldman Sachs. All of this helps us convey the feeling of the brand. But what about animations?
+PayPal’s website is full of blue color, which is often associated with trust.
+If we look at Stripe for example, we can see that their animations are pretty slow, they take their time. It feels premium and reliable to me, as if they are saying "we are not in a hurry, we are here for you". I’m talking strictly about the marketing website here, not the dashboard.
+ 
+If you are a young, forward-thinking agency, you could go for more "edgy" ease-in-out curves.
+ 
+When I worked at Vercel, I maintained our design system and we decided to make our animations very fast or in some cases even instant (no animation at all). Vercel is a company that is all about speed, so it made sense to make the product itself feel fast.
+ 
+I wanted Sonner to feel premium and elegant. That’s why I made the animations feel a bit slower than usual. It also uses an ease curve rather than ease-out, it doesn’t feel as snappy, but it makes it feel more elegant, it fits the vibe I was going for.
+Add toast
+Usually, our main goal should be to build interfaces that feel fast and are not annoying. Having slower animations on your marketing page is fine, as they are mostly informative and not interactive, and that’s where you should try and convey the feeling of your brand. But when it comes to the product itself, we should aim for speed. Family is the perfect example of that. I know that I mention Family a lot, but it just nails everything we talk about in this course.
+ 
+Orchestration
+A "detail" that can take your animation to the next level. Visiting Paco’s site feels like a moment of joy. The enter animation is sequenced perfectly, it feels like a wave. It’s way nicer than if everything just animated in together.
+ 
+Another great example of it is Apple’s navigation menu where they fade in the columns with a slight delay. This feels like a wave effect to me again. It’s hard to achieve such effect, as the delay has to be just right.
+ 
+I can’t give you any specific tips here, as I believe that this type of details are just a matter of trial and error until it feels right. I told you in the taste lesson that you need to surround yourself with great work and practice. So let’s try, and recreate Paco’s enter animation!
+Framer Motion makes orchestration easier with stagger. But let’s use pure CSS here so that you can see how it’s done without any libraries.
+App.jsstyles.css
+```
+import "./styles.css";
+
+export default function Orchestration() {
+  return (
+    <div className="orchestration">
+      <h1>Jon Doe</h1>
+      {COPY.map((copy) => (
+        <p key={copy}>{copy}</p>
+      ))}
+    </div>
+  );
+}
+
+const COPY = [
+  `Using Apple's Sheet component on iOS feels natural, I wanted to create the same experience, but for the web. That's how Vaul, the React component was born.`,
+  `Open-sourcing meant that more people will use it, which will result in more feedback, ultimately making the component better.`,
+  `I chose to build Vaul on top of Radix's Dialog primitive. Radix ensures the component is accessible, handles focus management etc. I also made Vaul's API is very similar to Radix's, so that it feels familiar.`,
+  `Once the content of the drawer got bigger than ~20 list items the drag gesture became laggy, and I couldn't figure out why. `,
+  `Since CSS Variables are inheritable, changing them will cause style recalculation for all children, meaning the more items I have in my drawer, the more expensive the calculation gets.`,
+];
+```
+
+View Solution
+Blur
+Blur is used more and more in web animations. It’s a nice way to create a better sense of motion and to mask any potential imperfections in the animation. We’ve used this in our feedback component for the success state.
+Feedback
+The Dynamic Island that’ll build soon is another example of where blur makes a difference. You can try turning the blur on and off in the component below, and see how it affects the animation. You might not notice a huge change, but it definitely feels better with the blur on.
+Toggle blur offIdleRingTimer
+Reviewing your work
+I’ve spoken about it before, but I want to emphasize the importance of reviewing your work. The animations I post on twitter are never shared the day they are made. I give myself at least a day to look at them with fresh eyes. It’s the same as with design, after stepping away, you’ll notice things you didn’t see before.
+Replay your animation, see how it moves, how it can be improved, step away from the code. Leonardo da Vinci would spend hours just staring at his work, not applying a single brushstroke. I’m obviously not comparing us to someone like da Vinci, but I do believe that people don’t give their animations enough time. They focus on the code, write it, and move on. The greatest animations take time, not only to code, but to review and improve it.
+The transitions in Sonner were done in a few days, but I kept replaying them literally everyday until I published them. Who knows, maybe those additional few tweaks made Theo appreciate the animation the way he did.
+Copy pageEmil Kowalski@emilkowalski·FollowTheo just made a great ad for SonnerWatch on X4:37 PM · Dec 27, 2023724ReplyCopy linkRead 25 replies

@@ -1,0 +1,21 @@
+# Relapse flow resets the streak; undo restores it
+appId: host.exp.Exponent
+---
+- openLink: exp://localhost:8090/--/relapse
+- extendedWaitUntil:
+    visible: ".*lapse isn’t a relapse.*"
+    timeout: 40000
+- tapOn:
+    text: "Continue"
+    optional: true
+- tapOn:
+    text: "Continue"
+    optional: true
+- tapOn: "Start again"
+- extendedWaitUntil:
+    visible: ".*Streak restarted.*"
+    timeout: 15000
+- tapOn: "Undo"
+- extendedWaitUntil:
+    notVisible: ".*Streak restarted.*"
+    timeout: 10000

@@ -1,0 +1,365 @@
+Multi-step componentThis is step oneUsually in this step we would explain why this thing exists and what it does. Also, we would show a button to go to the next step.BackContinue
+Step animation
+Let’s try animating the steps first, with no height animation or direction awareness.
+Success criteria:
+
+When the continue or back button is pressed, the exiting step should animate to the left and the entering step should animate from the right.
+The exit animation should consist of opacity and x transition.
+
+App.jsstyles.css
+```
+"use client";
+
+import { useMemo, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import useMeasure from "react-use-measure";
+import "./styles.css";
+
+export default function MultiStepComponent() {
+  const [currentStep, setCurrentStep] = useState(0);
+
+  const content = useMemo(() => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <>
+            <h2 className="heading">This is step one</h2>
+            <p>
+              Usually in this step we would explain why this thing exists and
+              what it does. Also, we would show a button to go to the next step.
+            </p>
+            <div className="skeletons">
+              <div className="skeleton" style={{ width: 256 }} />
+              <div className="skeleton" style={{ width: 192 }} />
+              <div className="skeleton" />
+              <div className="skeleton" style={{ width: 384 }} />
+            </div>
+          </>
+        );
+      case 1:
+        return (
+          <>
+            <h2 className="heading">This is step two</h2>
+            <p>
+              Usually in this step we would explain why this thing exists and
+              what it does. Also, we would show a button to go to the next step.
+            </p>
+            <div className="skeletons">
+              <div className="skeleton" style={{ width: 256 }} />
+              <div className="skeleton" style={{ width: 192 }} />
+              <div className="skeleton" style={{ width: 384 }} />
+            </div>
+          </>
+        );
+      case 2:
+        return (
+          <>
+            <h2 className="heading">This is step three</h2>
+            <p>
+              Usually in this step we would explain why this thing exists and
+              what it does. Also, we would show a button to go to the next step.
+            </p>
+            <div className="skeletons">
+              <div className="skeleton" style={{ width: 256 }} />
+              <div className="skeleton" style={{ width: 192 }} />
+              <div className="skeleton" style={{ width: 128 }} />
+              <div className="skeleton" style={{ width: 224 }} />
+              <div className="skeleton" style={{ width: 384 }} />
+            </div>
+          </>
+        );
+    }
+  }, [currentStep]);
+
+  return (
+    <div className="multi-step-wrapper">
+      <div className="multi-step-inner">
+        <div>{content}</div>
+        <div className="actions">
+          <button
+            className="secondary-button"
+            disabled={currentStep === 0}
+            onClick={() => {
+              if (currentStep === 0) {
+                return;
+              }
+              setCurrentStep((prev) => prev - 1);
+            }}
+          >
+            Back
+          </button>
+          <button
+            className="primary-button"
+            disabled={currentStep === 2}
+            onClick={() => {
+              if (currentStep === 2) {
+                setCurrentStep(0);
+                return;
+              }
+              setCurrentStep((prev) => prev + 1);
+            }}
+          >
+            Continue
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+View Solution
+Height animation
+Animating the height will make our component look less jarring. Let’s try that next.
+Success criteria:
+
+The height should animate smoothly when the content changes, it should not use magic numbers.
+The buttons should follow the height animation, they should not jump around.
+
+App.jsstyles.css
+```
+"use client";
+
+import { useMemo, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import useMeasure from "react-use-measure";
+import "./styles.css";
+
+export default function MultiStepComponent() {
+  const [currentStep, setCurrentStep] = useState(0);
+
+  const content = useMemo(() => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <>
+            <h2 className="heading">This is step one</h2>
+            <p>
+              Usually in this step we would explain why this thing exists and
+              what it does. Also, we would show a button to go to the next step.
+            </p>
+            <div className="skeletons">
+              <div className="skeleton" style={{ width: 256 }} />
+              <div className="skeleton" style={{ width: 192 }} />
+              <div className="skeleton" />
+              <div className="skeleton" style={{ width: 384 }} />
+            </div>
+          </>
+        );
+      case 1:
+        return (
+          <>
+            <h2 className="heading">This is step two</h2>
+            <p>
+              Usually in this step we would explain why this thing exists and
+              what it does. Also, we would show a button to go to the next step.
+            </p>
+            <div className="skeletons">
+              <div className="skeleton" style={{ width: 256 }} />
+              <div className="skeleton" style={{ width: 192 }} />
+              <div className="skeleton" style={{ width: 384 }} />
+            </div>
+          </>
+        );
+      case 2:
+        return (
+          <>
+            <h2 className="heading">This is step three</h2>
+            <p>
+              Usually in this step we would explain why this thing exists and
+              what it does. Also, we would show a button to go to the next step.
+            </p>
+            <div className="skeletons">
+              <div className="skeleton" style={{ width: 256 }} />
+              <div className="skeleton" style={{ width: 192 }} />
+              <div className="skeleton" style={{ width: 128 }} />
+              <div className="skeleton" style={{ width: 224 }} />
+              <div className="skeleton" style={{ width: 384 }} />
+            </div>
+          </>
+        );
+    }
+  }, [currentStep]);
+
+  return (
+    <div className="multi-step-wrapper">
+      <div className="multi-step-inner">
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.div
+            key={currentStep}
+            initial={{ x: "110%", opacity: 0 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ x: "-110%", opacity: 0 }}
+            transition={{ duration: 0.5, type: "spring", bounce: 0 }}
+          >
+            {content}
+          </motion.div>
+        </AnimatePresence>
+        <div className="actions">
+          <button
+            className="secondary-button"
+            disabled={currentStep === 0}
+            onClick={() => {
+              if (currentStep === 0) {
+                return;
+              }
+              setCurrentStep((prev) => prev - 1);
+            }}
+          >
+            Back
+          </button>
+          <button
+            className="primary-button"
+            disabled={currentStep === 2}
+            onClick={() => {
+              if (currentStep === 2) {
+                setCurrentStep(0);
+                return;
+              }
+              setCurrentStep((prev) => prev + 1);
+            }}
+          >
+            Continue
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+View Solution
+Direction awareness
+Currently, our elements enter from the right and disappear to the left, regardless of whether we are moving forward or backward. We want to flip our x-values depending on the direction we are moving towards. Good luck!
+Success criteria:
+
+When the continue button is pressed, the entering step should animate from the right and the exiting step should animate to the left.
+When the back button is pressed, the entering step should animate from the left and the exiting step should animate to the right.
+
+Show hint
+App.jsstyles.css
+```
+"use client";
+
+import { useMemo, useState } from "react";
+import { AnimatePresence, motion, MotionConfig } from "motion/react";
+import useMeasure from "react-use-measure";
+import "./styles.css";
+
+export default function MultiStepComponent() {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [ref, bounds] = useMeasure();
+
+  const content = useMemo(() => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <>
+            <h2 className="heading">This is step one</h2>
+            <p>
+              Usually in this step we would explain why this thing exists and
+              what it does. Also, we would show a button to go to the next step.
+            </p>
+            <div className="skeletons">
+              <div className="skeleton" style={{ width: 256 }} />
+              <div className="skeleton" style={{ width: 192 }} />
+              <div className="skeleton" />
+              <div className="skeleton" style={{ width: 384 }} />
+            </div>
+          </>
+        );
+      case 1:
+        return (
+          <>
+            <h2 className="heading">This is step two</h2>
+            <p>
+              Usually in this step we would explain why this thing exists and
+              what it does. Also, we would show a button to go to the next step.
+            </p>
+            <div className="skeletons">
+              <div className="skeleton" style={{ width: 256 }} />
+              <div className="skeleton" style={{ width: 192 }} />
+              <div className="skeleton" style={{ width: 384 }} />
+            </div>
+          </>
+        );
+      case 2:
+        return (
+          <>
+            <h2 className="heading">This is step three</h2>
+            <p>
+              Usually in this step we would explain why this thing exists and
+              what it does. Also, we would show a button to go to the next step.
+            </p>
+            <div className="skeletons">
+              <div className="skeleton" style={{ width: 256 }} />
+              <div className="skeleton" style={{ width: 192 }} />
+              <div className="skeleton" style={{ width: 128 }} />
+              <div className="skeleton" style={{ width: 224 }} />
+              <div className="skeleton" style={{ width: 384 }} />
+            </div>
+          </>
+        );
+    }
+  }, [currentStep]);
+
+  return (
+    <MotionConfig transition={{ duration: 0.5, type: "spring", bounce: 0 }}>
+      <motion.div
+        animate={{ height: bounds.height }}
+        className="multi-step-wrapper"
+      >
+        <div className="multi-step-inner" ref={ref}>
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.div
+              key={currentStep}
+              initial={{ x: "110%", opacity: 0 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ x: "-110%", opacity: 0 }}
+            >
+              {content}
+            </motion.div>
+          </AnimatePresence>
+          <motion.div layout className="actions">
+            <button
+              className="secondary-button"
+              disabled={currentStep === 0}
+              onClick={() => {
+                if (currentStep === 0) {
+                  return;
+                }
+                setCurrentStep((prev) => prev - 1);
+              }}
+            >
+              Back
+            </button>
+            <button
+              className="primary-button"
+              disabled={currentStep === 2}
+              onClick={() => {
+                if (currentStep === 2) {
+                  setCurrentStep(0);
+                  return;
+                }
+                setCurrentStep((prev) => prev + 1);
+              }}
+            >
+              Continue
+            </button>
+          </motion.div>
+        </div>
+      </motion.div>
+    </MotionConfig>
+  );
+}
+```
+
+View Solution
+Accessibility
+There is quite a lot of movement happening on the screen. To disable the animation for people that have reduced motion enabled, we can use the useReducedMotion hook from Framer Motion. We haven’t done it in this exercise, as I wanted to keep the code relatively simple, but we’ll talk about it in the accessibility lesson.
+Key takeaways
+When an element is animating out using AnimatePresence its state is stale. To work around this, you can use the custom prop on our motion.div as well as on AnimatePresence. This will ensure that all leaving components are using the latest data.
+Rapid switching
+When you switch quickly between states in animate presence, you might eventually see both elements being visible in the DOM. That’s a bug in Framer Motion that will hopefully be fixed. If you are experiencing it and you can’t work around it, I suggest installing version 11.0.10 of Framer Motion where this bug is not present.
+Inspiration
+This exercise is inspired by buildui.com where Sam Selikoff talks about a similar problem. I’m a huge admirer of his work and I highly recommend checking out his content.ResourcesCustom prop documentationThe Power of Keys in Framer MotionCopy page

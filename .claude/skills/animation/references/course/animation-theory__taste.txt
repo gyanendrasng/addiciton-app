@@ -1,0 +1,65 @@
+TasteAs you go through this course, you start to understand why some animations feel right while others don’t. I show you bad and good examples and explain why the good example feels better.
+The more of these examples you see, the better your intuition gets. You start to recognize what separates good animations from bad ones. You improve your taste.
+And taste has never been more valuable. With each month LLMs are more capable of taking care of the technical difficulties. Code is not the differentiator anymore, taste is.
+This lesson is all about taste and how to improve it.
+Can you improve your taste?
+Many people say that taste is just a personal preference. If that was true, then there would be no good and bad designs, just different personal preferences. Yet most people admire Apple’s beautiful products, and most agree that da Vinci was a great artist.
+“If taste is just personal preference, 
+then everyone’s taste is already perfect.”Paul Graham,  Y Combinator
+What actually happens is as you improve at any craft and revisit your old work, you realize that it’s not just different - it’s worse. And you can tell why.
+I teach you animations through good and bad examples, because when they are put next to each other, it’s easy to tell the difference, even if your taste is not developed yet.
+Most people would agree that the correct example below feels better. Since we covered it earlier, you now know I didn’t build it based on my intuition, but rules that can be justified with The Easing Blueprint. This proves that taste is not just a personal preference, but a skill you can train.
+
+Before we dive into how to improve your taste, let’s talk more about why it matters.
+Why does taste matter?
+When the first car came out, consumers didn’t care about its color, or silhouette, because the competition was a horse. But now that cars have been commoditized, quality and details have become more important than ever.
+The same applies to software. Simply shipping a working product is no longer enough, anyone can do that, especially now with AI. It’s not the differentiator anymore as people expect things to work. What makes a product stand out is the brand, design, interactions, how intuitive it is, the overall experience. Taste is the differentiator.
+“In a world of scarcity, we treasure tools. 
+ In a world of abundance, we treasure 
+taste.”Anu Atluru,  Taste is Eating Silicon Valley
+Companies start to realize that in order to stand out, they need to have a great product. Great product requires great intuition, and great intuition requires great taste.
+But how can you actually improve your taste?
+How to get better?
+You need to surround yourself with great work.
+If you are a designer, look at great designs. If you are a writer, read great books. Expose yourself to great work, this way you’ll learn how greatness looks and feels like.
+“It comes down to trying to expose yourself to the best things that 
+humans have done and then try to bring those things into 
+what you’re doing.”Steve Jobs,  Apple
+Find people who are respected in their field. Look who they admire and build a
+curated list of tastemakers. Surround yourself with their work. Look at their
+designs, use their apps, read their books. Learning from the best is the best
+way to learn.
+Designers should copy great designs, writers should copy great books.
+Copy and re-implement work you admire until you can proudly create for yourself.
+Heavy exposure to great things shapes output.
+If you don’t know where to find your tastemakers, the course’s Vault should help. It contains stuff that I personally admire, so if you like my taste, it could be a good starting point.
+The Vault is a highly curated list of resources.
+Think about why you like something
+While developing your taste, don’t just label things as good or bad. Instead of relying on gut feelings, try to rationalize why something feels great. Analyze and understand patterns, don’t rely purely on your intuition.
+If you’re a designer, don’t just use apps - study them. Why does this interaction feel good? If you’re a filmmaker, don’t just watch movies - think about why the director made the choices they did.
+Have a mindset of thinking deeply about what makes something great. Go beyond the surface level. Be curious.
+I love recreating good animations, the ones that everyone talks about when they are first seen. There is always a reason why everyone talks about them and I want to find the why behind it. So I record the animation and scrub through the recording.
+ 
+Oftentimes the animation happens quickly and you don’t see every detail of it, but trust me, the greatest animations have a lot of details. Scrubbing through the video helps you notice and appreciate every single one.
+ I record a lot, even my own animations to see what I can improve.
+This accelerated my learning process more than anything else. I recorded an animation and recreated it until I was satisfied with my replica. It took a long time, but I learned so much from it.
+Practice
+Practice your craft. Create things. A designer should design, a writer should write. This will make you not only a good judge of taste, but also, with time, a tastemaker.
+This is the most important step. You can’t learn to craft great animations by just watching someone else do it just like you can’t learn how to play guitar by just watching someone else play it. I show you my approach to animations, but you need to put in the work.
+That’s why there are so many exercises in this course where you can choose an easing yourself. You’re not just learning to code - you’re training your taste.
+While practicing, seek feedback from others. Good critique from the right person beats trial and error alone. The course’s Discord server is a great place to get feedback.
+The things you’ll create probably won’t be good at first, but that’s a good sign. Your taste is good enough to tell that your work is not on par yet. That’s the taste gap that Ira Glass talks about here:
+
+Care
+Taste doesn’t matter much if you don’t care about your work. The best people at any craft are that good, because they care. They go that extra mile and they don’t stop until they are truly satisfied with the result.
+“I don’t think my taste in aesthetics is that much different than a lot of other people’s.
+
+The difference is that I just get to be really stubborn about making things as good as we all know they can be.”Steve Jobs,  Apple
+But if you bought this course, you probably care. Because why would you spend your time and money on something you don’t care about?
+It’s not just me saying this for the sake of it, you can actually feel whether people cared about their product or not. Apple’s products are made with care, Linear is made with care. You feel it when you use these products.
+“What we make testifies who we are. 
+People can sense care and can sense carelessness.”Jony Ive,  LoveFrom
+Homework
+Find an animation or interaction that you really like and describe why you like it. Be specific. Don’t just say the easing is nice or the text animation feels good, but rather why it feels good.
+Write it down or share it on the course’s Discord server, don’t just do it in your head. This exercise will help you a lot, arguably more than the coding exercises further in the course.
+This shouldn’t be something you do once for this homework exercise. If you are serious about animations and improving your taste, you should review great work from others a lot. I know how much it helped me, and I know it’ll do the same for you.ResourcesTaste for MakersTaste is eating Silicon ValleyCopy page

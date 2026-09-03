@@ -1,0 +1,318 @@
+FundamentalsWalkthroughsModule 01Family DrawerThe analysisFirst animationsCrossfadeThe finishing touchModule 02Dynamic IslandThe DesignRing viewTimer viewMorph effectModule 03Navigation menuKnow your toolsAnimating the menuClosing thoughtsModule 04Hero illustrationSVG introductionLines and dashesRotationClick animationClock animationPolishMorph effectThis is our final piece of this component. Let’s first look at the morphing effect from Apple’s Dynamic Island again. A small disclaimer—I don’t know Swift, so I don’t know how Apple implemented it. I’ll talk about it from a Framer Motion perspective.
+Apple’s approach
+Most of the time, the Dynamic Island transitions between its idle state and an activity, like a phone call. This is easier to implement because it transitions from a black background to a rich view rather than between two UI-rich states. You can see this in the video below
+ 
+It becomes tricky when morphing between two rich states. Apple avoids showing both states simultaneously by using a method similar to ‘wait mode’ in AnimatePresence from Framer Motion. The exiting state disappears before the entering state starts to animate in.
+ 
+Animating with popLayout would introduce a lot of issues, because we animate these views inside a container that not only changes its height, but also its width. Because a lot of stuff in Framer Motion is happening magically under the hood, we lose control of how the views are animated.
+ One of the issues with popLayout in this specific case.
+Framer Motion doesn’t know that we want our animation to mimic those in Dynamic Island. It simply calculates the layout changes and animates them using a predefined formula.
+Now we could obviously use the wait mode on AnimatePresence, but I really wanted to make a crossfade-like transition, and the fact that it was harder to implement made it even more interesting. I also just think that this effect is more satisfying.
+The solution
+I basically duplicated the active view. One version is responsible for only the enter animation, while the other is hidden and only shows up when it’s exiting. That allows us to show both views, at the same time, without having to fight against Framer Motion as one of them is positioned absolutely.
+
+```
+<motion.div
+  layout
+  transition={{
+    type: "spring",
+    bounce,
+  }}
+  style={{ borderRadius: 32 }}
+  className="mx-auto w-fit min-w-[100px] overflow-hidden rounded-full bg-black"
+>
+  // This is the active view which is always visible
+  <motion.div
+    ref={activeStateWrapperRef}
+    transition={{
+      type: "spring",
+      bounce,
+    }}
+    initial={{
+      scale: 0.9,
+      opacity: 0,
+      filter: "blur(5px)",
+      originX: 0.5,
+      originY: 0.5,
+    }}
+    animate={{
+      scale: 1,
+      opacity: 1,
+      filter: "blur(0px)",
+      originX: 0.5,
+      originY: 0.5,
+      transition: {
+        delay: 0.05,
+      },
+    }}
+    key={view}
+  >
+    {content}
+  </motion.div>
+</motion.div>
+ 
+<div className="pointer-events-none absolute left-1/2 top-0 flex h-[200px] w-[300px] -translate-x-1/2 items-start justify-center">
+  <AnimatePresence mode="popLayout" custom={exitTransition}>
+    // This shows only when exiting
+    <motion.div
+      initial={{ opacity: 0 }}
+      exit="exit"
+      variants={variants}
+      key={view}
+    >
+      {content}
+    </motion.div>
+  </AnimatePresence>
+</div>
+```
+
+The way I show the second view only when it’s exiting is by using keyframes. The initial opacity is 0, and I only change it in the exit animation using variants like this:
+
+```
+const variants = {
+  exit: (transition) => {
+    return {
+      ...transition,
+      opacity: [1, 0],
+      filter: "blur(4px)",
+    };
+  },
+};
+```
+
+We start with opacity 1, which makes it visible again.
+Custom exit animation
+Each view can’t have the same animation, because it varies in size. When transitioning from a small view to a larger one, exiting items should scale up. At the same time, when transitioning from a large view to a smaller one, exiting items should scale down to fit the shrinking Island.
+When I was working on these lessons I built a function to calculate the scale, scaleX, and y values. It’s right below in case you are curious.
+
+```
+// This was the function I came up with
+function calculateScale(width, lastWidth, height, lastHeight) {
+  // Adjust the scaling factor to account for the differences in widths
+  const scaleFactor = Math.pow(width / lastWidth, 0.4);
+  const scale = Math.round(scaleFactor * 10) / 10; // Rounding to nearest tenth for scale consistency
+ 
+  // Fine-tune y calculation
+  const y = Math.round((height - lastHeight) * 0.23 * 10) / 10; // Adjusted scaling factor to 0.1, rounded to nearest tenth
+ 
+  // If the island's width is smaller, push the exiting view to the inside
+  const scaleX = lastWidth > width ? 0.9 : 1;
+ 
+  return {
+    scaleX,
+    scale,
+    y,
+  };
+}
+```
+
+But then I thought that this is not how I built it initially. I actually hardcoded the values for each transition to have granular control to be able to fine-tune it. While this approach is less flexible, to me a Dynamic Island on the web has a finite number of states, so you won’t need to create transitions for hundreds of views.
+After some testing I came up with the following values for the transitions:
+
+```
+const ANIMATION_VARIANTS = {
+  "ring-idle": {
+    scale: 0.9,
+    scaleX: 0.9,
+    bounce: 0.5,
+  },
+  "timer-ring": {
+    scale: 0.7,
+    y: -7.5,
+    bounce: 0.35,
+  },
+  "ring-timer": {
+    scale: 1.4,
+    y: 7.5,
+    bounce: 0.35,
+  },
+  "timer-idle": {
+    scale: 0.7,
+    y: -7.5,
+    bounce: 0.3,
+  },
+};
+```
+
+This approach covers every possible transition. We scale up or down based on dimensions, knowing, for example, that a timer is bigger than the idle state, so we scale the exiting items up accordingly. scaleX is needed to push the exiting items to the center of the Island if it gets narrower. Otherwise, they would bleed out of the Island at a certain point.
+Custom bounce
+The amount of bounce also needs to be adjusted based on the active view. Smaller views require more bounce to be noticeable. If we used the same bounce amount for all animations, smaller views would look fine, but larger views would appear faster since they need more time to settle.
+I took the same approach here—hardcoded bounce values based on the current variant.
+
+```
+const BOUNCE_VARIANTS = {
+  idle: 0.5,
+  "ring-idle": 0.5,
+  "timer-ring": 0.35,
+  "ring-timer": 0.35,
+  "timer-idle": 0.3,
+  "idle-timer": 0.3,
+  "idle-ring": 0.5,
+};
+```
+
+Every time the active view changes we are modifying the variantKey state variable with which we can retrieve the correct animation values. The bounce value is assigned inline, and the animation value is passed through the custom prop of AnimatePresence which we covered earlier.
+
+```
+<motion.div
+  transition={{
+    type: "spring",
+    bounce: BOUNCE_VARIANTS[variantKey],
+  }}
+/>
+ 
+<AnimatePresence
+  mode="popLayout"
+  custom={ANIMATION_VARIANTS[variantKey]}
+>
+  // ...
+</AnimatePresence>
+```
+
+The result
+Everything combined gives us this beautiful, Apple-like result. You might have expected a more sophisticated solution, but I think it’s worth showing that sometimes solutions like this one also give you the expected results. I do this often when I’m prototyping something to save time.
+idleringtimer
+The demo in the sandpack below might have a bugged border-radius when you switch to the timer view for the first time. This happens in the sandpack editor only and is not an issue if you copy and paste it into your own project. I’m working on a fix for this.
+App.jstimer.jsring.js
+```
+"use client";
+
+import { useMemo, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { Ring } from "./ring";
+import { Timer } from "./timer";
+
+export default function DynamicIsland() {
+  const [view, setView] = useState("idle");
+  const [variantKey, setVariantKey] = useState("idle");
+
+  const content = useMemo(() => {
+    switch (view) {
+      case "ring":
+        return <Ring />;
+      case "timer":
+        return <Timer />;
+      case "idle":
+        return <div className="h-7" />;
+    }
+  }, [view]);
+
+  return (
+    <div className="h-[200px]">
+      <div className="relative flex h-full w-full flex-col justify-between">
+        <motion.div
+          layout
+          transition={{
+            type: "spring",
+            bounce: BOUNCE_VARIANTS[variantKey],
+          }}
+          style={{ borderRadius: 32 }}
+          className="mx-auto w-fit min-w-[100px] overflow-hidden rounded-full bg-black"
+        >
+          <motion.div
+            transition={{
+              type: "spring",
+              bounce: BOUNCE_VARIANTS[variantKey],
+            }}
+            initial={{
+              scale: 0.9,
+              opacity: 0,
+              filter: "blur(5px)",
+              originX: 0.5,
+              originY: 0.5,
+            }}
+            animate={{
+              scale: 1,
+              opacity: 1,
+              filter: "blur(0px)",
+              originX: 0.5,
+              originY: 0.5,
+              transition: {
+                delay: 0.05,
+              },
+            }}
+            key={view}
+          >
+            {content}
+          </motion.div>
+        </motion.div>
+
+        <div className="pointer-events-none absolute top-0 left-1/2 flex h-[200px] w-[300px] -translate-x-1/2 items-start justify-center">
+          <AnimatePresence
+            mode="popLayout"
+            custom={ANIMATION_VARIANTS[variantKey]}
+          >
+            <motion.div
+              initial={{ opacity: 0 }}
+              exit="exit"
+              variants={variants}
+              key={view}
+            >
+              {content}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        <div className="flex w-full justify-center gap-4">
+          {["idle", "ring", "timer"].map((v) => (
+            <button
+              type="button"
+              className="h-10 w-32 rounded-full bg-white px-2.5 py-1.5 text-sm font-medium text-gray-900 capitalize shadow-sm ring-1 ring-gray-300/50 ring-inset hover:bg-gray-50"
+              onClick={() => {
+                setView(v);
+                setVariantKey(`${view}-${v}`);
+              }}
+              key={v}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const variants = {
+  exit: (transition) => {
+    return {
+      ...transition,
+      opacity: [1, 0],
+      filter: "blur(5px)",
+    };
+  },
+};
+
+const ANIMATION_VARIANTS = {
+  "ring-idle": {
+    scale: 0.9,
+    scaleX: 0.9,
+    bounce: 0.5,
+  },
+  "timer-ring": {
+    scale: 0.7,
+    y: -7.5,
+    bounce: 0.35,
+  },
+  "ring-timer": {
+    scale: 1.4,
+    y: 7.5,
+    bounce: 0.35,
+  },
+  "timer-idle": {
+    scale: 0.7,
+    y: -7.5,
+    bounce: 0.3,
+  },
+};
+
+const BOUNCE_VARIANTS = {
+  idle: 0.5,
+  "ring-idle": 0.5,
+  "timer-ring": 0.35,
+  "ring-timer": 0.35,
+  "timer-idle": 0.3,
+  "idle-timer": 0.3,
+  "idle-ring": 0.5,
+};
+```
+Copy page

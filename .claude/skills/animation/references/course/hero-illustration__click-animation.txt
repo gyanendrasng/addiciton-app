@@ -1,0 +1,1906 @@
+FundamentalsWalkthroughsModule 01Family DrawerThe analysisFirst animationsCrossfadeThe finishing touchModule 02Dynamic IslandThe DesignRing viewTimer viewMorph effectModule 03Navigation menuKnow your toolsAnimating the menuClosing thoughtsModule 04Hero illustrationSVG introductionLines and dashesRotationClick animationClock animationPolishClick animation
+In this lesson we’ll build the click animation. We’ll layer transform-based animations, path morphing, and stroke dash effects with careful timing to make everything feel unified.
+What we’re working with
+The hand SVG we’ll be working with has three main elements:
+
+Background: We’ll scale this when the hand clicks for extra
+feedback.
+Hand: A single <path> element we’ll morph between resting and clicked shapes.
+Three lines: All <line> elements are of the same length and will be animate with the strokeDashoffset method discussed in the previous lesson.
+
+
+Notice the data-animate attributes on each element below. We’ll use these to target elements for animation without needing refs. The data-index attribute will be used to distinguish between the lines to select animation values and for staggered timing.
+
+```
+<svg width="125" height="119" viewBox="0 0 125 119">
+  <g>
+    <g data-animate="background">
+      <path d="..." />
+    </g>
+ 
+    <path data-animate="hand" d="..." />
+ 
+    <line data-animate="line" data-index="2" ... />
+    <line data-animate="line" data-index="1" ... />
+    <line data-animate="line" data-index="0" ... />
+  </g>
+</svg>
+```
+
+Why useAnimate?
+Before we dive in, let’s talk about why we’re using useAnimate instead of Motion’s declarative props like initial, animate, whileHover, etc.
+Those work great for simple cases, but here we’re coordinating multiple SVG elements at once - pulse the background, move the hand, morph the hand shape, and draw in three motion lines with staggered timing. All triggered from different events (hover, click, idle timer) with precise coordination between them.
+A declarative approach would require managing animation states:
+
+```
+const [animationState, setAnimationState] = useState("idle"); // idle, hover, leave, click
+const [canClick, setCanClick] = useState(false);
+```
+
+Every state change triggers a re-render, even though we’re just updating animation phases.
+Then there’s path morphing - there’s no declarative way to interpolate between SVG paths, so we’re forced into imperative code regardless:
+
+```
+const handPathProgress = useMotionValue(0);
+const handPath = useTransform(handPathProgress, [0, 1], handPaths);
+ 
+useEffect(() => {
+  // Manually animate path for each state: hover, click, idle, leave...
+  if (animationState === "hover") {
+    animate(handPathProgress, [0, 1, 0], {
+      /* timing config */
+    });
+  }
+  // ... more state checks
+}, [animationState]);
+```
+
+Now we’re managing both declarative variants (for the background and lines) and imperative animations (for the path) simultaneously.
+The biggest pain is coordinating completion. When the user’s mouse leaves, we need to wait for all the “leave” animations to finish before starting the idle loop. With declarative variants, there’s no built-in way to await completion across multiple elements, so we’d need completion tracking:
+
+```
+const [leaveCompleted, setLeaveCompleted] = useState({
+  background: false,
+  hand: false,
+  lines: false,
+});
+ 
+// Add onAnimationComplete to every element
+<motion.g
+  animate={animationState}
+  onAnimationComplete={() => {
+    setLeaveCompleted((prev) => ({ ...prev, background: true }));
+  }}
+/>;
+ 
+// Then check when everything's done
+useEffect(() => {
+  if (
+    animationState === "leave" &&
+    leaveCompleted.background &&
+    leaveCompleted.hand &&
+    leaveCompleted.lines
+  ) {
+    setAnimationState("idle"); // Finally start idle loop
+  }
+}, [animationState, leaveCompleted]);
+```
+
+That’s a lot of ceremony for “wait for these animations to finish, then start the next one”.
+With useAnimate, we get imperative control that lets us orchestrate everything from event handlers. We can coordinate timing, sequence animations, and wait for completion naturally - without the state management overhead. Let’s see how this works.
+Getting started
+First, we need to convert our static SVG elements to motion components and import the useAnimate hook:
+
+```
+import { useAnimate, motion } from "motion/react";
+ 
+export default function ClickAnimation() {
+  const [scope, animate] = useAnimate();
+ 
+  return (
+    <svg width="125" height="119" viewBox="0 0 125 119" fill="none">
+      {/* Scope defines the boundary for our animate() selectors */}
+      <motion.g
+        ref={scope}
+        onMouseEnter={() => {}}
+        onMouseLeave={() => {}}
+      >
+        {/* Each element gets a data-animate attribute for targeting */}
+        <motion.g data-animate="background" filter="...">
+          <path d="..." />
+        </motion.g>
+ 
+        <motion.path data-animate="hand" d="..." />
+ 
+        {/* data-index helps us distinguish between lines */}
+        <motion.line data-animate="ray" data-index="2" ... />
+        <motion.line data-animate="ray" data-index="1" ... />
+        <motion.line data-animate="ray" data-index="0" ... />
+      </motion.g>
+    </svg>
+  );
+}
+```
+
+Notice how the background is wrapped in a motion.g (group), but the hand and lines are motion.path and motion.line directly. This is intentional.
+Groups serve multiple purposes in SVG animations. The outer group wraps all our elements together so we can attach event handlers and apply animations to the entire illustration. The background gets its own group because it has a filter effect applied - we’ll animate the group rather than the path directly to keep the filter styling unchanged. The hand and lines can be animated directly since they don’t need this separation.
+This pattern also lets you layer multiple animations on the same element by wrapping it in nested groups, where each group handles a different transform. We’ll see this in action in the next lessons.
+The scope ref on the outer group defines the boundary for our animate() function - it tells Motion which part of the DOM to search when we use selectors.
+The background scale effect
+Now let’s add the background transform animation. The animate function takes three arguments: a selector, animation values, and options where we can define our transition values.
+
+```
+const [scope, animate] = useAnimate();
+ 
+const handleMouseEnter = () => {
+  animate(
+    "[data-animate='background']",
+    { transform: ["scale(1)", "scale(0.97)", "scale(1.01)", "scale(1)"] },
+    { duration: 0.53, ease: easeOut },
+  );
+};
+ 
+return (
+  <svg
+    width="125"
+    height="119"
+    viewBox="0 0 125 119"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className="overflow-visible"
+  >
+    <g ref={scope} onMouseEnter={handleMouseEnter}>
+      <motion.g data-animate="background">
+        <path d="..." />
+      </motion.g>
+    </g>
+  </svg>
+);
+```
+
+Let’s break down what’s happening here.
+We’re calling useAnimate which gives us a scope ref and an animate function. The ref gets attached to a parent <g> element, creating a scope for our animations. Any element inside this scope can be targeted by our animate function.
+When the mouse enters, we use animate with a CSS selector "[data-animate='background']" to find our background element. This is more flexible than using refs when you need to animate multiple elements.
+The animation itself is a keyframe sequence. We pass an array of transform values creating compress → overshoot → settle.
+We don’t need to explicitly define transform-box: fill-box style on the motion.g element as motion does this by default on SVG elements, and sets the transform-origin to 50% 50% (or center) which is exactly what we need here.
+We also set overflow: visible on the SVG to make sure that the SVG doesn’t clip the background path when it overshoots the SVG bounds.
+Hover over the background to see the animation.
+Moving the hand into position
+Looking at the full animation, you’ll see the background scaling is delayed. It doesn’t happen when you hover - it syncs with the click for a more cohesive feel.
+
+The hand needs to shift position to center the index finger with the middle line. Finding these values takes some trial and error - I used CSS transforms directly in the browser console until it felt right: translateX(-4px) translateY(3px) rotate(25deg).
+We’ll also use the times option which let’s us change the timing of each keyframe. Each value in the times array is a value between 0 and 1, representing when that keyframe occurs during the animation’s duration. For example, with times: [0, 0.4] on a 1s animation, the second keyframe happens at 0.4s (40% through).
+Now let’s add the transform keyframes and coordinate the animations:
+
+```
+const handleMouseEnter = () => {
+  // Background: delayed start
+  animate(
+    "[data-animate='background']",
+    { transform: ["scale(1)", "scale(0.97)", "scale(1.01)", "scale(1)"] },
+    {
+      duration: 0.53,
+      ease: easeOut,
+      times: [0, 0.2, 0.6, 1],
+      delay: 0.2, // Syncs with hand path morphing
+    },
+  );
+ 
+  // Hand: moves into position
+  animate(
+    "[data-animate='hand']",
+    {
+      transform: [
+        "translateX(0px) translateY(0px) rotate(0deg)",
+        "translateX(-4px) translateY(3px) rotate(25deg)",
+      ],
+    },
+    {
+      duration: 0.53,
+      times: [0, 0.4],
+      ease: easeInOut,
+    },
+  );
+};
+ 
+const handleMouseLeave = () => {
+  animate("[data-animate='hand']", {
+    transform: "translateX(0px) translateY(0px) rotate(0deg)",
+  });
+};
+```
+
+The hand reaches its final position at 40% through the animation (times: [0, 0.4]), while the background starts later with a 0.2s delay. This layered timing, elements starting and finishing at different moments, makes the animation feel more organic than if everything moved in lockstep.
+We also added a handleMouseLeave callback to reset the hand to its initial position when the mouse leaves the hand.
+Hover over the hand below to see the effect of our implementation above using the times option.
+
+Path morphing: the clicking motion
+To sell the “click” animation, we could take the easy route and scale the hand down. But with Motion’s useTransform, we can morph the SVG path itself - animating the index finger into a clicking position.
+From the previous lesson, you know a path is a set of commands that draw a shape. useTransform can interpolate between two paths as long as they have the same structure and number of points. Our hand paths both have the same sequence of move and curve commands, making them perfect for simple interpolation.
+If you needed to morph between very different paths (different number of points or command types), you’d use a library like flubber - here’s an example from Motion’s docs. But for our matching paths, useTransform is all we need.
+The pattern for path morphing with Motion looks like this:
+
+```
+const handPaths = [
+  "M58.5431 71.4419C60.2401...", // open hand
+  "M58.7957 70.4997C60.4927...", // clicking hand
+];
+ 
+const handPathProgress = useMotionValue(0);
+const handPath = useTransform(handPathProgress, [0, 1], handPaths);
+ 
+// In the animation:
+animate(handPathProgress, [0, 1, 0], {
+  duration: 0.53,
+  times: [0.4, 0.6, 0.9],
+  ease: easeOut,
+});
+ 
+// In the JSX:
+<motion.path d={handPath} />;
+```
+
+Here’s how this works. We create a useMotionValue for the animation progress, then useTransform converts that progress into interpolated SVG paths. We pass it the progress value, the input range [0, 1], and the two paths to morph between. When the progress value changes, the path automatically updates.
+When we animate the progress from 0 → 1 → 0, we get open hand → clicking hand → open hand. The times array controls when these transitions happen - the hand starts morphing at 40% through the animation, reaches full curl at 60%, and returns to open by 90%.
+
+```
+"use client";
+
+import {
+  motion,
+  useAnimate,
+  useMotionValue,
+  useTransform,
+  easeOut,
+  easeInOut,
+} from "motion/react";
+
+const handPaths = [
+  "M58.5431 71.4419C60.2401 71.6239 61.3091 69.6649 60.2391 68.3369L49.2671 54.7189C48.6804 53.9554 48.4158 52.9927 48.5299 52.0366C48.6439 51.0805 49.1275 50.207 49.8773 49.6028C50.6271 48.9987 51.5835 48.712 52.542 48.804C53.5004 48.8959 54.3849 49.3593 55.0061 50.0949L58.3501 54.2449C58.8429 54.8569 59.5061 55.3089 60.2559 55.5437C61.0057 55.7785 61.8083 55.7855 62.5621 55.5639L70.6681 53.1809C72.8705 52.5335 75.23 52.6775 77.3372 53.5881C79.4444 54.4987 81.1663 56.1184 82.2041 58.1659L84.9681 63.6179C85.7915 65.2412 86.0321 67.098 85.6498 68.8775C85.2675 70.657 84.2855 72.2511 82.8681 73.3929L74.6611 80.0039C73.7139 80.7673 72.604 81.3028 71.417 81.5691C70.23 81.8355 68.9976 81.8255 67.8151 81.5399L55.1911 78.4919C54.2783 78.2707 53.4839 77.7106 52.9688 76.9252C52.4537 76.1399 52.2566 75.188 52.4174 74.2627C52.5781 73.3374 53.0848 72.5078 53.8346 71.9422C54.5844 71.3766 55.5212 71.1173 56.4551 71.2169L58.5431 71.4419Z",
+  "M58.7957 70.4997C60.4927 70.6817 61.3092 69.6653 60.2392 68.3373L51.8366 57.8368C51.2499 57.0733 50.867 55.9897 50.981 55.0336C51.0951 54.0776 51.5787 53.204 52.3285 52.5999C53.0783 51.9958 54.0347 51.7091 54.9931 51.801C55.9516 51.893 56.7918 52.4457 57.413 53.1813L58.3502 54.2453C58.8429 54.8573 59.5062 55.3093 60.256 55.5441C61.0058 55.7789 61.8084 55.7859 62.5622 55.5643L70.6681 53.1813C72.8705 52.5339 75.23 52.6779 77.3373 53.5885C79.4445 54.4991 81.1664 56.1187 82.2042 58.1663L84.9682 63.6183C85.7915 65.2416 86.0322 67.0984 85.6499 68.8778C85.2676 70.6573 84.2855 72.2515 82.8682 73.3933L74.6611 80.0043C73.714 80.7677 72.604 81.3032 71.417 81.5695C70.23 81.8358 68.9977 81.8258 67.8151 81.5403L55.5115 77.3318C54.5988 77.1105 53.8043 76.5504 53.2892 75.765C52.7742 74.9797 52.577 74.0279 52.7378 73.1025C52.8986 72.1772 53.4052 71.3476 54.155 70.782C54.9048 70.2165 55.8416 69.9572 56.7755 70.0567L58.7957 70.4997Z",
+];
+
+export default function ClickAnimation() {
+  const [scope, animate] = useAnimate();
+  const handPathProgress = useMotionValue(0);
+  const handPath = useTransform(handPathProgress, [0, 1], handPaths);
+
+  const handleMouseEnter = () => {
+    animate(
+      "[data-animate='background']",
+      { transform: ["scale(1)", "scale(0.97)", "scale(1.01)", "scale(1)"] },
+      {
+        duration: 0.55,
+        times: [0, 0.2, 0.6, 1],
+        ease: easeOut,
+        delay: 0.2,
+      },
+    );
+
+    animate(
+      "[data-animate='hand']",
+      {
+        transform: [
+          "translateX(0px) translateY(0px) rotate(0deg)",
+          "translateX(-4px) translateY(3px) rotate(25deg)",
+        ],
+      },
+      {
+        duration: 0.55,
+        times: [0, 0.4],
+        ease: easeInOut,
+      },
+    );
+
+    animate(handPathProgress, [0, 1, 0], {
+      duration: 0.55,
+      times: [0.4, 0.6, 0.9],
+      ease: easeOut,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    animate("[data-animate='hand']", {
+      transform: "translateX(0px) translateY(0px) rotate(0deg)",
+    });
+  };
+
+  return (
+    <svg
+      width="125"
+      height="119"
+      viewBox="0 0 125 119"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ overflow: "visible" }}
+    >
+      <g
+        ref={scope}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <g data-animate="background" filter="url(#filter0_i_269_329)">
+          <path
+            d="M14.9066 10.1626C18.9956 19.8776 23.4146 30.4306 25.5696 35.7296C26.3866 37.7366 25.6336 39.9006 23.7896 41.0376L12.7336 47.8526C12.1283 48.2259 11.6112 48.7261 11.218 49.3187C10.8249 49.9113 10.5651 50.5822 10.4565 51.285C10.3479 51.9879 10.3932 52.7059 10.5891 53.3895C10.7851 54.0732 11.1272 54.7061 11.5916 55.2446L19.3536 64.2426C20.1213 65.1328 20.5445 66.2687 20.5464 67.4443C20.5482 68.6198 20.1286 69.757 19.3636 70.6496L1.34161 91.6766C-1.69439 95.2186 1.45161 100.601 6.02761 99.6936L31.5196 94.6386C32.7448 94.3961 34.0163 94.6291 35.0758 95.2904C36.1353 95.9516 36.9033 96.9915 37.2236 98.1986L41.1356 112.939C42.0306 116.315 46.0646 117.704 48.8496 115.596L60.7136 106.617C61.5752 105.964 62.628 105.614 63.7089 105.62C64.7897 105.627 65.8382 105.99 66.6916 106.654L81.3666 118.048C84.2466 120.285 88.4726 118.716 89.1956 115.143L92.5696 98.4746C92.7053 97.8046 92.9793 97.1702 93.3741 96.6121C93.7689 96.054 94.2759 95.5844 94.8625 95.2333C95.4491 94.8823 96.1026 94.6575 96.781 94.5733C97.4595 94.4892 98.148 94.5475 98.8026 94.7446L115.49 99.7726C119.957 101.119 123.61 96.0636 120.929 92.2446L106.344 71.4686C105.633 70.4557 105.331 69.2121 105.497 67.986C105.663 66.7599 106.286 65.6417 107.241 64.8546L123.32 51.6046C126.177 49.2496 125.503 44.7016 122.085 43.2766L109.166 37.8936C108.082 37.4416 107.195 36.6163 106.667 35.5672C106.139 34.5182 106.004 33.3146 106.287 32.1746L111.616 10.7026C112.746 6.15163 107.466 2.75564 103.793 5.67064L84.2026 21.2176C81.6436 23.2486 77.8526 22.2626 76.6066 19.2426L70.0536 3.36063C68.5736 -0.224368 63.7166 -0.762367 61.4886 2.41363L51.8826 16.1066C51.1775 17.1118 50.1215 17.8164 48.9227 18.0819C47.7239 18.3473 46.4692 18.1542 45.4056 17.5406L21.8996 3.98863C17.8176 1.63563 13.0796 5.82063 14.9066 10.1626Z"
+            fill="#F8F8F8"
+          />
+        </g>
+
+        <motion.path
+          d={handPath}
+          data-animate="hand"
+          initial={{
+            transform: "translateX(0px) translateY(0px) rotate(0deg)",
+          }}
+          fill="#989898"
+        />
+
+        <line
+          data-animate="line"
+          data-index="2"
+          x1="62.8541"
+          y1="39.4586"
+          x2="64.5595"
+          y2="34.929"
+          strokeOpacity="0.5"
+          strokeWidth="3.7"
+          strokeLinecap="round"
+          stroke="#989898"
+        />
+        <line
+          data-animate="line"
+          data-index="1"
+          x1="53.0633"
+          y1="38.313"
+          x2="52.2947"
+          y2="33.5344"
+          strokeOpacity="0.5"
+          strokeWidth="3.7"
+          strokeLinecap="round"
+          stroke="#989898"
+        />
+        <line
+          data-animate="line"
+          data-index="0"
+          x1="44.047"
+          y1="42.3621"
+          x2="41.0059"
+          y2="38.5917"
+          strokeOpacity="0.5"
+          strokeWidth="3.7"
+          strokeLinecap="round"
+          stroke="#989898"
+        />
+      </g>
+
+      <defs>
+        <filter
+          id="filter0_i_269_329"
+          x="0"
+          y="0"
+          width="124.969"
+          height="118.764"
+          filterUnits="userSpaceOnUse"
+          colorInterpolationFilters="sRGB"
+        >
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
+          <feBlend
+            mode="normal"
+            in="SourceGraphic"
+            in2="BackgroundImageFix"
+            result="shape"
+          />
+          <feColorMatrix
+            in="SourceAlpha"
+            type="matrix"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+            result="hardAlpha"
+          />
+          <feOffset />
+          <feGaussianBlur stdDeviation="6.551" />
+          <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
+          <feColorMatrix
+            type="matrix"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.03 0"
+          />
+          <feBlend
+            mode="normal"
+            in2="shape"
+            result="effect1_innerShadow_269_329"
+          />
+        </filter>
+      </defs>
+    </svg>
+  );
+}
+```
+
+Drawing the motion lines
+Now we’ll animate the motion lines using the stroke dash technique from the previous lessons.
+Here’s how we set up each line:
+
+```
+<motion.line
+  data-animate="line"
+  data-index="0"
+  initial={{ strokeDashoffset: 0 }}
+  strokeLinecap="round"
+  strokeDasharray="1px 1.1px"
+  pathLength="1"
+/>
+```
+
+We’re normalizing the line length with pathLength="1" and creating a dashed pattern with strokeDasharray="1px 1.1px". Notice the gap (1.1px) is larger than the dash (1px).
+This is because strokeLinecap="round" extends the caps (ends) beyond the mathematical dash length. If the gap matched the dash exactly, those rounded caps would peek through when the line should be fully hidden. The extra 0.1px ensures clean visibility control when we offset the pattern.
+Now let’s get all the lines within the scope and animate them to their appropriate values:
+
+```
+// Initial offsets create the staggered appearance
+const defaultStrokeDashoffsets = [0, 0.55, 0.9];
+ 
+const handleMouseEnter = () => {
+  // ...other animations
+ 
+  scope.current.querySelectorAll("[data-animate='line']").forEach((line) => {
+    const index = line.getAttribute("data-index");
+    animate(
+      line,
+      // Middle line (1) draws fully, outer lines stop at 60%
+      { strokeDashoffset: index === "1" ? [1.05, 0] : [1.05, 0.4] },
+      {
+        delay: index === "1" ? 0 : 0.04, // Delay the outer lines
+        duration: 0.53,
+        times: [0.7, 0.9], // Quick reveal
+      }
+    );
+  });
+};
+ 
+const handleMouseLeave = () => {
+  // ...other animations
+ 
+  // Animate the lines back to their default positions
+  scope.current.querySelectorAll("[data-animate='line']").forEach((line) => {
+    const index = line.getAttribute("data-index");
+    animate(line, {
+      strokeDashoffset: defaultStrokeDashoffsets[Number(index)],
+    });
+  });
+};
+```
+
+Each line starts at a different offset (defined in defaultStrokeDashoffsets), creating that initial staggered appearance. On hover, we animate them from 1.05 (hidden) to their target positions - the middle line draws in fully (0), while the outer lines stop at 0.4, showing only 60% of their length.
+The middle line starts immediately while the others have a 40ms delay, and all animations happen in 20% of the duration (times: [0.7, 0.9]). This creates a quick, punchy reveal that coincides with the hand path animation ending.
+On mouse leave, each line returns to its initial offset position, ready for the next interaction.
+
+```
+"use client";
+
+import {
+  motion,
+  useAnimate,
+  useMotionValue,
+  useTransform,
+  easeOut,
+  easeInOut,
+} from "motion/react";
+
+const handPaths = [
+  "M58.5431 71.4419C60.2401 71.6239 61.3091 69.6649 60.2391 68.3369L49.2671 54.7189C48.6804 53.9554 48.4158 52.9927 48.5299 52.0366C48.6439 51.0805 49.1275 50.207 49.8773 49.6028C50.6271 48.9987 51.5835 48.712 52.542 48.804C53.5004 48.8959 54.3849 49.3593 55.0061 50.0949L58.3501 54.2449C58.8429 54.8569 59.5061 55.3089 60.2559 55.5437C61.0057 55.7785 61.8083 55.7855 62.5621 55.5639L70.6681 53.1809C72.8705 52.5335 75.23 52.6775 77.3372 53.5881C79.4444 54.4987 81.1663 56.1184 82.2041 58.1659L84.9681 63.6179C85.7915 65.2412 86.0321 67.098 85.6498 68.8775C85.2675 70.657 84.2855 72.2511 82.8681 73.3929L74.6611 80.0039C73.7139 80.7673 72.604 81.3028 71.417 81.5691C70.23 81.8355 68.9976 81.8255 67.8151 81.5399L55.1911 78.4919C54.2783 78.2707 53.4839 77.7106 52.9688 76.9252C52.4537 76.1399 52.2566 75.188 52.4174 74.2627C52.5781 73.3374 53.0848 72.5078 53.8346 71.9422C54.5844 71.3766 55.5212 71.1173 56.4551 71.2169L58.5431 71.4419Z",
+  "M58.7957 70.4997C60.4927 70.6817 61.3092 69.6653 60.2392 68.3373L51.8366 57.8368C51.2499 57.0733 50.867 55.9897 50.981 55.0336C51.0951 54.0776 51.5787 53.204 52.3285 52.5999C53.0783 51.9958 54.0347 51.7091 54.9931 51.801C55.9516 51.893 56.7918 52.4457 57.413 53.1813L58.3502 54.2453C58.8429 54.8573 59.5062 55.3093 60.256 55.5441C61.0058 55.7789 61.8084 55.7859 62.5622 55.5643L70.6681 53.1813C72.8705 52.5339 75.23 52.6779 77.3373 53.5885C79.4445 54.4991 81.1664 56.1187 82.2042 58.1663L84.9682 63.6183C85.7915 65.2416 86.0322 67.0984 85.6499 68.8778C85.2676 70.6573 84.2855 72.2515 82.8682 73.3933L74.6611 80.0043C73.714 80.7677 72.604 81.3032 71.417 81.5695C70.23 81.8358 68.9977 81.8258 67.8151 81.5403L55.5115 77.3318C54.5988 77.1105 53.8043 76.5504 53.2892 75.765C52.7742 74.9797 52.577 74.0279 52.7378 73.1025C52.8986 72.1772 53.4052 71.3476 54.155 70.782C54.9048 70.2165 55.8416 69.9572 56.7755 70.0567L58.7957 70.4997Z",
+];
+
+const defaultStrokeDashoffsets = [0, 0.55, 0.9];
+
+export default function ClickAnimation() {
+  const [scope, animate] = useAnimate();
+  const handPathProgress = useMotionValue(0);
+  const handPath = useTransform(handPathProgress, [0, 1], handPaths);
+
+  const handleMouseEnter = () => {
+    animate(
+      "[data-animate='background']",
+      { transform: ["scale(1)", "scale(0.97)", "scale(1.01)", "scale(1)"] },
+      {
+        duration: 0.53,
+        times: [0, 0.2, 0.6, 1],
+        ease: easeOut,
+        delay: 0.2,
+      },
+    );
+
+    animate(
+      "[data-animate='hand']",
+      {
+        transform: [
+          "translateX(0px) translateY(0px) rotate(0deg)",
+          "translateX(-4px) translateY(3px) rotate(25deg)",
+        ],
+      },
+      {
+        duration: 0.53,
+        times: [0, 0.4],
+        ease: easeInOut,
+      },
+    );
+
+    animate(handPathProgress, [0, 1, 0], {
+      duration: 0.53,
+      times: [0.4, 0.6, 0.9],
+      ease: easeOut,
+    });
+
+    scope.current.querySelectorAll("[data-animate='line']").forEach((line) => {
+      const index = line.getAttribute("data-index");
+      animate(
+        line,
+        {
+          strokeDashoffset: index === "1" ? [1.05, 0] : [1.05, 0.4],
+        },
+        {
+          delay: index === "1" ? 0 : 0.04,
+          duration: 0.53,
+          times: [0.7, 0.9],
+        },
+      );
+    });
+  };
+
+  const handleMouseLeave = () => {
+    animate("[data-animate='hand']", {
+      transform: "translateX(0px) translateY(0px) rotate(0deg)",
+    });
+
+    scope.current.querySelectorAll("[data-animate='line']").forEach((line) => {
+      const index = line.getAttribute("data-index");
+      animate(line, {
+        strokeDashoffset: defaultStrokeDashoffsets[Number(index)],
+      });
+    });
+  };
+
+  return (
+    <svg
+      width="125"
+      height="119"
+      viewBox="0 0 125 119"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="overflow-visible!"
+    >
+      <g
+        ref={scope}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <motion.g
+          data-animate="background"
+          initial={{ transform: "scale(1)" }}
+          filter="url(#filter0_i_269_329)"
+        >
+          <path
+            d="M14.9066 10.1626C18.9956 19.8776 23.4146 30.4306 25.5696 35.7296C26.3866 37.7366 25.6336 39.9006 23.7896 41.0376L12.7336 47.8526C12.1283 48.2259 11.6112 48.7261 11.218 49.3187C10.8249 49.9113 10.5651 50.5822 10.4565 51.285C10.3479 51.9879 10.3932 52.7059 10.5891 53.3895C10.7851 54.0732 11.1272 54.7061 11.5916 55.2446L19.3536 64.2426C20.1213 65.1328 20.5445 66.2687 20.5464 67.4443C20.5482 68.6198 20.1286 69.757 19.3636 70.6496L1.34161 91.6766C-1.69439 95.2186 1.45161 100.601 6.02761 99.6936L31.5196 94.6386C32.7448 94.3961 34.0163 94.6291 35.0758 95.2904C36.1353 95.9516 36.9033 96.9915 37.2236 98.1986L41.1356 112.939C42.0306 116.315 46.0646 117.704 48.8496 115.596L60.7136 106.617C61.5752 105.964 62.628 105.614 63.7089 105.62C64.7897 105.627 65.8382 105.99 66.6916 106.654L81.3666 118.048C84.2466 120.285 88.4726 118.716 89.1956 115.143L92.5696 98.4746C92.7053 97.8046 92.9793 97.1702 93.3741 96.6121C93.7689 96.054 94.2759 95.5844 94.8625 95.2333C95.4491 94.8823 96.1026 94.6575 96.781 94.5733C97.4595 94.4892 98.148 94.5475 98.8026 94.7446L115.49 99.7726C119.957 101.119 123.61 96.0636 120.929 92.2446L106.344 71.4686C105.633 70.4557 105.331 69.2121 105.497 67.986C105.663 66.7599 106.286 65.6417 107.241 64.8546L123.32 51.6046C126.177 49.2496 125.503 44.7016 122.085 43.2766L109.166 37.8936C108.082 37.4416 107.195 36.6163 106.667 35.5672C106.139 34.5182 106.004 33.3146 106.287 32.1746L111.616 10.7026C112.746 6.15163 107.466 2.75564 103.793 5.67064L84.2026 21.2176C81.6436 23.2486 77.8526 22.2626 76.6066 19.2426L70.0536 3.36063C68.5736 -0.224368 63.7166 -0.762367 61.4886 2.41363L51.8826 16.1066C51.1775 17.1118 50.1215 17.8164 48.9227 18.0819C47.7239 18.3473 46.4692 18.1542 45.4056 17.5406L21.8996 3.98863C17.8176 1.63563 13.0796 5.82063 14.9066 10.1626Z"
+            fill="#F8F8F8"
+          />
+        </motion.g>
+
+        <motion.path
+          d={handPath}
+          data-animate="hand"
+          initial={{
+            transform: "translateX(0%) translateY(0%) rotate(0deg)",
+          }}
+          fill="#989898"
+        />
+
+        <motion.line
+          data-animate="line"
+          data-index="2"
+          initial={{ strokeDashoffset: defaultStrokeDashoffsets[2] }}
+          x1="62.8541"
+          y1="39.4586"
+          x2="64.5595"
+          y2="34.929"
+          strokeOpacity="0.5"
+          strokeWidth="3.7"
+          strokeLinecap="round"
+          strokeDasharray="1px 1.1px"
+          pathLength="1"
+          stroke="#989898"
+        />
+        <motion.line
+          data-animate="line"
+          data-index="1"
+          initial={{ strokeDashoffset: defaultStrokeDashoffsets[1] }}
+          x1="53.0633"
+          y1="38.313"
+          x2="52.2947"
+          y2="33.5344"
+          strokeOpacity="0.5"
+          strokeWidth="3.7"
+          strokeLinecap="round"
+          strokeDasharray="1px 1.1px"
+          pathLength="1"
+          stroke="#989898"
+        />
+        <motion.line
+          data-animate="line"
+          data-index="0"
+          initial={{ strokeDashoffset: defaultStrokeDashoffsets[0] }}
+          x1="44.047"
+          y1="42.3621"
+          x2="41.0059"
+          y2="38.5917"
+          strokeOpacity="0.5"
+          strokeWidth="3.7"
+          strokeLinecap="round"
+          strokeDasharray="1px 1.1px"
+          pathLength="1"
+          stroke="#989898"
+        />
+      </g>
+
+      <defs>
+        <filter
+          id="filter0_i_269_329"
+          x="0"
+          y="0"
+          width="124.969"
+          height="118.764"
+          filterUnits="userSpaceOnUse"
+          colorInterpolationFilters="sRGB"
+        >
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
+          <feBlend
+            mode="normal"
+            in="SourceGraphic"
+            in2="BackgroundImageFix"
+            result="shape"
+          />
+          <feColorMatrix
+            in="SourceAlpha"
+            type="matrix"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+            result="hardAlpha"
+          />
+          <feOffset />
+          <feGaussianBlur stdDeviation="6.551" />
+          <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
+          <feColorMatrix
+            type="matrix"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.03 0"
+          />
+          <feBlend
+            mode="normal"
+            in2="shape"
+            result="effect1_innerShadow_269_329"
+          />
+        </filter>
+      </defs>
+    </svg>
+  );
+}
+```
+
+Making it clickable
+Let’s make this actually clickable. After the hover animation completes, clicking the hand should trigger the animations immediately without the gradual buildup.
+The click handler is similar to hover, but with different timing:
+
+```
+const handleClick = () => {
+  // Background: no delay on click (instant feedback)
+  animate(
+    "[data-animate='background']",
+    { transform: ["scale(1)", "scale(0.97)", "scale(1.01)", "scale(1)"] },
+    {
+      duration: 0.53,
+      times: [0.1, 0.3, 0.65, 1],
+      ease: easeOut,
+    }
+  );
+ 
+  // Hand: already in position from hover, just maintain it
+  animate("[data-animate='hand']", {
+    transform: "translateX(-4px) translateY(3px) rotate(25deg)",
+  });
+ 
+  // Path morph
+  animate(handPathProgress, [0, 1, 0], {
+    duration: 0.53,
+    times: [0.1, 0.3, 0.6],
+    ease: easeOut,
+  });
+ 
+  scope.current.querySelectorAll("[data-animate='line']").forEach((line) => {
+    const index = Number(line.getAttribute("data-index"));
+    animate(
+      line,
+      {
+        strokeDashoffset: index === 1 ? [1.05, 0] : [1.05, 0.4],
+      },
+      {
+        delay: index === 1 ? 0 : 0.04,
+        duration: 0.53,
+        times: [0.4, 0.6],
+      }
+    );
+  });
+};
+```
+
+Notice the differences from hover.
+There’s no delay on the background - the click should feel instant and responsive.
+For the hand transform, we pass a single value instead of keyframes. Since the hand is already in position from the hover, we just keep it there.
+The path morph uses different times - starting at 0.1 instead of 0.4 to make the finger curl happen sooner. The proportions within the animation stay the same (20% to curl, 30% to uncurl), just happening earlier in the sequence.
+Now, to make sure clicks only work after the hover animation finished, we can use a ref to track when it completes. This way we don’t trigger any re-renders as we’re not accessing the value inside JSX, so no need to reach for useState with this setup.
+
+```
+const hasAnimationCompletedRef = useRef(false);
+ 
+const handleMouseEnter = async () => {
+  // ...other animations
+ 
+  await animate(handPathProgress, [0, 1, 0], {
+    duration: 0.53,
+    times: [0.4, 0.6, 0.9],
+    ease: easeOut,
+  });
+ 
+  hasAnimationCompletedRef.current = true;
+};
+ 
+const handleMouseLeave = () => {
+  hasAnimationCompletedRef.current = false;
+ 
+  // ...animations
+};
+ 
+const handleClick = () => {
+  if (!hasAnimationCompletedRef.current) return;
+ 
+  // ...animations
+};
+```
+
+We make handleMouseEnter async and await one of the animations. Since they all have the same duration, any one works. Once it completes, we set the ref to true.
+We reset it to false in handleMouseLeave, and guard against early clicks in handleClick.
+Alternative approaches include await Promise.all([...animations]) if durations differ, or using .then() notation. Pick what fits your style or animation setup.
+
+```
+"use client";
+import { useRef } from "react";
+import {
+  motion,
+  useAnimate,
+  useMotionValue,
+  useTransform,
+  easeOut,
+  easeInOut,
+} from "motion/react";
+
+const handPaths = [
+  "M58.5431 71.4419C60.2401 71.6239 61.3091 69.6649 60.2391 68.3369L49.2671 54.7189C48.6804 53.9554 48.4158 52.9927 48.5299 52.0366C48.6439 51.0805 49.1275 50.207 49.8773 49.6028C50.6271 48.9987 51.5835 48.712 52.542 48.804C53.5004 48.8959 54.3849 49.3593 55.0061 50.0949L58.3501 54.2449C58.8429 54.8569 59.5061 55.3089 60.2559 55.5437C61.0057 55.7785 61.8083 55.7855 62.5621 55.5639L70.6681 53.1809C72.8705 52.5335 75.23 52.6775 77.3372 53.5881C79.4444 54.4987 81.1663 56.1184 82.2041 58.1659L84.9681 63.6179C85.7915 65.2412 86.0321 67.098 85.6498 68.8775C85.2675 70.657 84.2855 72.2511 82.8681 73.3929L74.6611 80.0039C73.7139 80.7673 72.604 81.3028 71.417 81.5691C70.23 81.8355 68.9976 81.8255 67.8151 81.5399L55.1911 78.4919C54.2783 78.2707 53.4839 77.7106 52.9688 76.9252C52.4537 76.1399 52.2566 75.188 52.4174 74.2627C52.5781 73.3374 53.0848 72.5078 53.8346 71.9422C54.5844 71.3766 55.5212 71.1173 56.4551 71.2169L58.5431 71.4419Z",
+  "M58.7957 70.4997C60.4927 70.6817 61.3092 69.6653 60.2392 68.3373L51.8366 57.8368C51.2499 57.0733 50.867 55.9897 50.981 55.0336C51.0951 54.0776 51.5787 53.204 52.3285 52.5999C53.0783 51.9958 54.0347 51.7091 54.9931 51.801C55.9516 51.893 56.7918 52.4457 57.413 53.1813L58.3502 54.2453C58.8429 54.8573 59.5062 55.3093 60.256 55.5441C61.0058 55.7789 61.8084 55.7859 62.5622 55.5643L70.6681 53.1813C72.8705 52.5339 75.23 52.6779 77.3373 53.5885C79.4445 54.4991 81.1664 56.1187 82.2042 58.1663L84.9682 63.6183C85.7915 65.2416 86.0322 67.0984 85.6499 68.8778C85.2676 70.6573 84.2855 72.2515 82.8682 73.3933L74.6611 80.0043C73.714 80.7677 72.604 81.3032 71.417 81.5695C70.23 81.8358 68.9977 81.8258 67.8151 81.5403L55.5115 77.3318C54.5988 77.1105 53.8043 76.5504 53.2892 75.765C52.7742 74.9797 52.577 74.0279 52.7378 73.1025C52.8986 72.1772 53.4052 71.3476 54.155 70.782C54.9048 70.2165 55.8416 69.9572 56.7755 70.0567L58.7957 70.4997Z",
+];
+
+const defaultStrokeDashoffsets = [0, 0.55, 0.9];
+
+export default function ClickAnimation() {
+  const [scope, animate] = useAnimate();
+  const handPathProgress = useMotionValue(0);
+  const handPath = useTransform(handPathProgress, [0, 1], handPaths);
+  const hasAnimationCompletedRef = useRef(false);
+
+  const handleMouseEnter = async () => {
+    animate(
+      "[data-animate='background']",
+      { transform: ["scale(1)", "scale(0.97)", "scale(1.01)", "scale(1)"] },
+      {
+        duration: 0.53,
+        times: [0, 0.2, 0.6, 1],
+        ease: easeOut,
+        delay: 0.2,
+      },
+    );
+
+    animate(
+      "[data-animate='hand']",
+      {
+        transform: [
+          "translateX(0px) translateY(0px) rotate(0deg)",
+          "translateX(-4px) translateY(3px) rotate(25deg)",
+        ],
+      },
+      {
+        duration: 0.53,
+        times: [0, 0.4],
+        ease: easeInOut,
+      },
+    );
+
+    scope.current.querySelectorAll("[data-animate='line']").forEach((line) => {
+      const index = line.getAttribute("data-index");
+      animate(
+        line,
+        {
+          strokeDashoffset: index === "1" ? [1.05, 0] : [1.05, 0.4],
+        },
+        {
+          delay: index === "1" ? 0 : 0.04,
+          duration: 0.53,
+          times: [0.7, 0.9],
+        },
+      );
+    });
+
+    await animate(handPathProgress, [0, 1, 0], {
+      duration: 0.53,
+      times: [0.4, 0.6, 0.9],
+      ease: easeOut,
+    });
+
+    hasAnimationCompletedRef.current = true;
+  };
+
+  const handleMouseLeave = async () => {
+    hasAnimationCompletedRef.current = false;
+
+    animate("[data-animate='hand']", {
+      transform: "translateX(0px) translateY(0px) rotate(0deg)",
+    });
+
+    await Promise.all(
+      Array.from(scope.current.querySelectorAll("[data-animate='line']")).map(
+        (line) => {
+          const index = line.getAttribute("data-index");
+          return animate(line, {
+            strokeDashoffset: defaultStrokeDashoffsets[Number(index)],
+          });
+        },
+      ),
+    );
+  };
+
+  const handleClick = () => {
+    if (!hasAnimationCompletedRef.current) return;
+
+    animate(
+      "[data-animate='background']",
+      { transform: ["scale(1)", "scale(0.97)", "scale(1.01)", "scale(1)"] },
+      {
+        duration: 0.53,
+        times: [0.1, 0.3, 0.65, 1],
+        ease: easeOut,
+      },
+    );
+
+    animate("[data-animate='hand']", {
+      transform: "translateX(-4px) translateY(3px) rotate(25deg)",
+    });
+
+    animate(handPathProgress, [0, 1, 0], {
+      duration: 0.53,
+      times: [0.1, 0.3, 0.6],
+      ease: easeOut,
+    });
+
+    scope.current.querySelectorAll("[data-animate='line']").forEach((line) => {
+      const index = Number(line.getAttribute("data-index"));
+      animate(
+        line,
+        {
+          strokeDashoffset: index === 1 ? [1.05, 0] : [1.05, 0.4],
+        },
+        {
+          delay: index === 1 ? 0 : 0.04,
+          duration: 0.53,
+          times: [0.4, 0.6],
+        },
+      );
+    });
+  };
+
+  return (
+    <svg
+      width="125"
+      height="119"
+      viewBox="0 0 125 119"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="overflow-visible!"
+    >
+      <g
+        ref={scope}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
+      >
+        <motion.g
+          data-animate="background"
+          initial={{ transform: "scale(1)" }}
+          filter="url(#filter0_i_269_329)"
+        >
+          <path
+            d="M14.9066 10.1626C18.9956 19.8776 23.4146 30.4306 25.5696 35.7296C26.3866 37.7366 25.6336 39.9006 23.7896 41.0376L12.7336 47.8526C12.1283 48.2259 11.6112 48.7261 11.218 49.3187C10.8249 49.9113 10.5651 50.5822 10.4565 51.285C10.3479 51.9879 10.3932 52.7059 10.5891 53.3895C10.7851 54.0732 11.1272 54.7061 11.5916 55.2446L19.3536 64.2426C20.1213 65.1328 20.5445 66.2687 20.5464 67.4443C20.5482 68.6198 20.1286 69.757 19.3636 70.6496L1.34161 91.6766C-1.69439 95.2186 1.45161 100.601 6.02761 99.6936L31.5196 94.6386C32.7448 94.3961 34.0163 94.6291 35.0758 95.2904C36.1353 95.9516 36.9033 96.9915 37.2236 98.1986L41.1356 112.939C42.0306 116.315 46.0646 117.704 48.8496 115.596L60.7136 106.617C61.5752 105.964 62.628 105.614 63.7089 105.62C64.7897 105.627 65.8382 105.99 66.6916 106.654L81.3666 118.048C84.2466 120.285 88.4726 118.716 89.1956 115.143L92.5696 98.4746C92.7053 97.8046 92.9793 97.1702 93.3741 96.6121C93.7689 96.054 94.2759 95.5844 94.8625 95.2333C95.4491 94.8823 96.1026 94.6575 96.781 94.5733C97.4595 94.4892 98.148 94.5475 98.8026 94.7446L115.49 99.7726C119.957 101.119 123.61 96.0636 120.929 92.2446L106.344 71.4686C105.633 70.4557 105.331 69.2121 105.497 67.986C105.663 66.7599 106.286 65.6417 107.241 64.8546L123.32 51.6046C126.177 49.2496 125.503 44.7016 122.085 43.2766L109.166 37.8936C108.082 37.4416 107.195 36.6163 106.667 35.5672C106.139 34.5182 106.004 33.3146 106.287 32.1746L111.616 10.7026C112.746 6.15163 107.466 2.75564 103.793 5.67064L84.2026 21.2176C81.6436 23.2486 77.8526 22.2626 76.6066 19.2426L70.0536 3.36063C68.5736 -0.224368 63.7166 -0.762367 61.4886 2.41363L51.8826 16.1066C51.1775 17.1118 50.1215 17.8164 48.9227 18.0819C47.7239 18.3473 46.4692 18.1542 45.4056 17.5406L21.8996 3.98863C17.8176 1.63563 13.0796 5.82063 14.9066 10.1626Z"
+            fill="#F8F8F8"
+          />
+        </motion.g>
+
+        <motion.path
+          d={handPath}
+          data-animate="hand"
+          initial={{
+            transform: "translateX(0%) translateY(0%) rotate(0deg)",
+          }}
+          fill="#989898"
+        />
+
+        <motion.line
+          data-animate="line"
+          data-index="2"
+          initial={{ strokeDashoffset: defaultStrokeDashoffsets[2] }}
+          x1="62.8541"
+          y1="39.4586"
+          x2="64.5595"
+          y2="34.929"
+          strokeOpacity="0.5"
+          strokeWidth="3.7"
+          strokeLinecap="round"
+          strokeDasharray="1px 1.1px"
+          pathLength="1"
+          stroke="#989898"
+        />
+        <motion.line
+          data-animate="line"
+          data-index="1"
+          initial={{ strokeDashoffset: defaultStrokeDashoffsets[1] }}
+          x1="53.0633"
+          y1="38.313"
+          x2="52.2947"
+          y2="33.5344"
+          strokeOpacity="0.5"
+          strokeWidth="3.7"
+          strokeLinecap="round"
+          strokeDasharray="1px 1.1px"
+          pathLength="1"
+          stroke="#989898"
+        />
+        <motion.line
+          data-animate="line"
+          data-index="0"
+          initial={{ strokeDashoffset: defaultStrokeDashoffsets[0] }}
+          x1="44.047"
+          y1="42.3621"
+          x2="41.0059"
+          y2="38.5917"
+          strokeOpacity="0.5"
+          strokeWidth="3.7"
+          strokeLinecap="round"
+          strokeDasharray="1px 1.1px"
+          pathLength="1"
+          stroke="#989898"
+        />
+      </g>
+
+      <defs>
+        <filter
+          id="filter0_i_269_329"
+          x="0"
+          y="0"
+          width="124.969"
+          height="118.764"
+          filterUnits="userSpaceOnUse"
+          colorInterpolationFilters="sRGB"
+        >
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
+          <feBlend
+            mode="normal"
+            in="SourceGraphic"
+            in2="BackgroundImageFix"
+            result="shape"
+          />
+          <feColorMatrix
+            in="SourceAlpha"
+            type="matrix"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+            result="hardAlpha"
+          />
+          <feOffset />
+          <feGaussianBlur stdDeviation="6.551" />
+          <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
+          <feColorMatrix
+            type="matrix"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.03 0"
+          />
+          <feBlend
+            mode="normal"
+            in2="shape"
+            result="effect1_innerShadow_269_329"
+          />
+        </filter>
+      </defs>
+    </svg>
+  );
+}
+```
+
+When users aren’t interacting with the animation, we want it to subtly loop to catch their attention. This means starting an infinite animation on mount, then restarting it when the user’s mouse leaves.
+Here’s how we set up a repeating idle animation:
+
+```
+const startIdleAnimations = () => {
+  // Background pulse
+  animate(
+    "[data-animate='background']",
+    { transform: ["scale(1)", "scale(0.97)", "scale(1.01)", "scale(1)"] },
+    {
+      duration: 0.63,
+      times: [0.2, 0.5, 0.85, 1],
+      ease: easeOut,
+      repeat: Infinity,
+      repeatType: "loop",
+      repeatDelay: 2,
+      delay: 2, // Initial delay before first loop
+    }
+  );
+ 
+  // Hand path morphing
+  animate(handPathProgress, [0, 1, 0], {
+    duration: 0.63,
+    times: [0.1, 0.4, 0.8],
+    ease: easeOut,
+    repeat: Infinity,
+    repeatType: "loop",
+    repeatDelay: 2,
+    delay: 2,
+  });
+ 
+  // Motion lines: hidden then back to default state
+  scope.current.querySelectorAll("[data-animate='line']").forEach((line) => {
+    const index = Number(line.getAttribute("data-index"));
+    animate(
+      line,
+      {
+        strokeDashoffset: [
+          defaultStrokeDashoffsets[index], // Start at default position
+          1.05, // Hidden
+          defaultStrokeDashoffsets[index], // Back to default
+        ],
+      },
+      {
+        duration: 0.63,
+        // First 2 keyframes have the same time so that the line starts
+        // at it’s default position and is hidden instantly,
+        // then animates back to default position by 0.8
+        times: [0.5, 0.5, 0.8],
+        repeat: Infinity,
+        repeatType: "loop",
+        repeatDelay: 2,
+        delay: 2,
+      }
+    );
+  });
+};
+```
+
+The key properties here are repeat: Infinity to loop forever, and repeatDelay: 2 to wait 2 seconds between loops.
+We also use delay: 2 for the initial delay. This gives users time to discover the hover interaction naturally before the idle animation starts drawing attention. (Note that I made the delay and repeatDelay short here so you don’t have to wait too long to see it happen. In the hero animation we have repeatDelay: 6, delay: 2.5 on the first idle animation and delay: 6 for all subsequent idle animations.)
+Now we need to start these animations when the component mounts:
+
+```
+useEffect(() => {
+  startIdleAnimations();
+}, []);
+```
+
+Finally, we need to restart the idle animations when the user’s mouse leaves. But there’s a coordination challenge - if we start the idle loop while the hand and lines are still resetting to their initial positions, the animations will conflict.
+The solution is to wait for the reset animations to complete before starting the idle loop:
+
+```
+const handleMouseLeave = async () => {
+  hasAnimationCompletedRef.current = false;
+ 
+  animate("[data-animate='hand']", {
+    transform: "translateX(0px) translateY(0px) rotate(0deg)",
+  });
+ 
+  await Promise.all(
+    Array.from(scope.current.querySelectorAll("[data-animate='line']")).map(
+      (line) => {
+        const index = line.getAttribute("data-index");
+        return animate(line, {
+          strokeDashoffset: defaultStrokeDashoffsets[Number(index)],
+        });
+      }
+    )
+  );
+ 
+  startIdleAnimations();
+};
+```
+
+We use Promise.all with .map() to wait for all line animations to complete before calling startIdleAnimations(). This ensures a smooth transition from the interactive state back to the idle loop.
+
+```
+"use client";
+
+import { useRef, useEffect } from "react";
+import {
+  motion,
+  useAnimate,
+  useMotionValue,
+  useTransform,
+  easeOut,
+  easeInOut,
+} from "motion/react";
+
+const handPaths = [
+  "M58.5431 71.4419C60.2401 71.6239 61.3091 69.6649 60.2391 68.3369L49.2671 54.7189C48.6804 53.9554 48.4158 52.9927 48.5299 52.0366C48.6439 51.0805 49.1275 50.207 49.8773 49.6028C50.6271 48.9987 51.5835 48.712 52.542 48.804C53.5004 48.8959 54.3849 49.3593 55.0061 50.0949L58.3501 54.2449C58.8429 54.8569 59.5061 55.3089 60.2559 55.5437C61.0057 55.7785 61.8083 55.7855 62.5621 55.5639L70.6681 53.1809C72.8705 52.5335 75.23 52.6775 77.3372 53.5881C79.4444 54.4987 81.1663 56.1184 82.2041 58.1659L84.9681 63.6179C85.7915 65.2412 86.0321 67.098 85.6498 68.8775C85.2675 70.657 84.2855 72.2511 82.8681 73.3929L74.6611 80.0039C73.7139 80.7673 72.604 81.3028 71.417 81.5691C70.23 81.8355 68.9976 81.8255 67.8151 81.5399L55.1911 78.4919C54.2783 78.2707 53.4839 77.7106 52.9688 76.9252C52.4537 76.1399 52.2566 75.188 52.4174 74.2627C52.5781 73.3374 53.0848 72.5078 53.8346 71.9422C54.5844 71.3766 55.5212 71.1173 56.4551 71.2169L58.5431 71.4419Z",
+  "M58.7957 70.4997C60.4927 70.6817 61.3092 69.6653 60.2392 68.3373L51.8366 57.8368C51.2499 57.0733 50.867 55.9897 50.981 55.0336C51.0951 54.0776 51.5787 53.204 52.3285 52.5999C53.0783 51.9958 54.0347 51.7091 54.9931 51.801C55.9516 51.893 56.7918 52.4457 57.413 53.1813L58.3502 54.2453C58.8429 54.8573 59.5062 55.3093 60.256 55.5441C61.0058 55.7789 61.8084 55.7859 62.5622 55.5643L70.6681 53.1813C72.8705 52.5339 75.23 52.6779 77.3373 53.5885C79.4445 54.4991 81.1664 56.1187 82.2042 58.1663L84.9682 63.6183C85.7915 65.2416 86.0322 67.0984 85.6499 68.8778C85.2676 70.6573 84.2855 72.2515 82.8682 73.3933L74.6611 80.0043C73.714 80.7677 72.604 81.3032 71.417 81.5695C70.23 81.8358 68.9977 81.8258 67.8151 81.5403L55.5115 77.3318C54.5988 77.1105 53.8043 76.5504 53.2892 75.765C52.7742 74.9797 52.577 74.0279 52.7378 73.1025C52.8986 72.1772 53.4052 71.3476 54.155 70.782C54.9048 70.2165 55.8416 69.9572 56.7755 70.0567L58.7957 70.4997Z",
+];
+
+const defaultStrokeDashoffsets = [0, 0.55, 0.9];
+
+export default function ClickAnimation() {
+  const [scope, animate] = useAnimate();
+  const handPathProgress = useMotionValue(0);
+  const handPath = useTransform(handPathProgress, [0, 1], handPaths);
+  const hasAnimationCompletedRef = useRef(false);
+
+  const startIdleAnimations = () => {
+    animate(
+      "[data-animate='background']",
+      { transform: ["scale(1)", "scale(0.97)", "scale(1.01)", "scale(1)"] },
+      {
+        duration: 0.63,
+        times: [0.2, 0.5, 0.85, 1],
+        ease: easeOut,
+        repeat: Infinity,
+        repeatType: "loop",
+        repeatDelay: 2,
+        delay: 2,
+      },
+    );
+
+    animate(handPathProgress, [0, 1, 0], {
+      duration: 0.63,
+      times: [0.1, 0.4, 0.8],
+      ease: easeOut,
+      repeat: Infinity,
+      repeatType: "loop",
+      repeatDelay: 2,
+      delay: 2,
+    });
+
+    scope.current.querySelectorAll("[data-animate='line']").forEach((line) => {
+      const index = Number(line.getAttribute("data-index"));
+      animate(
+        line,
+        {
+          strokeDashoffset: [
+            defaultStrokeDashoffsets[index],
+            1.05,
+            defaultStrokeDashoffsets[index],
+          ],
+        },
+        {
+          duration: 0.63,
+          times: [0.5, 0.5, 0.8],
+          repeat: Infinity,
+          repeatType: "loop",
+          repeatDelay: 2,
+          delay: 2,
+        },
+      );
+    });
+  };
+
+  useEffect(() => {
+    startIdleAnimations();
+  }, []);
+
+  const handleMouseEnter = async () => {
+    animate(
+      "[data-animate='background']",
+      { transform: ["scale(1)", "scale(0.97)", "scale(1.01)", "scale(1)"] },
+      {
+        duration: 0.53,
+        times: [0, 0.2, 0.6, 1],
+        ease: easeOut,
+        delay: 0.2,
+      },
+    );
+
+    animate(
+      "[data-animate='hand']",
+      {
+        transform: [
+          "translateX(0px) translateY(0px) rotate(0deg)",
+          "translateX(-4px) translateY(3px) rotate(25deg)",
+        ],
+      },
+      {
+        duration: 0.53,
+        times: [0, 0.4],
+        ease: easeInOut,
+      },
+    );
+
+    scope.current.querySelectorAll("[data-animate='line']").forEach((line) => {
+      const index = line.getAttribute("data-index");
+      animate(
+        line,
+        {
+          strokeDashoffset: index === "1" ? [1.05, 0] : [1.05, 0.4],
+        },
+        {
+          delay: index === "1" ? 0 : 0.04,
+          duration: 0.53,
+          times: [0.7, 0.9],
+        },
+      );
+    });
+
+    await animate(handPathProgress, [0, 1, 0], {
+      duration: 0.53,
+      times: [0.4, 0.6, 0.9],
+      ease: easeOut,
+    });
+
+    hasAnimationCompletedRef.current = true;
+  };
+
+  const handleMouseLeave = async () => {
+    hasAnimationCompletedRef.current = false;
+
+    animate("[data-animate='hand']", {
+      transform: "translateX(0px) translateY(0px) rotate(0deg)",
+    });
+
+    await Promise.all(
+      Array.from(scope.current.querySelectorAll("[data-animate='line']")).map(
+        (line) => {
+          const index = line.getAttribute("data-index");
+          return animate(line, {
+            strokeDashoffset: defaultStrokeDashoffsets[Number(index)],
+          });
+        },
+      ),
+    );
+
+    startIdleAnimations();
+  };
+
+  const handleClick = () => {
+    if (!hasAnimationCompletedRef.current) return;
+
+    animate(
+      "[data-animate='background']",
+      { transform: ["scale(1)", "scale(0.97)", "scale(1.01)", "scale(1)"] },
+      {
+        duration: 0.53,
+        times: [0.1, 0.3, 0.65, 1],
+        ease: easeOut,
+      },
+    );
+
+    animate("[data-animate='hand']", {
+      transform: "translateX(-4px) translateY(3px) rotate(25deg)",
+    });
+
+    animate(handPathProgress, [0, 1, 0], {
+      duration: 0.53,
+      times: [0.1, 0.3, 0.6],
+      ease: easeOut,
+    });
+
+    scope.current.querySelectorAll("[data-animate='line']").forEach((line) => {
+      const index = Number(line.getAttribute("data-index"));
+      animate(
+        line,
+        {
+          strokeDashoffset: index === 1 ? [1.05, 0] : [1.05, 0.4],
+        },
+        {
+          delay: index === 1 ? 0 : 0.04,
+          duration: 0.53,
+          times: [0.4, 0.6],
+        },
+      );
+    });
+  };
+
+  return (
+    <svg
+      width="125"
+      height="119"
+      viewBox="0 0 125 119"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="overflow-visible!"
+    >
+      <g
+        ref={scope}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
+      >
+        <motion.g
+          data-animate="background"
+          initial={{ transform: "scale(1)" }}
+          filter="url(#filter0_i_269_329)"
+        >
+          <path
+            d="M14.9066 10.1626C18.9956 19.8776 23.4146 30.4306 25.5696 35.7296C26.3866 37.7366 25.6336 39.9006 23.7896 41.0376L12.7336 47.8526C12.1283 48.2259 11.6112 48.7261 11.218 49.3187C10.8249 49.9113 10.5651 50.5822 10.4565 51.285C10.3479 51.9879 10.3932 52.7059 10.5891 53.3895C10.7851 54.0732 11.1272 54.7061 11.5916 55.2446L19.3536 64.2426C20.1213 65.1328 20.5445 66.2687 20.5464 67.4443C20.5482 68.6198 20.1286 69.757 19.3636 70.6496L1.34161 91.6766C-1.69439 95.2186 1.45161 100.601 6.02761 99.6936L31.5196 94.6386C32.7448 94.3961 34.0163 94.6291 35.0758 95.2904C36.1353 95.9516 36.9033 96.9915 37.2236 98.1986L41.1356 112.939C42.0306 116.315 46.0646 117.704 48.8496 115.596L60.7136 106.617C61.5752 105.964 62.628 105.614 63.7089 105.62C64.7897 105.627 65.8382 105.99 66.6916 106.654L81.3666 118.048C84.2466 120.285 88.4726 118.716 89.1956 115.143L92.5696 98.4746C92.7053 97.8046 92.9793 97.1702 93.3741 96.6121C93.7689 96.054 94.2759 95.5844 94.8625 95.2333C95.4491 94.8823 96.1026 94.6575 96.781 94.5733C97.4595 94.4892 98.148 94.5475 98.8026 94.7446L115.49 99.7726C119.957 101.119 123.61 96.0636 120.929 92.2446L106.344 71.4686C105.633 70.4557 105.331 69.2121 105.497 67.986C105.663 66.7599 106.286 65.6417 107.241 64.8546L123.32 51.6046C126.177 49.2496 125.503 44.7016 122.085 43.2766L109.166 37.8936C108.082 37.4416 107.195 36.6163 106.667 35.5672C106.139 34.5182 106.004 33.3146 106.287 32.1746L111.616 10.7026C112.746 6.15163 107.466 2.75564 103.793 5.67064L84.2026 21.2176C81.6436 23.2486 77.8526 22.2626 76.6066 19.2426L70.0536 3.36063C68.5736 -0.224368 63.7166 -0.762367 61.4886 2.41363L51.8826 16.1066C51.1775 17.1118 50.1215 17.8164 48.9227 18.0819C47.7239 18.3473 46.4692 18.1542 45.4056 17.5406L21.8996 3.98863C17.8176 1.63563 13.0796 5.82063 14.9066 10.1626Z"
+            fill="#F8F8F8"
+          />
+        </motion.g>
+
+        <motion.path
+          d={handPath}
+          data-animate="hand"
+          initial={{
+            transform: "translateX(0%) translateY(0%) rotate(0deg)",
+          }}
+          fill="#989898"
+        />
+
+        <motion.line
+          data-animate="line"
+          data-index="2"
+          initial={{ strokeDashoffset: defaultStrokeDashoffsets[2] }}
+          x1="62.8541"
+          y1="39.4586"
+          x2="64.5595"
+          y2="34.929"
+          strokeOpacity="0.5"
+          strokeWidth="3.7"
+          strokeLinecap="round"
+          strokeDasharray="1px 1.1px"
+          pathLength="1"
+          stroke="#989898"
+        />
+        <motion.line
+          data-animate="line"
+          data-index="1"
+          initial={{ strokeDashoffset: defaultStrokeDashoffsets[1] }}
+          x1="53.0633"
+          y1="38.313"
+          x2="52.2947"
+          y2="33.5344"
+          strokeOpacity="0.5"
+          strokeWidth="3.7"
+          strokeLinecap="round"
+          strokeDasharray="1px 1.1px"
+          pathLength="1"
+          stroke="#989898"
+        />
+        <motion.line
+          data-animate="line"
+          data-index="0"
+          initial={{ strokeDashoffset: defaultStrokeDashoffsets[0] }}
+          x1="44.047"
+          y1="42.3621"
+          x2="41.0059"
+          y2="38.5917"
+          strokeOpacity="0.5"
+          strokeWidth="3.7"
+          strokeLinecap="round"
+          strokeDasharray="1px 1.1px"
+          pathLength="1"
+          stroke="#989898"
+        />
+      </g>
+
+      <defs>
+        <filter
+          id="filter0_i_269_329"
+          x="0"
+          y="0"
+          width="124.969"
+          height="118.764"
+          filterUnits="userSpaceOnUse"
+          colorInterpolationFilters="sRGB"
+        >
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
+          <feBlend
+            mode="normal"
+            in="SourceGraphic"
+            in2="BackgroundImageFix"
+            result="shape"
+          />
+          <feColorMatrix
+            in="SourceAlpha"
+            type="matrix"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+            result="hardAlpha"
+          />
+          <feOffset />
+          <feGaussianBlur stdDeviation="6.551" />
+          <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
+          <feColorMatrix
+            type="matrix"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.03 0"
+          />
+          <feBlend
+            mode="normal"
+            in2="shape"
+            result="effect1_innerShadow_269_329"
+          />
+        </filter>
+      </defs>
+    </svg>
+  );
+}
+```
+
+Refactoring to variants
+At this point, our animation works, but the code is getting messy. We have timing values scattered across event handlers, duplicated animation calls, and it’s hard to see at a glance how the hover animation differs from the click animation.
+Setting up the variants
+Let’s clean this up using a variant pattern - defining all our animation states upfront in a centralized place.
+Here’s what the background variants look like:
+
+```
+// variants.js
+ 
+const DURATION = 0.53;
+ 
+export const backgroundVariants = {
+  initial: {
+    transform: "scale(1)",
+  },
+  hover: {
+    transform: ["scale(1)", "scale(0.97)", "scale(1.01)", "scale(1)"],
+    transition: {
+      duration: DURATION,
+      times: [0, 0.2, 0.6, 1],
+      ease: easeOut,
+      delay: 0.2,
+    },
+  },
+  idle: {
+    transform: ["scale(1)", "scale(0.97)", "scale(1.01)", "scale(1)"],
+    transition: {
+      // ...
+    },
+  },
+  click: {
+    transform: ["scale(1)", "scale(0.97)", "scale(1.01)", "scale(1)"],
+    transition: {
+      // ...
+    },
+  },
+};
+ 
+// ...other variants
+```
+
+Each variant contains both the animation values and transition config. Now when we want to understand how the idle animation differs from hover, we can see it at a glance.
+For elements that need per-item customization, we use functions:
+
+```
+export const lineVariants = {
+  initial: (i) => ({
+    strokeDashoffset: defaultStrokeDashoffsets[i],
+  }),
+  hover: (i) => ({
+    strokeDashoffset: i === 1 ? [1.05, 0] : [1.05, 0.4],
+    transition: {
+      delay: i === 1 ? 0 : 0.04,
+      duration: DURATION,
+      times: [0.7, 0.9],
+    },
+  }),
+  // ... other states
+};
+```
+
+This keeps the per-line differences organized and easy to modify.
+A reusable pattern
+We can also create a hook that wraps useAnimate and extracts transition config:
+
+```
+// use-animate-variant.js
+ 
+export function useAnimateVariant() {
+  const [scope, animate] = useAnimate();
+ 
+  const animateVariant = useCallback(
+    (selector, variant) => {
+      if (!variant) return;
+      const { transition, ...values } = variant;
+      return animate(
+        selector,
+        values,
+        transition ?? {
+          type: "spring",
+          stiffness: 800,
+          damping: 80,
+          mass: 4,
+        }
+      );
+    },
+    [animate]
+  );
+ 
+  return [scope, animateVariant, animate];
+}
+```
+
+This separates transition config from values and provides a fallback transition for any animations without explicit timing. The return values are [scope, animateVariant, animate], so we keep the same motion convention, but prioritize our use-case, making it simpler to reuse the logic in other components.
+So we can now do this:
+
+```
+const [scope, animateVariant, animate] = useAnimateVariant();
+ 
+const playAnimationState = (variant) => {
+  // Simple usage
+  animateVariant('[data-animate="background"]', backgroundVariants[variant]);
+ 
+  // ...other animations
+};
+```
+
+For our click animation, though, we need to coordinate multiple elements and handle path morphing. Let’s build an orchestrator for that.
+Building the orchestrator
+Now let’s build an orchestrator that plays all element animations for a given state:
+
+```
+const [scope, animateVariant, animate] = useAnimateVariant();
+const handPathAnimationRef = useRef(null);
+ 
+const playAnimationState = async (variant, pathConfig) => {
+  // Cleanup: stop any in-flight animations to prevent conflicts
+  handPathAnimationRef.current?.stop();
+  if (!pathConfig?.keyframes) {
+    await animate(handPathProgress, 0);
+  }
+ 
+  // Collect all animations to coordinate with Promise.all
+  const animations = [];
+ 
+  // Animate background
+  animations.push(
+    animateVariant('[data-animate="background"]', backgroundVariants[variant])
+  );
+ 
+  // Animate hand position (skip for idle state)
+  if (variant !== "idle") {
+    animations.push(
+      animateVariant('[data-animate="hand"]', handVariants[variant])
+    );
+  }
+ 
+  // Animate all three lines with per-line variants
+  animations.push(
+    ...Array.from({ length: 3 }, (_, i) => {
+      return animateVariant(
+        `[data-animate="line"][data-index='${i}']`,
+        lineVariants[variant](i)
+      );
+    })
+  );
+ 
+  // Handle path morphing separately (pathConfig for granular control)
+  if (pathConfig) {
+    const pathAnimation = animate(handPathProgress, pathConfig.keyframes, {
+      duration: pathConfig.repeat ? IDLE_DURATION : DURATION,
+      times: pathConfig.times,
+      ease: easeOut,
+      ...(pathConfig.repeat && {
+        repeat: Infinity,
+        repeatType: "loop",
+        repeatDelay: REPEAT_DELAY,
+        delay: REPEAT_DELAY,
+      }),
+    });
+    handPathAnimationRef.current = pathAnimation;
+  }
+ 
+  // Return all animations so caller can await completion
+  return Promise.all(animations);
+};
+```
+
+This function stops any in-flight animations to prevent conflicts, resets the hand path when needed, collects all element animations into an array, and handles path morphing timing. We return the animations array inside a Promise.all so we can await the animation completion if we need to.
+The payoff
+Now our event handlers become much simpler and easier to read:
+
+```
+const startIdleAnimations = async () => {
+  await playAnimationState("idle", {
+    keyframes: [0, 1, 0],
+    times: [0.1, 0.4, 0.8],
+    repeat: true,
+  });
+};
+ 
+const handleMouseEnter = async () => {
+  await playAnimationState("hover", {
+    keyframes: [0, 1, 0],
+    times: [0.4, 0.6, 0.9],
+  });
+  hasAnimationCompletedRef.current = true;
+};
+ 
+const handleMouseLeave = async () => {
+  hasAnimationCompletedRef.current = false;
+  await playAnimationState("initial");
+  startIdleAnimations();
+};
+ 
+const handleClick = () => {
+  if (!hasAnimationCompletedRef.current) return;
+  playAnimationState("click", {
+    keyframes: [0, 1, 0],
+    times: [0.1, 0.3, 0.6],
+  });
+};
+```
+
+Just a single function call per interaction. The intent is crystal clear.
+The benefits of this refactor:
+
+All timing values live in one file - want to make hover snappier? Edit one variant object.
+Each animation state is self-contained, so you can see exactly what happens during "hover" without tracing through multiple functions.
+The orchestrator handles common patterns once instead of repeating them in every handler.
+And as animations grow more complex, this pattern scales much better.
+
+App.jsvariants.jsuse-animate-variant.js
+```
+"use client";
+
+import {
+  motion,
+  useAnimate,
+  useMotionValue,
+  useTransform,
+  easeOut,
+  easeInOut,
+} from "motion/react";
+import { useEffect, useState, useRef } from "react";
+import {
+  backgroundVariants,
+  DURATION,
+  handVariants,
+  IDLE_DURATION,
+  lineVariants,
+  defaultStrokeDashoffsets,
+  REPEAT_DELAY,
+} from "./variants";
+import { useAnimateVariant } from "./use-animate-variant";
+
+const handPaths = [
+  "M58.5431 71.4419C60.2401 71.6239 61.3091 69.6649 60.2391 68.3369L49.2671 54.7189C48.6804 53.9554 48.4158 52.9927 48.5299 52.0366C48.6439 51.0805 49.1275 50.207 49.8773 49.6028C50.6271 48.9987 51.5835 48.712 52.542 48.804C53.5004 48.8959 54.3849 49.3593 55.0061 50.0949L58.3501 54.2449C58.8429 54.8569 59.5061 55.3089 60.2559 55.5437C61.0057 55.7785 61.8083 55.7855 62.5621 55.5639L70.6681 53.1809C72.8705 52.5335 75.23 52.6775 77.3372 53.5881C79.4444 54.4987 81.1663 56.1184 82.2041 58.1659L84.9681 63.6179C85.7915 65.2412 86.0321 67.098 85.6498 68.8775C85.2675 70.657 84.2855 72.2511 82.8681 73.3929L74.6611 80.0039C73.7139 80.7673 72.604 81.3028 71.417 81.5691C70.23 81.8355 68.9976 81.8255 67.8151 81.5399L55.1911 78.4919C54.2783 78.2707 53.4839 77.7106 52.9688 76.9252C52.4537 76.1399 52.2566 75.188 52.4174 74.2627C52.5781 73.3374 53.0848 72.5078 53.8346 71.9422C54.5844 71.3766 55.5212 71.1173 56.4551 71.2169L58.5431 71.4419Z",
+  "M58.7957 70.4997C60.4927 70.6817 61.3092 69.6653 60.2392 68.3373L51.8366 57.8368C51.2499 57.0733 50.867 55.9897 50.981 55.0336C51.0951 54.0776 51.5787 53.204 52.3285 52.5999C53.0783 51.9958 54.0347 51.7091 54.9931 51.801C55.9516 51.893 56.7918 52.4457 57.413 53.1813L58.3502 54.2453C58.8429 54.8573 59.5062 55.3093 60.256 55.5441C61.0058 55.7789 61.8084 55.7859 62.5622 55.5643L70.6681 53.1813C72.8705 52.5339 75.23 52.6779 77.3373 53.5885C79.4445 54.4991 81.1664 56.1187 82.2042 58.1663L84.9682 63.6183C85.7915 65.2416 86.0322 67.0984 85.6499 68.8778C85.2676 70.6573 84.2855 72.2515 82.8682 73.3933L74.6611 80.0043C73.714 80.7677 72.604 81.3032 71.417 81.5695C70.23 81.8358 68.9977 81.8258 67.8151 81.5403L55.5115 77.3318C54.5988 77.1105 53.8043 76.5504 53.2892 75.765C52.7742 74.9797 52.577 74.0279 52.7378 73.1025C52.8986 72.1772 53.4052 71.3476 54.155 70.782C54.9048 70.2165 55.8416 69.9572 56.7755 70.0567L58.7957 70.4997Z",
+];
+
+export default function ClickAnimation() {
+  const [scope, animateVariant, animate] = useAnimateVariant();
+  const handPathProgress = useMotionValue(0);
+  const handPath = useTransform(handPathProgress, [0, 1], handPaths);
+  const handPathAnimationRef = useRef(null);
+  const hasAnimationCompletedRef = useRef(false);
+
+  // Consolidated animation orchestration
+  const playAnimationState = async (
+    // "initial" | "hover" | "idle" | "click"
+    variant,
+    // optional path morphing config: { keyframes: number[]; times: number[]; repeat?: boolean; }
+    pathConfig,
+  ) => {
+    // Stop any in-flight animations
+    handPathAnimationRef.current?.stop();
+    if (!pathConfig?.keyframes) {
+      await animate(handPathProgress, 0);
+    }
+
+    const animations = [];
+
+    // Background
+    animations.push(
+      animateVariant(
+        '[data-animate="background"]',
+        backgroundVariants[variant],
+      ),
+    );
+
+    // Hand (no idle variant)
+    if (variant !== "idle") {
+      animations.push(
+        animateVariant('[data-animate="hand"]', handVariants[variant]),
+      );
+    }
+
+    // Lines (indexed)
+    animations.push(
+      ...Array.from({ length: 3 }, (_, i) => {
+        return animateVariant(
+          `[data-animate="line"][data-index='${i}']`,
+          lineVariants[variant](i),
+        );
+      }),
+    );
+
+    // Animate path morphing if config provided
+    if (pathConfig) {
+      const pathAnimation = animate(handPathProgress, pathConfig.keyframes, {
+        duration: pathConfig.repeat ? IDLE_DURATION : DURATION,
+        times: pathConfig.times,
+        ease: easeOut,
+        ...(pathConfig.repeat && {
+          repeat: Infinity,
+          repeatType: "loop",
+          repeatDelay: REPEAT_DELAY,
+          delay: REPEAT_DELAY,
+        }),
+      });
+      handPathAnimationRef.current = pathAnimation;
+    }
+
+    return Promise.all(animations);
+  };
+
+  const startIdleAnimations = async () => {
+    await playAnimationState("idle", {
+      keyframes: [0, 1, 0],
+      times: [0.1, 0.4, 0.8],
+      repeat: true,
+    });
+  };
+
+  useEffect(() => {
+    startIdleAnimations();
+
+    return () => {
+      handPathAnimationRef.current?.stop();
+    };
+  }, [startIdleAnimations]);
+
+  const handleMouseEnter = async () => {
+    await playAnimationState("hover", {
+      keyframes: [0, 1, 0],
+      times: [0.4, 0.6, 0.9],
+    });
+    hasAnimationCompletedRef.current = true;
+  };
+
+  const handleMouseLeave = async () => {
+    hasAnimationCompletedRef.current = false;
+    await playAnimationState("initial");
+    startIdleAnimations();
+  };
+
+  const handleClick = () => {
+    if (!hasAnimationCompletedRef.current) return;
+    playAnimationState("click", {
+      keyframes: [0, 1, 0],
+      times: [0.1, 0.3, 0.6],
+    });
+  };
+
+  return (
+    <svg
+      width="125"
+      height="119"
+      viewBox="0 0 125 119"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="overflow-visible!"
+    >
+      <g
+        ref={scope}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
+      >
+        <motion.g
+          data-animate="background"
+          initial={backgroundVariants.initial}
+          filter="url(#filter0_i_269_329)"
+        >
+          <path
+            d="M14.9066 10.1626C18.9956 19.8776 23.4146 30.4306 25.5696 35.7296C26.3866 37.7366 25.6336 39.9006 23.7896 41.0376L12.7336 47.8526C12.1283 48.2259 11.6112 48.7261 11.218 49.3187C10.8249 49.9113 10.5651 50.5822 10.4565 51.285C10.3479 51.9879 10.3932 52.7059 10.5891 53.3895C10.7851 54.0732 11.1272 54.7061 11.5916 55.2446L19.3536 64.2426C20.1213 65.1328 20.5445 66.2687 20.5464 67.4443C20.5482 68.6198 20.1286 69.757 19.3636 70.6496L1.34161 91.6766C-1.69439 95.2186 1.45161 100.601 6.02761 99.6936L31.5196 94.6386C32.7448 94.3961 34.0163 94.6291 35.0758 95.2904C36.1353 95.9516 36.9033 96.9915 37.2236 98.1986L41.1356 112.939C42.0306 116.315 46.0646 117.704 48.8496 115.596L60.7136 106.617C61.5752 105.964 62.628 105.614 63.7089 105.62C64.7897 105.627 65.8382 105.99 66.6916 106.654L81.3666 118.048C84.2466 120.285 88.4726 118.716 89.1956 115.143L92.5696 98.4746C92.7053 97.8046 92.9793 97.1702 93.3741 96.6121C93.7689 96.054 94.2759 95.5844 94.8625 95.2333C95.4491 94.8823 96.1026 94.6575 96.781 94.5733C97.4595 94.4892 98.148 94.5475 98.8026 94.7446L115.49 99.7726C119.957 101.119 123.61 96.0636 120.929 92.2446L106.344 71.4686C105.633 70.4557 105.331 69.2121 105.497 67.986C105.663 66.7599 106.286 65.6417 107.241 64.8546L123.32 51.6046C126.177 49.2496 125.503 44.7016 122.085 43.2766L109.166 37.8936C108.082 37.4416 107.195 36.6163 106.667 35.5672C106.139 34.5182 106.004 33.3146 106.287 32.1746L111.616 10.7026C112.746 6.15163 107.466 2.75564 103.793 5.67064L84.2026 21.2176C81.6436 23.2486 77.8526 22.2626 76.6066 19.2426L70.0536 3.36063C68.5736 -0.224368 63.7166 -0.762367 61.4886 2.41363L51.8826 16.1066C51.1775 17.1118 50.1215 17.8164 48.9227 18.0819C47.7239 18.3473 46.4692 18.1542 45.4056 17.5406L21.8996 3.98863C17.8176 1.63563 13.0796 5.82063 14.9066 10.1626Z"
+            fill="#F8F8F8"
+          />
+        </motion.g>
+
+        <motion.path
+          d={handPath}
+          data-animate="hand"
+          initial={handVariants.initial}
+          fill="#989898"
+        />
+
+        <motion.line
+          data-animate="line"
+          data-index="2"
+          initial={lineVariants.initial(2)}
+          x1="62.8541"
+          y1="39.4586"
+          x2="64.5595"
+          y2="34.929"
+          strokeOpacity="0.5"
+          strokeWidth="3.7"
+          strokeLinecap="round"
+          strokeDasharray="1px 1.1px"
+          pathLength="1"
+          stroke="#989898"
+        />
+        <motion.line
+          data-animate="line"
+          data-index="1"
+          initial={lineVariants.initial(1)}
+          x1="53.0633"
+          y1="38.313"
+          x2="52.2947"
+          y2="33.5344"
+          strokeOpacity="0.5"
+          strokeWidth="3.7"
+          strokeLinecap="round"
+          strokeDasharray="1px 1.1px"
+          pathLength="1"
+          stroke="#989898"
+        />
+        <motion.line
+          data-animate="line"
+          data-index="0"
+          initial={lineVariants.initial(0)}
+          x1="44.047"
+          y1="42.3621"
+          x2="41.0059"
+          y2="38.5917"
+          strokeOpacity="0.5"
+          strokeWidth="3.7"
+          strokeLinecap="round"
+          strokeDasharray="1px 1.1px"
+          pathLength="1"
+          stroke="#989898"
+        />
+      </g>
+
+      <defs>
+        <filter
+          id="filter0_i_269_329"
+          x="0"
+          y="0"
+          width="124.969"
+          height="118.764"
+          filterUnits="userSpaceOnUse"
+          colorInterpolationFilters="sRGB"
+        >
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
+          <feBlend
+            mode="normal"
+            in="SourceGraphic"
+            in2="BackgroundImageFix"
+            result="shape"
+          />
+          <feColorMatrix
+            in="SourceAlpha"
+            type="matrix"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+            result="hardAlpha"
+          />
+          <feOffset />
+          <feGaussianBlur stdDeviation="6.551" />
+          <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
+          <feColorMatrix
+            type="matrix"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.03 0"
+          />
+          <feBlend
+            mode="normal"
+            in2="shape"
+            result="effect1_innerShadow_269_329"
+          />
+        </filter>
+      </defs>
+    </svg>
+  );
+}
+```
+
+We’ve covered a lot - coordinated timing, path morphing, stroke animations, and organizing it all with variants. The patterns you’ve learned here will serve you well as you build more complex animations.
+Try experimenting with the timing values or adding your own touches. Small adjustments can completely change the feel of an animation.
+In the next lesson, we’ll apply these techniques to build the clock animation with an interesting easter egg. You’ll see how the same coordination patterns work for different types of motion.Copy page

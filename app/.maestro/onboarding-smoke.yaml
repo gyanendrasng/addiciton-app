@@ -1,0 +1,18 @@
+# Smoke: walk onboarding start on iOS (Expo Go)
+appId: host.exp.Exponent
+---
+- openLink: exp://localhost:8090
+- extendedWaitUntil:
+    visible: "Break the cycle."
+    timeout: 30000
+- takeScreenshot: maestro-welcome
+- tapOn: "Start the 2-minute quiz"
+- extendedWaitUntil:
+    visible: "Your brain can rewire itself in 90 days."
+    timeout: 10000
+- takeScreenshot: maestro-framing
+- tapOn: "I’m ready"
+- extendedWaitUntil:
+    visible: "How often do you watch?"
+    timeout: 10000
+- takeScreenshot: maestro-q1

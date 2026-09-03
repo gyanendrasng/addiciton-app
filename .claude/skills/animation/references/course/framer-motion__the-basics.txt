@@ -1,0 +1,303 @@
+The BasicsWhile Framer Motion is a very powerful animation library and is relatively easy to start with, it still differs from CSS animations. We’ll go over the basics first and get comfortable with the library.
+Anatomy of an animation
+To animate with Framer Motion we need to use the motion element. It’s a wrapper around the native HTML elements that allows us to animate them using Framer Motion’s API.
+Framer Motion importsFramer Motion is now Motion for React. We still use motion imports in this course, but this doesn’t change much, the API of the library is the same. The only difference is the import path. You can read more about it here.
+App.jsstyles.css
+```
+import { motion } from "motion/react";
+import { useState } from "react";
+
+export default function Example() {
+  return (
+    <div className="wrapper">
+      <motion.div className="element" />
+    </div>
+  );
+}
+```
+
+When working with animations you have a start and an end state. In Framer Motion, you can define these states using the initial and animate props. The initial prop defines the starting state of the animation, while the animate prop defines the end state.
+Let’s say we want to create an enter animation for our yellow rectangle. We can define our initial state as follows:
+
+```
+<motion.div
+  initial={{ opacity: 0, scale: 0 }}
+  className="element"
+/>
+```
+
+This will make our element invisible when it renders the first time (at mount time). To define our end state, we simply add an animate prop, and define the properties we want to end up with:
+
+```
+<motion.div
+  initial={{ opacity: 0, scale: 0 }}
+  animate={{ opacity: 1, scale: 1 }}
+  className="element"
+/>
+```
+
+To view our effect, reload the sandbox by pressing on the refresh button in the top right corner.
+App.jsstyles.css
+```
+import { motion } from "motion/react";
+import { useState } from "react";
+
+export default function Example() {
+  return (
+    <div className="wrapper">
+      <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="element"
+      />
+    </div>
+  );
+}
+```
+
+When we inspect a Framer Motion animation we can see that the value we provided isn’t immediately applied. It’s interpolated, which means that the value is gradually changed. That’s because the animation is done in Javascript and not CSS.
+ This is not the element above, but it’s a similar example.
+The animation happens outside of React’s render cycle, so every time the animation updates, it doesn’t trigger a re-render, which is great for performance.
+Transition prop
+By default, Framer Motion will create an appropriate animation for a snappy transition based on the types of value being animated. For instance, physical properties like x or scale will be animated via a spring simulation. Whereas values like opacity or color will be animated with a tween (easing-based).
+We can also define our own transition using the transition prop. It takes in an object with properties like duration, type, delay, and more.
+You can see both of the animation types below.
+SpringEasing
+
+```
+// Spring animation
+<motion.div
+  animate={{
+    x: 100,
+    transition: { type: "spring", duration: 0.5, bounce: 0.2 },
+  }}
+/>
+ 
+// Easing animation
+<motion.div
+  animate={{
+    x: 100,
+    transition: { duration: 0.3, ease: "easeOut" },
+  }}
+/>
+```
+
+Exit animations
+Exit animations in React are hard. AnimatePresence in Framer Motion allows components to animate out when they’re removed from the React tree.
+It has good DX as well. All you need to do is wrap an element you want to animate out with AnimatePresence, and add the exit prop, which works the same way as initial and animate, except it defines the end state of our component when it’s removed.
+
+```
+import { motion, AnimatePresence } from "motion/react"
+ 
+export const MyComponent = ({ isVisible }) => (
+  <AnimatePresence>
+    {isVisible ? (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      />
+    ) : null}
+  </AnimatePresence>
+)
+```
+
+It also has different modes. I often use the wait mode to animate between two elements. The copy button we’ve seen earlier in this lesson is using this mode. When you click the button, the copy icon animates out, and only after that, the checkmark animates in.
+
+
+```
+const variants = {
+  hidden: { opacity: 0, scale: 0.5 },
+  visible: { opacity: 1, scale: 1 },
+};
+ 
+// ...
+ 
+<button aria-label="Copy code snippet" onClick={copy}>
+  <AnimatePresence mode="wait" initial={false}>
+    {copied ? (
+      <motion.span
+        key="checkmark"
+        variants={variants}
+        initial="hidden"
+        animate="visible"
+        exit="hidden"
+      >
+        <CheckmarkIcon />
+      </motion.span>
+    ) : (
+      <motion.span
+        key="copy"
+        variants={variants}
+        initial="hidden"
+        animate="visible"
+        exit="hidden"
+      >
+        <CopyIcon />
+      </motion.span>
+    )}
+  </AnimatePresence>
+</button>
+```
+
+With this type of animations, it’s important to include initial={false} on AnimatePresence. This tells Framer Motion not to animate on the initial render.
+TipIf an animation that involves AnimatePresence is not working as expected, make sure that you have a key prop on the element you’re animating. Otherwise, the component won’t be unmounted and the exit animation won’t be triggered.
+AnimatePresence is also the key for this button animation, which is used on the login page of this course.
+Send me a login link
+Let’s try and recreate it.
+App.jsSpinner.jsxstyles.css
+```
+"use client";
+
+import { useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { Spinner } from "./Spinner";
+import "./styles.css";
+
+const buttonCopy = {
+  idle: "Send me a login link",
+  loading: <Spinner size={16} color="rgba(255, 255, 255, 0.65)" />,
+  success: "Login link sent!",
+};
+
+export default function SmoothButton() {
+  const [buttonState, setButtonState] = useState("idle");
+
+  return (
+    <div className="outer-wrapper">
+      <button
+        className="blue-button"
+        disabled={buttonState !== "idle"}
+        onClick={() => {
+          // This code is just a placeholder
+          setButtonState("loading");
+
+          setTimeout(() => {
+            setButtonState("success");
+          }, 1750);
+
+          setTimeout(() => {
+            setButtonState("idle");
+          }, 3500);
+        }}
+      >
+        <span>{buttonCopy[buttonState]}</span>
+      </button>
+    </div>
+  );
+}
+```
+
+View Solution
+Variants
+We can also make a reusable component out of this, so that it doesn’t have to be used only for this button. Here, I also used variants. Variants are predefined sets of targets which can be then used in the initial, animate, and exit props.
+They can be useful if you find yourself repeating the same animation multiple times. In this case, I knew that enter and exit animation would be the same, so I used it, but there are definitely better use cases for it.
+
+```
+"use client";
+ 
+import { AnimatePresence, motion } from "motion/react";
+ 
+const variants = {
+  initial: { opacity: 0, y: -25 },
+  visible: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: 25 },
+};
+ 
+export function AnimatedState({ children }: { children: React.ReactNode }) {
+  return (
+    <AnimatePresence mode="popLayout" initial={false}>
+      <motion.div
+        initial="initial"
+        animate="visible"
+        exit="exit"
+        variants={variants}
+        transition={{ type: "spring", duration: 0.3, bounce: 0 }}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+```
+
+Animating height
+Framer Motion allows us to animate height from a fixed value to auto. The problem we are having here is that we want to animate from auto to auto, which Framer Motion doesn’t support. But often times we need to animate dynamic heights, like the Family drawer below. We will build the full version of the drawer in the walkthroughs later on by the way!
+ 
+How are we supposed to handle dynamic heights? Below is a simple example where clicking the button changes the content, which results in height change. Try to animate the height automatically when the content changes.
+This one is not easy, it might be tricky, and perhaps frustrating. However, struggling and failing is much more productive than reading through the solution. When I started to learn how to code I didn’t want to struggle and I regret it. There is a small hint in the code below though!
+Show Hint
+App.jsstyles.css
+```
+import { motion } from "motion/react";
+import { useState, useRef, useEffect } from "react";
+import useMeasure from "react-use-measure";
+
+export default function Example() {
+  const [showExtraContent, setShowExtraContent] = useState(false);
+
+  return (
+    <div className="wrapper">
+      <button className="button" onClick={() => setShowExtraContent((b) => !b)}>
+        Toggle height
+      </button>
+      <div className="element">
+        <div className="inner">
+          <h1>Fake Family Drawer</h1>
+          <p>
+            This is a fake family drawer. Animating height is tricky, but
+            satisfying when it works.
+          </p>
+          {showExtraContent ? (
+            <p>
+              This extra content will change the height of the drawer. Some even
+              more content to make the drawer taller and taller and taller...
+            </p>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+View Solution
+When should you use Framer Motion?
+Before we dive into more advanced concepts of Framer Motion, let’s talk about when you should use it.
+I tend to avoid using this library if I can achieve the same effect with CSS in a reasonable amount of time. Basically, I animate all enter and exit animations of UI elements like modals, dropdowns etc. through Radix, as it allows me to animate the exit with CSS.
+
+```
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+ 
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+ 
+.dialog[data-state="open"] {
+  animation: fadeIn 200ms ease-out;
+}
+ 
+.DialogContent[data-state="closed"] {
+  animation: fadeOut 150ms ease-out;
+}
+```
+
+Radix listens for animationstart event, and if an animation started when the open state changed to false they suspend the unmount while the animation plays out.
+Whether to use Framer Motion or not also depends on how sensitive your app is to bundle size. At Vercel, we avoided using Framer Motion in Next.js’ docs, because we wanted to keep the bundle size as small as possible.
+The copy animation below was initially using Framer Motion, as it was easier to build and maintain. But, we ended up switching to CSS animations to not use this library and reduce the bundle size.
+
+But at Clerk, we are already using Framer Motion in our dashboard, so I reach for it more easily there to save time and make the code easier to read and maintain.
+ An animation in Clerk's dashboard that uses Framer Motion.
+Framer Motion also has a guide on how to reduce bundle size which is worth checking out if you are concerned about it.Copy page

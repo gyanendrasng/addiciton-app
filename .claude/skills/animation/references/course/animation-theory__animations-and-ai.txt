@@ -1,0 +1,16 @@
+Animations and AIThe barriers to entry for software engineering have never been lower. Everyone can create apps thanks to AI. This means that just having a working product is no longer enough to stand out as people expect things to work. The focus has shifted to taste.
+Think again about this quote from the taste lesson:
+“In a world of scarcity, we treasure tools.  In a world of abundance, we treasure taste.”Anu Atluru,  Taste is Eating Silicon Valley
+Animations can be a great representation of taste. Motion is hard to get right, so great motion stands out. If it was easy, then you and 7,000+ other people probably would not have enrolled in this course, as it would just be common sense.
+Because great animations are not common sense, AI struggles with them as well. An LLM is trained on lots of data, not all animations in that data set are great. And that’s good news for you, because this course is teaching you something that AI can’t do well yet.
+That’s why a good understanding of motion principles will get more and more valuable. It’s a way to differentiate yourself, your brand, and your product, by showcasing your taste.
+How AI can help you
+This course teaches you a set of principles that help you create great animations. We can feed those principles to an LLM and it will keep these rules in mind when helping you with animations.
+I created a set of skills that can help you with animations. You can view them here:
+View the official animations.dev skills
+How do I use AI?
+I use Claude Code daily when working at Linear or on my personal projects. I try to write the hard parts myself to ensure that I understand the code, but repetitive tasks, or autocompletion for simple things is something that I use a lot.
+I also use DALL·E 3 and Midjourney for image generation. Great visuals make a huge difference when it comes to animations. As an example, I used Midjourney to create images in this course for the Trash interaction, App Store Cards, and Shared Layout Modals.
+Game of the dayA game about vikingsAre you ready? A game about vikings, where you can play as a viking and fight other vikings. You can also build your own viking village and explore the world.The never ending adventureIn this game set in a fairy tale world, players embark on a quest through mystical lands filled with enchanting forests and towering mountains.Midjourney was used to create illustrations used in this component.
+You need to be careful though. With each prompt, you are not only outsourcing labor, but a bit of the thinking, the intuition, and care as well. These things can’t be outsourced. You have to be involved in the process and think deeply about the things you create in order to make something wonderful.
+“The qualities that make something truly excellent come from being deeply involved in the entire process.”Karri Saarinen,  CEO LinearResourcesanimations.dev skills                                   Taste Is Eating Silicon Valley                                   Crafting quality that endures                                   Copy page

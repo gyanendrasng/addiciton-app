@@ -1,0 +1,31 @@
+appId: host.exp.Exponent
+---
+- openLink: exp://localhost:8090
+- tapOn:
+    text: "Keep going"
+    optional: true
+- tapOn:
+    text: "×"
+    optional: true
+- tapOn:
+    text: "Home"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*clean, and counting.*"
+    timeout: 40000
+- swipe:
+    direction: UP
+    duration: 400
+- tapOn: ".*(Evening check-in|Checked in).*"
+- extendedWaitUntil:
+    visible: "How was today?"
+    timeout: 10000
+- tapOn: "Good"
+- tapOn: "Some"
+- tapOn: "Save check-in|Update check-in"
+- tapOn:
+    text: "Keep going"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*Checked in.*"
+    timeout: 10000

@@ -1,0 +1,44 @@
+# Urge toolkit: breathe (skip after 20s) → delay (skip after 30s) → reasons → game (skip after 30s) → survived
+appId: host.exp.Exponent
+---
+- openLink: exp://localhost:8090
+- tapOn:
+    text: "Keep going"
+    optional: true
+- tapOn:
+    text: "×"
+    optional: true
+- tapOn:
+    text: "Home"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*clean, and counting.*"
+    timeout: 40000
+- tapOn: ".*I have an urge.*"
+- extendedWaitUntil:
+    visible: "Breathe in|Hold|Breathe out"
+    timeout: 10000
+- extendedWaitUntil:
+    visible: "Skip"
+    timeout: 30000
+- tapOn: "Skip"
+- extendedWaitUntil:
+    visible: "Urges peak, then pass."
+    timeout: 10000
+- extendedWaitUntil:
+    visible: "Skip"
+    timeout: 40000
+- tapOn: "Skip"
+- tapOn: "I remember"
+- extendedWaitUntil:
+    visible: "Match the pairs."
+    timeout: 10000
+- extendedWaitUntil:
+    visible: "Skip"
+    timeout: 40000
+- tapOn: "Skip"
+- tapOn: "Late at night"
+- tapOn: "Urge survived"
+- extendedWaitUntil:
+    visible: ".*clean, and counting.*"
+    timeout: 10000

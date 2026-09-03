@@ -1,0 +1,237 @@
+TransitionsElements on a site often have state. Buttons might change color when hovered, a toast might change its transform values when it enters the screen. By default, changes in CSS happen instantly.
+CSS transitions allow you to interpolate between the initial and target states.
+What’s interpolation?It’s the process of estimating unknown values that fall between known values. In the context of CSS transitions, it’s the process of calculating the values between the initial and target state.
+To add a transition we need to use the transition property. It’s a shorthand property for four transition properties:
+
+transition-property
+transition-duration
+transition-timing-function
+transition-delay
+
+Here’s an example of how it looks:
+
+```
+.button {
+  /* Transition transform over 200ms with ease as our timing function and a delay of 100ms */
+  transition: transform 200ms ease 100ms;
+}
+```
+
+Let’s briefly clarify what they mean:
+
+transition-property: The property you want to transition. For example: transform, opacity, background-color, but also all to transition all properties.
+transition-duration: The time it takes for the transition to complete. For example: 200ms, 1s.
+transition-timing-function: The easing you want to apply to the transition. For example: ease, ease-in, cubic-bezier(0.19, 1, 0.22, 1).
+transition-delay: The time to wait before the transition starts. For example: 200ms, 1s.
+
+To transition a change in the transform property we can simply add something like this:
+
+```
+.box {
+  /* We can optionally add a delay after the timing-function */
+  transition: transform 0.2s ease;
+}
+```
+
+This means that our transform will be interpolated from one state to another over 0.2s seconds with the ease easing. Hover over the box below to see it in practice going from scale(1) to scale(1.5) on hover.
+transition: transform 0.2s ease;
+Notice how when you hover and unhover before the transition finishes it smoothly transitions back to the original state. This happens because CSS transitions are interruptible. It’s important to keep this in mind as we will later compare it to CSS keyframe animations which are not interruptible.
+How I use CSS transitions
+In the first module we talked about keeping our animations fast. Most of CSS transitions that I use are simple hover effects or transitions in which we move an element via the transform property. We want to keep our animations fast so usually my transitions will look like this:
+
+```
+.box {
+  /* Or any other property that you want to animate */
+  transition: transform 0.2s ease;
+}
+```
+
+ease is the default timing-function, but I’ve noticed that a lot of people think it’s linear, so I want to be clear about it and write it out.
+I avoid using the all keyword. We often transition a few properties at once, like transform and opacity. Being explicit about what property we are transitioning ensures that we don’t transition any other property that might potentially change.
+If you are animating a lot of properties with the same duration and easing, you can define it once with shorthand and compliment with transition-property:
+
+```
+/* More repetition */
+.button {
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+ 
+/* Less repetition, more consistency */
+.button {
+  transition: 0.2s ease;
+  transition-property: color, background-color, border-color;
+}
+```
+
+I don’t use the shorthand for transition-delay. I have always found reading a transition like transition: transform 0.2s ease 1s a bit confusing. When I see transition-delay: 1s I know exactly what it does.
+Practice
+In general, CSS transitions are quite straightforward. You specify which property you want to animate, how long it should take, the easing you want to apply, and optionally, a delay—that’s it! Let’s solidify this knowledge with a few exercises. The exercises will increase in difficulty.
+Simple Transform
+The end goal is to move the box 20% upwards on hover. You can choose your own duration and easing. Here’s how the end result should look like:
+Hover on the yellow ball to see the transition.
+This might seem easy, but you will run into a problem if you pay enough attention to the details.
+App.jsstyles.css
+```
+import "./styles.css";
+
+export default function SimpleTransformTransition() {
+  return <div className="box" />;
+}
+```
+
+View Solution
+Card Hover
+You might have seen this type of effect elsewhere on the web, it’s a pretty common one. The goal is to start with a hidden description of a project and reveal it when you hover over the card. Here’s how the end result should look like:
+Project nameProject descriptionThe white background within the card would usually be a visual of a given project.
+The starting state is a card with visible description. Your job is to hide it and reveal it with a transform only when hovered and when... I’ll leave the second pseudo-class to you.
+App.jsstyles.css
+```
+import "./styles.css";
+
+export default function CardHover() {
+  return (
+    <a href="#" className="card">
+      <div className="card-description">
+        <h3 className="card-title">Project name</h3>
+        <p className="card-subtitle">Project description</p>
+        <svg
+          width="11"
+          height="11"
+          viewBox="0 0 11 11"
+          fill="none"
+          className="card-icon"
+        >
+          <path
+            fillRule="evenodd"
+            clipRule="evenodd"
+            d="M6.33333 0.4375C6.33333 0.195877 6.52922 0 6.77083 0H10.5625C10.8041 0 11 0.195877 11 0.4375V4.22917C11 4.47078 10.8041 4.66667 10.5625 4.66667C10.3209 4.66667 10.125 4.47078 10.125 4.22917V1.49372L7.08017 4.53851C6.90932 4.70937 6.63235 4.70937 6.46149 4.53851C6.29063 4.36765 6.29063 4.09068 6.46149 3.91981L9.50626 0.875H6.77083C6.52922 0.875 6.33333 0.679122 6.33333 0.4375ZM0.5 6.27083C0.5 6.02922 0.695877 5.83333 0.9375 5.83333C1.17912 5.83333 1.375 6.02922 1.375 6.27083V9.00626L4.41981 5.96149C4.59068 5.79063 4.86765 5.79063 5.03851 5.96149C5.20937 6.13235 5.20937 6.40932 5.03851 6.58017L1.99372 9.625H4.72917C4.97078 9.625 5.16667 9.82088 5.16667 10.0625C5.16667 10.3041 4.97078 10.5 4.72917 10.5H0.9375C0.695877 10.5 0.5 10.3041 0.5 10.0625V6.27083Z"
+            fill="#58585F"
+          />
+        </svg>
+      </div>
+    </a>
+  );
+}
+```
+
+View Solution
+Download Arrow
+A similar exercise to the previous one, but in this one, we’ll have to animate two elements at once. The arrow moves down when you hover over the button, but there’s actually another one coming from the top at the same time.
+
+Let’s try and recreate this effect. The starting code is a button with an arrow inside. Your job is to move the arrow down and reveal the second one when hovered. Good luck!
+App.jsstyles.css
+```
+import "./styles.css";
+
+export default function DownloadArrow() {
+  return (
+    <button aria-label="Download PDF" className="download-button">
+      {ArrowDown}
+    </button>
+  );
+}
+
+const ArrowDown = (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M18.25 14L12 20.25L5.75 14M12 19.5V3.75"
+      stroke="black"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+```
+
+View Solution
+Toast component
+While definitely less common, CSS transitions can also be used for enter animations. This is especially useful when your animation can change its end state mid-way. Remember this Sonner example?
+animation Add toast
+When we add a toast while the one before is still animating, it’ll shift to its new position when using CSS animations. This does not happen with CSS transitions. Again, this is not used often, but it’s definitely useful to know in case you ever need it.
+Let’s try and build a toast component to see how this works in practice. It’s basically Sonner, but in its expanded mode. Here’s how the end result should look like:
+Add toast
+The starting code is a <Toaster /> that renders toasts inside of it. Every time we click on the "Add toast" button we increment the toasts state variable which we then use to render the toasts. This is just to simplify the code. In a real-world scenario, we’d probably have an array of toast objects.
+
+```
+{Array.from({ length: toasts }).map((_, i) => (
+  <Toast key={i} />
+))}
+```
+
+This adds toasts on top of each other. Your job is to make them animate each time when a toast changes position. You can choose your own duration and easing, I’ll explain in the solution what easing I chose and why. Also, you can click on the  refresh icon in the header of the playground to remove all toasts you’ve added.
+Show HintShow Second Hint
+App.jsstyles.css
+```
+import "./styles.css";
+import { useState } from "react";
+
+export default function Toaster() {
+  const [toasts, setToasts] = useState(0);
+
+  return (
+    <div className="wrapper">
+      <div className="toaster">
+        {Array.from({ length: toasts }).map((_, i) => (
+          <Toast key={i} />
+        ))}
+      </div>
+      <button
+        className="button"
+        onClick={() => {
+          setToasts(toasts + 1);
+        }}
+      >
+        Add toast
+      </button>
+    </div>
+  );
+}
+
+function Toast() {
+  return (
+    <div className="toast">
+      <span className="title">Event Created </span>
+      <span className="description">Monday, January 3rd at 6:00pm</span>
+    </div>
+  );
+}
+```
+
+View Solution
+Disabling hover effects
+Many CSS transitions are triggered by hovering over an element. Hovering is technically only possible when using a pointer device. However, when you tap an interactive element on a touch device, it triggers the hover state as well.
+This is annoying and usually accidental. To avoid this we can apply a media query that will only trigger a hover effect if a pointer (like a mouse) is used to interact with the element.
+
+```
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    background: blue;
+  }
+}
+```
+
+You can enable this in Tailwind as well in your tailwind config:
+
+```
+// tailwind.config.js
+module.exports = {
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
+  // ...
+}
+```
+
+This will apply the media query above to all hover effects automatically.
+It’s also the default in Tailwind v4, so you don’t even have to worry about it there.
+Hover in Tailwind v4If you are using Tailwind v4, you don’t even have to worry about it. Hovers are disabled on touch devices by default.Get better at animations, todayJoin  designers and engineers who have improved their animation skills by taking this course.Theory and practice combinedA skill.md course fileCertificate of completionPrivate Discord communityMore than 45 lessonsFree future updatesInterviews with expertsAccess for lifeRegistration closes in00 days00 hours00 minutes00 secondsStart learning now $249Copy page

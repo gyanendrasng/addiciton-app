@@ -1,0 +1,27 @@
+Animations of the futureStatic transitions can disrupt the user’s sense of flow and orientation. You should envision your interface as a constantly evolving space, where any element can transform into another.
+ Family's iOS App is a great example of a fluid interface. This video is made by Benji,
+We did this in the course already with shared layout animations. Rather than rendering a separate component for the form, we morph our button into its new state.
+Feedback
+Another example of it, is the trash interaction we made. The items don’t suddenly appear in the trash, they are "thrown" into it.
+
+What about text?
+Applying this principle to text adds another layer of fluidity.
+This is not only appealing, but it also helps the user notice the change. In a static interface, this change would happen instantly. By morphing the text we highlight the transition in a subtle, yet effective way.
+CompileInitialFinal
+How is it made?
+When I shared this transition on Twitter, some people said that this is distracting, but that’s exactly the point! By morphing the text we want to emphasize the change, we want to let the user know that the button he is about to press has different consequences.
+Fluidity and perceived performance
+Seamless movement in our app can improve user’s perception of speed. Below you can see Family’s graph transition on the left, and CashApp’s static transition on the right. The one on the left seems faster, even though it takes roughly the same time to load.
+ This video is made by Benji, the idea is heavily inspired by Benji as well
+Fluid interfaces are hard, especially on the web
+A fluid interface on the web, is a seamless interface. Navigating through such interface is effortless for the user. iOS has the tools that enable you to easily achieve this (Swift UI), and, there’s much less screen estate, there are more opportunities for meaningful transitions.
+I built the component below to demonstrate where a fluid web interface makes sense. The illustration transforms into an input. Additionally, after the input has a value, we morph the paste button into an "X" button. All of this feels like a natural progression, it gives you more joy than a static transition.
+There are a lot of flaws in this animation, because I time-boxed myself to 60 minutes to build this component. I wanted to show that perfecting fluid animations is time-consuming, and that’s why you don’t see them a lot.
+Add Users to your GroupStart by adding users to your group or skip this step and do it later.Search NowSkip
+In order to achieve a fluid interface, you need to think about the animations before you design the UI. The illustration in the example above is positioned and styled in a way that makes the transition seamless.
+Should I always try to build fluid interfaces?
+I can’t think of any other app that nails fluidity as well as Family does. You don’t see them a lot, because it’s time-consuming and requires a lot of thought. If you have the resources and the time, then you should do it. If your product misses features, has bugs, or lacks other important aspects, then you should focus on those first, otherwise, the fluidity will be overshadowed by those issues.
+On top of that, the level of fluidity we talked about here is very hard to achieve on the web. I truly believe that more and more companies will start to invest into this, but for now, the technology is not quite there yet.
+This chapter is called "Good vs Great animations" though, so I wanted to touch on this subject. I think it’s important to know what great looks like, even if it’s not really realistic at the moment I believe that this is the future of great web animations.
+Disclaimer
+This lesson is heavily inspired by the way Benji thinks about motion design. The work of his team can be seen in Family.ResourcesFamily ValuesCopy page

@@ -1,0 +1,124 @@
+FundamentalsWalkthroughsModule 01Family DrawerThe analysisFirst animationsCrossfadeThe finishing touchModule 02Dynamic IslandThe DesignRing viewTimer viewMorph effectModule 03Navigation menuKnow your toolsAnimating the menuClosing thoughtsModule 04Hero illustrationSVG introductionLines and dashesRotationClick animationClock animationPolishCrossfadeI’ve updated the UI of the drawer between this lesson and the last one. This is a course about animations, so we won’t focus too much on the styling, but let’s go through it so you know what changed.
+Try it out
+I’ve split the component into a few files so that it’s easier to work on the exercises later. We now have a components file that contains all the views.
+Show code
+These views are then used in our useMemo hook. useMemo is usually my preferred approach for conditional rendering with multiple possible outcomes. If it were just two components, I would use a ternary.
+
+```
+const content = useMemo(() => {
+  switch (view) {
+    case "default":
+      return <DefaultView setView={setView} />;
+    case "remove":
+      return <RemoveWallet setView={setView} />;
+    case "phrase":
+      return <Phrase setView={setView} />;
+    case "key":
+      return <Key setView={setView} />;
+  }
+}, [view]);
+```
+
+I use a lot of arbitrary values in Tailwind. For example, instead of mt-5, I use mt-[21px]. I usually try to avoid this, but in this case, Benji shared Family’s Figma file with me, and I wanted to ensure the spacing is as close as possible to the original.
+clsx is a library I use pretty often, it is used to conditionally add classes to an element. You could also create your own utility function, but this one also takes care of objects and doesn’t weigh much.
+
+```
+<button
+  className={clsx(
+    "grid place-items-center",
+    className,
+  )}
+/>
+```
+
+Or when I need to add a class conditionally when the state of the component changes for example.
+
+```
+<div
+  className={clsx("size-16", {
+    "bg-blue-400": isActive,
+    "bg-gray-400": isDisabled,
+  })}
+/>
+```
+
+The buttons now have a small scale transition on press, we go from 1 to 0.95 with the default transition settings from tailwind.
+Last thing is the font. Family uses a custom font in their app, it’s a sans-serif font that is a bit rounded. The closest, free font I could find was Open Runde. It’s a rounded variant of Inter. This is important as in recreations like this one it’s not only about the animations, it has to look like the original as well.
+In the code editor here I assign the font inline, that’s a limitation of Sandpack, which I use under the hood. I don’t usually inline this type of styles.
+Crossfade
+By updating the styles we get a lot closer to the actual Family iOS drawer. Let’s now add the crossfade animation to it. This is how the end result should look like::
+Try it out
+App.jscomponents.jsxicons.js
+```
+"use client";
+
+import { useMemo, useState } from "react";
+import { Drawer } from "vaul";
+import useMeasure from "react-use-measure";
+import { motion, AnimatePresence } from "motion/react";
+import { DefaultView, Key, Phrase, RemoveWallet } from "./components";
+import { CloseIcon } from "./icons";
+
+export default function FamilyDrawer() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [view, setView] = useState("default");
+  const [elementRef, bounds] = useMeasure();
+
+  const content = useMemo(() => {
+    switch (view) {
+      case "default":
+        return <DefaultView setView={setView} />;
+      case "remove":
+        return <RemoveWallet setView={setView} />;
+      case "phrase":
+        return <Phrase setView={setView} />;
+      case "key":
+        return <Key setView={setView} />;
+    }
+  }, [view]);
+
+  return (
+    <>
+      <button
+        className="focus-visible:shadow-focus-ring-button fixed top-1/2 left-1/2 h-[44px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-gray-200 bg-white px-4 py-2 font-medium text-black transition-colors hover:bg-[#F9F9F8] md:font-medium"
+        onClick={() => setIsOpen(true)}
+        style={{ fontFamily: "Open Runde" }}
+      >
+        Try it out
+      </button>
+      <Drawer.Root open={isOpen} onOpenChange={setIsOpen}>
+        <Drawer.Portal>
+          <Drawer.Overlay
+            className="fixed inset-0 z-10 bg-black/30"
+            onClick={() => setIsOpen(false)}
+          />
+          <Drawer.Content
+            asChild
+            className="fixed inset-x-4 bottom-4 z-10 mx-auto max-w-[361px] overflow-hidden rounded-[36px] bg-[#FEFFFE] outline-hidden md:mx-auto md:w-full"
+          >
+            <motion.div animate={{ height: bounds.height }}>
+              <Drawer.Close asChild>
+                <button
+                  data-vaul-no-drag=""
+                  className="focus-visible:shadow-focus-ring-button absolute top-7 right-8 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-[#F7F8F9] text-[#949595] transition-transform focus:scale-95 active:scale-75"
+                >
+                  <CloseIcon />
+                </button>
+              </Drawer.Close>
+              <div
+                ref={elementRef}
+                className="px-6 pt-2.5 pb-6 antialiased"
+                style={{ fontFamily: "Open Runde" }}
+              >
+                {content}
+              </div>
+            </motion.div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
+    </>
+  );
+}
+```
+
+View SolutionCopy page

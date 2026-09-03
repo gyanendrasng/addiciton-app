@@ -1,0 +1,65 @@
+The Easing BlueprintThe main ingredient that influences how our animations feel is easing. It describes the rate at which something changes over a period of time. It’s the most important part of any animation. It can make a bad animation look great, and a great animation look bad.
+You can animate the timeline component below with two different easings. Notice how much worse it feels with the incorrect one. Keep in mind this is just easing that’s changing.
+
+Easing also plays an important role in how fast our interfaces feel. This is important, because the perception of speed is often times more important than the actual performance of your app.
+A faster-spinning spinner makes the app seem to load faster, even when the load times are identical. This improves perceived performance.
+Which one works harder to load the data?
+This example focuses on duration, but easing can also influence the perception of speed. The dropdown on the left below uses ease-in easing, which starts slow. The one on the right uses ease-out, it starts fast, making the animation feel faster.
+OptionsOptionsClick on the buttons to compare the easing speed.
+The animation duration of both of these dropdowns is exactly the same, 300ms (you can inspect the code to verify this), but ease-in on the left feels much slower. Now imagine if all your UI animations were using ease-in, your app would feel way slower than it actually is.
+To know when and what easing to choose, I’ve developed a system for myself. This blueprint covers every type of easing that is built into CSS and it describes when to use it. Additionally, it provides 16 custom easing curves that I use in my work.
+Let’s go through each of them.
+ease-out
+
+I use this curve the most in my UI work. It’s great for user-initiated interactions like opening a dropdown or a modal as the acceleration at the beginning gives the user a feeling of responsiveness. I apply this easing for most elements that have an enter and exit animation.
+OptionsDropdowns are a great use case for ease-out.
+Giving users a feeling of responsiveness is important when it comes to building great interfaces, and ease-out helps a lot here.
+A trick to make your UI even more responsive with the help of ease-out is to add a subtle scale down effect when a button is pressed. A scale of 0.97 on the :active pseudo-class with a 150ms transition should do the job.
+PastePaste
+ease-out also works great for enter animations on marketing pages. I often use it for intro animations at Linear. All the movement on the video below uses ease-out easing, just with different delays and durations. Notice how all the movement slows down towards the end.
+ 
+ease-in-out
+
+Starts slowly, speeds up and then slows down towards the end, like the acceleration and deceleration of a car. I use it for elements that are already on the screen and need to move to a new position, or morph into a new shape.
+The timeline component below is a good use case for ease-in-out, all animated elements stay on the screen, they just change in some way. This easing feels right, because we see an animation accelerate and decelerate in a natural way.
+Notice how this movement mimics a car accelerating and decelerating.
+The hackathon project below that I worked on during my time at Vercel uses ease-in-out as well, because we morph the current page into a smaller container. A perfect use case for ease-in-out.
+ 
+The Dynamic Island would be a good use case for ease-in-out too. Apple actually uses spring animations to make it even more natural and organic, but if we were to convert it into an easing type, it would be an ease-in-out curve, because it changes its size while staying on the screen.
+IdleRingTimerWe’ll cover this component in a walkthrough series later in the course.
+ease-in
+
+It’s the opposite of ease-out, it starts slowly and ends fast. That slow start can make interfaces feel sluggish and less responsive, so it should generally be avoided.
+Here are the dropdowns from the beginning of this lesson as a reminder. ease-in feels much slower, even though the duration is the same.
+OptionsOptions
+You could just decrease the duration, but ease-in is simply not made for UI animations. It accelerates at the end, which is the opposite of what we want. It also feels less natural because of that. Our brain expects things to settle at the end of a movement.
+Here’s a visual representation of both of the curves, blue one is ease-out. Notice how much faster the line gets drawn at the beginning, that’s what we want for our animations.
+
+To sum it up: you should avoid ease-in as it makes the UI feel slow.
+linear
+
+Since a linear animation moves at a constant speed, it should generally be avoided as it can make motions feel robotic and unnatural. You should use linear only for constant animations like a marquee.
+A marquee is a good use case for linear easing type.
+Or interactive elements where you need to visualize the passage of time, like “a hold to delete” interaction. Here, we want to show the user how much time is left, the only transition that makes sense is linear, because time is passing linearly.
+Hold to DeleteHold to DeleteWe’ll build this component later on in the course.
+A 3D coin rotation animation is a rare, but great use case for linear easing as well.
+We’ll also build this component in a later lesson.
+ease
+
+A similar curve to ease-in-out, but it’s asymmetrical, it starts faster and ends slower than an ease-in-out curve. I use this one mostly for hover effects that transition color, background-color, opacity, and so on.
+The button below uses ease for both the subtle background color transition, and, the success animation. These smaller, more gentle animations often work best with ease, it’s an elegant curve that works well in such cases.
+
+I actually used it in Sonner for the same reason. ease-out would technically be the right choice, because a toast enters and exits the screen, but ease makes the component feel more elegant which was more important for me in this case.
+Add toast
+Custom easings
+In the resources section of this part I included a link to a set of custom easings I often use. They are sorted from the weakest to the strongest acceleration for each type of easing.
+All the examples you’ve seen up until this point are actually using these custom easings, as the accelerations of the built-in ones are not strong enough.
+Here you can see the difference between the built-in ease-in-out and a custom one from the blueprint.
+Built-inCustom easing here feels more energetic.
+The only time I personally use a built-in easing curve is for hover effects when I reach for the ease curve, which by the way is the default timing function for transitions in CSS.
+Create your own curve
+You can also create your own custom easing curves by using the cubic-bezier function in CSS. This is a great way to experiment and get a better feel for how different curves work.
+Or you can use a very specific easing for a very specific scenario like I did for Vaul.
+Vaul uses an easing type that is made purely to mimic iOS’ Sheet easing. I haven’t made it myself, it’s made by the Ionic Framework. This tiny detail gave the component a more native feel with little effort.
+ 
+If you are not comfortable with easings just yet, I encourage you to reference the blueprint as much as possible. I also encourage you to try every easing from the blueprint after this lesson. This will give you a better understanding and feel of how each curve works.ResourcesView the custom easing curves                                   Cubic Bezier Curve GeneratorGet better at animations, todayJoin  designers and engineers who have improved their animation skills by taking this course.Theory and practice combinedA skill.md course fileCertificate of completionPrivate Discord communityMore than 45 lessonsFree future updatesInterviews with expertsAccess for lifeRegistration closes in00 days00 hours00 minutes00 secondsStart learning now $249Copy page

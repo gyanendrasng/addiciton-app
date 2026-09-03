@@ -1,0 +1,75 @@
+Prototyping interfacesA lesson from AI for UIThis is a lesson from my new course, aiforui.dev. It fits this course so well since prototyping is where a lot of animation decisions get made, so I wanted you to have it here. More on the course at the end of this lesson. Enjoy!
+Prototyping is an essential part of building a great interface because it allows you to actually touch and feel the interface, see how it feels in different states and scenarios and iterate on it until you find the perfect solution.
+That’s why building actual variants of a flow or component is way better than drawing wireframes or mockups. You can experience the thing instead of just imagining how it would feel.
+And don’t get me wrong, you should still explore design directions in a design tool, but your goal should be to move to a living interface as soon as possible. That’s where ideas get validated.
+You can experience it yourself, what gives you a better idea of whether this UI works or not? A static wireframe, or a live interface?
+Step 1 of 4Let’s get you set upWe’ll use this to create your course account.NameEmailBackContinue
+Before AI, building out a few different options was often a very time-consuming process. A process that in some cases couldn’t be done to the extent you would want it to be, or maybe even not at all. Code was the expensive part.
+But now that code is becoming cheaper to produce, you can spend some tokens on prototyping to improve the outcome of your work.
+However, just asking the agent to create a few different types of the sign-up flow for example might not always be the best way to go. There are things you should do, and things you shouldn’t. This lesson is about how you should approach prototyping with AI.
+When should you actually prototype?
+In the exploration phase of your project or feature.
+That is when you have a rough description of what you want to build, but you are not sure of the exact details of how it should happen or how it should look.
+You can then use that rough description to ask your agent for a few prototypes. You most likely have a few different ideas of what a flow should look like. Describe them to an agent and let it build them for you so you can see how they feel and compare them.
+Here’s how I would approach prototyping a new onboarding flow:
+>/prototype Build me a new multi-step onboarding in three different ways.
+Here’s what came back when I used the /prototype skill, the same one that ships with the animations.dev skills.
+Step 1 of 4Let’s get you set upWe’ll use this to create your course account.NameEmailBackContinue
+I couldn’t have told you which one I wanted before seeing them. You need to interact with the material to know, to experience its texture and feel.
+How to prototype with AI
+A good prototyping flow you build with your agent should do a few things:
+
+It builds three to five genuinely different directions, that’s the whole idea of prototyping, trying different solutions to the same problem.
+It renders a switcher so you can go through the different variants.
+It pulls in other skills while it builds. Prototyping a type treatment should load typography advice, a card should load surface and shadow advice, an enter animation should load motion advice. You want to reject a direction because it doesn’t work, not because it doesn’t look good.
+It saves the selected version via query parameters so you can easily share it with teammates.
+
+You could write all this down in a prompt each time you need a prototype, but I’ve written this and some more detailed instructions in the /prototype skill, so you can focus on the things that matter most.
+
+```
+npx @animationsdev/install --token=...
+```
+
+There’s also a prototype skill in my public skills library. The difference is that this one pulls in the other skills from that course, so you get the right motion advice for each variant as well.
+With it, you can simply go for a prompt like this:
+>/prototype Build me a few different variants of the drag and drop interaction.
+Let people tweak the values
+In the latter stages of a prototype you want to get the details right.
+Whether it’s a drag interaction or an intro animation, it’s often something that needs fine-tuning and the way I like to do it is via control panels.
+By binding a variable like Offset X to a slider you can immediately try different variations of an interaction by simply dragging it. This shortens the feedback loop and allows you to iterate on the interaction much faster.
+This can be done pretty quickly with tools like DialKit which supports binding variables to sliders, color pickers, or even spring and bezier curves.
+Here’s the dithered Linear logo we made a while back at Linear. Move your cursor over it, click it a few times, then open the controls and try different values:
+Tweak the values
+When I was building it, I intentionally shared a preview link with the controls so everyone can tweak them and try their own variations. That’s great advice in general: share as much as possible, as often as possible with your team to get their feedback.
+Instead of tens of Slack messages, everyone can tweak the values themselves, and share the configuration with me if they end up with something they like. This way it’s also easier for people to participate, because you lower the barrier to entry, and it’s just fun to play with.
+This was the main reason why people on X loved it so much. Because everyone on the team could contribute to the design process, it wasn’t just a back and forth between the designer and an engineer. Everyone on the team (that we thought was a good fit for giving feedback here) was able to participate.
+Emil Kowalski @emilkowalskiMade this interaction of Linear’s dithered logo for our latest release.It’s using canvas with a lot of tiny dots. There’s an invisible circle around the cursor.Any dot inside it gets pushed outward with a cubic falloff so it’s gentle on the edges, and strong at the center.Mar 25, 2026I almost text you yesterday when I saw this. Awesome stuff as always, Emil.The bounce after the click is such a nice easter egg!So many great decisions to get it this level of craftA few comments from the thread.
+Here’s another one, a pixel board by Glenn for index.how that we iterated on. Click it to play the entrance again, and open the controls to change the shape, glow, and more:
+Tweak the values
+Use your worst content
+If the content is dynamic, based on user data, make sure you test with the worst-case scenario. Long user names, two-line titles, forty rows. It’s much better to find out that something might break during prototyping than in production.
+Members5 membersInviteSCSarah ChenDesignActiveMRMarco RuizEngineeringActiveAOAda OwensProductActiveTWTom WeberMarketingInvitedLPLena ParkDesignActiveShowing all 5Updated just nowDemo dataWorst case
+This example is obviously exaggerated, but it’s good to keep this in mind.
+Summary
+
+Build the thing instead of drawing it. A live interface gives you much more insight than a static wireframe.
+Use the /prototype skill to follow the rules laid out in this lesson automatically.
+Bind the details to a control panel for a shorter feedback loop.
+Test with your worst content. Long names, two-line titles, forty rows. Finding out it breaks during prototyping is better than finding out in production.
+Share as much as possible, as often as possible with your team to get their feedback.
+
+All of this is packaged into the /prototype skill. If you installed the skills using the general install command, you don’t have to install it again.
+Make AI match your quality bar
+This lesson comes from AI for UI, my new course on building great interfaces with AI. It teaches you:
+
+How to make AI follow your taste instead of its defaults.
+The right mental models so you are prepared regardless of how the technology evolves.
+How I work with AI. You’ll get to see my workflows I use every day.
+How to review AI’s output the way a proper designer or engineer would review work, and how to catch the details it gets wrong.
+
+Everything in it is hands-on. The /prototype skill you just used ships with the course, one of 20 UI skills covering typography, surfaces, component design, and more:
+/prototype/design-foundations/typography/color/design-vocabulary/prototype/design-foundations/typography/color/design-vocabulary/prototype/design-foundations/typography/color/design-vocabulary/ask-emil/marketing-pages/animations/ui-polish/performance/ask-emil/marketing-pages/animations/ui-polish/performance/ask-emil/marketing-pages/animations/ui-polish/performance/surfaces/component-design/forms-and-inputs/ui-review/ask-lapse/surfaces/component-design/forms-and-inputs/ui-review/ask-lapse/surfaces/component-design/forms-and-inputs/ui-review/ask-lapse/writing-skills/get-creative/build-a-tool/engineering-vocabulary/touch-and-accessibility/writing-skills/get-creative/build-a-tool/engineering-vocabulary/touch-and-accessibility/writing-skills/get-creative/build-a-tool/engineering-vocabulary/touch-and-accessibility
+You’ll also get Lapse, a tool built for reviewing animations. It records your interface, you can slow it down, scrub frame by frame, and copy the exact animation state, so your agent fixes the right thing, because it has all the right information.
+ 
+As an animations.dev customer, enrollment is open for you through September 11. You get the first 7 lessons, Lapse, and all 20 skills today, and the remaining lessons as I finish them. It’s $299 while the course is unfinished, instead of its full price of $399. And it comes with the same money-back guarantee as this course, anytime, no questions asked.
+See what’s inside AI for UIEarly accessResourcesanimations.dev skills                                   My public skills library                                   DialKit                                   AI for UI                                   Copy page

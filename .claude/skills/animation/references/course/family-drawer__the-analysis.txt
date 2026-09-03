@@ -1,0 +1,40 @@
+FundamentalsWalkthroughsModule 01Family DrawerThe analysisFirst animationsCrossfadeThe finishing touchModule 02Dynamic IslandThe DesignRing viewTimer viewMorph effectModule 03Navigation menuKnow your toolsAnimating the menuClosing thoughtsModule 04Hero illustrationSVG introductionLines and dashesRotationClick animationClock animationPolishThe analysisOne thing that really helped me learn animations was recreating some of the best ones. The key to a good recreation is figuring out why an animation feels right—like which properties are being animated, what kind of easing or spring is used, and so on.
+Recordings
+Most animations are fast, so it’s tough to catch all the details. What works best for me is recording the animation and playing it back frame by frame or in slow motion. Since Family is an iOS app, I just use my phone to record the interaction I want to recreate, then send it to my Mac to replay.
+ Best view to inspect the animation is the settings screen shown above.
+There are a few things that stick out to me even before we analyze it frame by frame:
+
+The interactions feel fast, probably an ease-out easing or a spring animation with no bounce.
+The animation likely involves only opacity and height changes.
+The drawer is draggable, so we can use Vaul here.
+
+Let’s slow it down and see what’s happening frame by frame.
+ 
+We can now see a subtle crossfade between the new and old content. To make this work, we’ll probably need to use the popLayout mode on AnimatePresence.
+ 
+The content follows the height of the drawer. If the drawer gets taller, the exiting content moves up too. The duration of the animation is the same for both entering and exiting content. It’s pretty fast, so without slow motion, the fade-out is almost unnoticeable.
+One thing that stood out to me is the button animation. It’s really satisfying to press it and see the transition right after. The bottom action buttons also have a different transition than the rest of the content. Their y-translate is smaller, and they seem to scale down a bit.
+Everything we’ve talked about so far gives the animation a certain feel. It feels light, fast, and satisfying. Our goal is to recreate that same experience on the web.
+Summary
+As you can see, this doesn’t have to take hours out of your day, but it’s essential for the recreation process. Here’s a quick summary of the key points:
+
+
+The animation is fast and likely uses ease-out easing or a spring animation with no bounce. A spring animation is more likely since it’s common in iOS apps.
+
+
+The duration is short, probably not more than 300ms, depending on the spring settings.
+
+
+We need to crossfade the content, so we’ll use the popLayout mode on AnimatePresence.
+
+
+Bouncy buttons are crucial for the right feel of the interaction.
+
+
+Action buttons have a different animation, which I’m not sure I like.
+
+
+With this in mind, we can start implementing the animation.
+Smoothness
+It’s worth noting that mobile browsers don’t support 120Hz refresh rate like an app like Family does. So we won’t be able to achieve the exact same smoothness as the app, but we can get pretty close.
+Desktop is even worse in my experience if you have 60hz or less. This component requires a certain smoothness for the opacity transition to feel right. That’s why I’d only use it as a mobile component.ResourcesFamily AppCopy page

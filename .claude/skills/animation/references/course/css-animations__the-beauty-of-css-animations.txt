@@ -1,0 +1,38 @@
+The beauty of CSS animationsThere’s something special about CSS animations. No dependencies, no javascript, just HTML and CSS. It feels like you are writing code how it was meant to be written.
+This module is about ensuring that you get the basics of CSS animations right and know when and how to use them. It covers everything you need to know to build beautiful things with CSS animations.
+Add toastOne of the animations we’ll build. Click on the button to see it animate.
+I’ll start by showing you how I think about CSS animations. Below are my notes and thoughts gathered over the years.
+Right tool for the job
+I agree that you don’t need Framer Motion for a simple hover animation or enter animations, but that’s pretty much it.
+DisclaimerFramer Motion is now Motion for React. I’ll keep referring to it as Framer Motion in this course to avoid confusion. This will change in the future.
+You bought this course not only to learn how to code animations, but also how to make them feel right. In the first module we brought up iOS a lot, the interactions there feel smooth, natural, and apps like Family are just a joy to use.
+ Video by Benji.
+The truth is, this level of quality is impossible to achieve with plain CSS. You need javascript to achieve iOS-level animations.
+CSS animations don’t support real spring animations.
+They can feel cheap and pedestrian.
+And the most important point is that your users don’t care if you use CSS animations.
+They care about what they see, they care about their experience.
+I personally like to build beautiful things. If that means I have to use an animation library, then I’m okay with that. As long as the end result is beautiful and works well across all devices and browsers.
+ The smoothness seen here would be hard to achieve with just CSS (it’s using Framer Motion).
+You might think that using an animation library will increase the bundle size and may cause frame drops, which will degrade the experience. While increased bundle size is unavoidable, this is usually not a cause for concern. Frame drops will not be an issue if you animate things in the right way. And you are here to learn this right way.
+CSS animations have their place of course, and we will cover many use cases in this module.
+Performance
+Some CSS animations are hardware-accelerated, which means that the browser can offload the work to the GPU. A hardware-accelerated animation will remain smooth, no matter how busy the main thread is. If you are animating using transform in CSS, the animation will likely be hardware-accelerated.
+That’s not the case for animations that involve the use of requestAnimationFrame, which Framer Motion uses. The busier the main thread is, the more frames will be dropped. You can see the difference below. The more logos you add, the laggier Framer Motion animation becomes.
+CSSFramer MotionWAAPIThis example is inspired by the Sidebar Animation Performance post by Josh Wootonn.
+This might be obvious, but CSS animations don’t require any extra dependencies either. Using more dependencies won’t cause your animations to drop frames, but it will increase the bundle size, which will make your website load longer.
+We will talk more about performance in the Performance lesson.
+When to use CSS animations
+Use CSS animations when:
+
+You need a simple hover effect.
+You need to animate an element in or out.
+You have an infinite, linear animation like a marquee.
+You have a bundle-size sensitive project.
+
+Use Framer Motion/other animation library when:
+
+You need to create complex animations.
+You want to make your animations feel more sophisticated.
+You want your animations to be interruptible and feel natural.
+ResourcesA Framework for Evaluating Browser SupportCopy page

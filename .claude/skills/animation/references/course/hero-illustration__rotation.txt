@@ -1,0 +1,252 @@
+FundamentalsWalkthroughsModule 01Family DrawerThe analysisFirst animationsCrossfadeThe finishing touchModule 02Dynamic IslandThe DesignRing viewTimer viewMorph effectModule 03Navigation menuKnow your toolsAnimating the menuClosing thoughtsModule 04Hero illustrationSVG introductionLines and dashesRotationClick animationClock animationPolishRotationSo, we know how to position shapes and animate lines. Now let’s rotate them. Click the clock below to see the hands rotate around the clock center.
+
+Those hands use transform origins to rotate around a specific point. Let’s see how it works.
+The problem with SVG transforms
+Let’s rotate a rectangle:
+
+```
+<svg viewBox="0 0 100 100">
+  <path
+    x="30"
+    y="30"
+    width="40"
+    height="40"
+    strokeWidth="1.5"
+    style="transform: rotate(0deg);"
+    fill="hsl(47, 94%, 66%)"
+  />
+</svg>
+```
+rotationZoom out
+It rotates around the corner instead of its center. This is because SVG transforms use coordinate (0, 0) as the default origin - the top-left corner of the viewBox.
+You might try to fix this with transform-origin: center, like you would in HTML:
+
+```
+rect {
+  transform: rotate(45deg);
+  transform-origin: center;
+}
+```
+
+But in SVG, center refers to the center of the viewBox, not the element. So this still doesn’t give us what we want.
+The real fix is to set transform-origin to explicit coordinates. For a rectangle with x="20", y="20", width="40", and height="40", the center point is at (50, 50). To rotate around that center, you’d write:
+
+```
+<svg viewBox="0 0 100 100">
+  <path
+    x="30"
+    y="30"
+    width="40"
+    height="40"
+    strokeWidth="1.5"
+    style="
+          transform: rotate(0deg);
+          transform-origin: 50px 50px;
+    "
+    fill="hsl(47, 94%, 66%)"
+  />
+</svg>
+```
+rotation
+This is exactly what we need for clock hands. Both hands rotate around the same point - the center of the clock - regardless of their own positions or lengths.
+Let’s put this into practice. Assemble the clock pieces below so the hands rotate correctly when you click “Animate hands”.
+Success criteria:
+
+Clock circle positioned at the center of the canvas.
+Both hands start at the center of the clock.
+Hands rotate around the clock’s center when animated.
+
+Hint
+App.jsstyles.css
+```
+import "./styles.css";
+import { useState } from "react";
+
+export default function ClockAssembly() {
+  const [reset, setReset] = useState(0);
+
+  return (
+    <div className="container">
+      <svg key={reset} viewBox="-9 -6 113 107">
+        <g mask="url(#grid-mask)">
+          {/* Grid background */}
+          <rect width="100" height="100" fill="url(#grid)" />
+
+          {/* Left edge */}
+          <rect x="0" y="0" width="0.5" height="100" fill="url(#left-edge)" />
+
+          {/* Top edge */}
+          <rect x="0" y="0" width="100" height="0.5" fill="url(#top-edge)" />
+
+          {/* Clock circle - currently at wrong position */}
+          <circle
+            cx="65"
+            cy="35"
+            r="25"
+            fill="none"
+            stroke="#000"
+            strokeWidth="2.25"
+            className="clock-circle"
+          />
+
+          {/* Hour hand - currently at wrong position */}
+          <line
+            x1="20"
+            y1="60"
+            x2="35"
+            y2="60"
+            stroke="#000"
+            strokeWidth="2.25"
+            className="hour-hand"
+          />
+
+          {/* Minute hand - currently at wrong position */}
+          <line
+            x1="80"
+            y1="90"
+            x2="80"
+            y2="70"
+            stroke="#000"
+            strokeWidth="1.75"
+            className="minute-hand"
+          />
+        </g>
+
+        {Array.from({ length: 6 }, (_, i) => {
+          const value = i * 20;
+          return (
+            <text
+              key={`x-label-${i}`}
+              x={value}
+              y="-2.3"
+              textAnchor="middle"
+              fontSize="4"
+              fill="rgb(141, 141, 134)"
+              className="font-mono"
+            >
+              {value}
+            </text>
+          );
+        })}
+
+        {Array.from({ length: 6 }, (_, i) => {
+          const value = i * 20;
+          return (
+            <text
+              key={`y-label-${i}`}
+              x={-2}
+              y={value}
+              textAnchor="end"
+              dominantBaseline="middle"
+              fontSize="4"
+              fill="rgb(141, 141, 134)"
+              className="font-mono"
+            >
+              {value}
+            </text>
+          );
+        })}
+
+        <defs>
+          {/* Grid pattern - starts from (10, 10) to avoid overlap */}
+          <pattern
+            id="grid"
+            patternUnits="userSpaceOnUse"
+            width="10"
+            height="10"
+            x="10"
+            y="10"
+          >
+            <path
+              d="M 0 10 h 10 v -10"
+              stroke="rgb(141, 141, 134)"
+              fill="none"
+              vectorEffect="non-scaling-stroke"
+              strokeDasharray="5"
+            />
+          </pattern>
+
+          {/* Left edge pattern */}
+          <pattern
+            id="left-edge"
+            patternUnits="userSpaceOnUse"
+            width="1"
+            height="10"
+          >
+            <path
+              d="M 0 0 v 10"
+              stroke="rgb(141, 141, 134)"
+              fill="none"
+              vectorEffect="non-scaling-stroke"
+              strokeDasharray="5"
+            />
+          </pattern>
+
+          {/* Top edge pattern */}
+          <pattern
+            id="top-edge"
+            patternUnits="userSpaceOnUse"
+            width="10"
+            height="1"
+          >
+            <path
+              d="M 0 0 h 10"
+              stroke="rgb(141, 141, 134)"
+              fill="none"
+              vectorEffect="non-scaling-stroke"
+              strokeDasharray="5"
+            />
+          </pattern>
+
+          {/* grid mask */}
+          <mask id="grid-mask" maskUnits="userSpaceOnUse">
+            <rect x="0" y="0" width="100" height="100" fill="white" />
+          </mask>
+        </defs>
+      </svg>
+
+      {/* Use this button to replay your animation */}
+      <button className="button" onClick={() => setReset(reset + 1)}>
+        Animate hands
+      </button>
+    </div>
+  );
+}
+```
+
+View Solution
+A simpler approach with transform-box
+The explicit coordinate approach works, but it has a downside: if you move the clock or change its size, you need to recalculate the transform-origin coordinates. There’s a more flexible solution using transform-box: fill-box.
+This property changes the reference point for transform-origin. Instead of using viewBox coordinates, it uses the element’s bounding box - making transform-origin work like it does in HTML:
+
+```
+rect {
+  transform: rotate(45deg);
+  transform-origin: center;
+  transform-box: fill-box;
+}
+```
+
+Now center refers to the center of the rectangle itself, not the viewBox. Try moving the rect shape around - the transform-origin moves with it:
+
+```
+<svg viewBox="0 0 100 100">
+  <path
+    x="30"
+    y="30"
+    width="40"
+    height="40"
+    strokeWidth="1.5"
+    style="
+          transform: rotate(0deg);
+          transform-origin: center;
+          transform-box: fill-box;
+    "
+    fill="hsl(47, 94%, 66%)"
+  />
+</svg>
+```
+xyrotation
+Challenge
+Refactor your clock from the previous exercise to use transform-box: fill-box instead of explicit coordinates. You can post your solution in the Discord server.
+View fill-box SolutionCopy page

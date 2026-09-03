@@ -1,0 +1,26 @@
+FundamentalsWalkthroughsModule 01Family DrawerThe analysisFirst animationsCrossfadeThe finishing touchModule 02Dynamic IslandThe DesignRing viewTimer viewMorph effectModule 03Navigation menuKnow your toolsAnimating the menuClosing thoughtsModule 04Hero illustrationSVG introductionLines and dashesRotationClick animationClock animationPolishClosing thoughtsOur menu is basically finished at this point. In this lesson I’ll discuss a small improvement we can make and we’ll talk about choosing libraries.
+
+Reduced motion
+Remember when we talked about accessibility? We talked about how animations can make people feel sick. This is one of those animations, because there’s a lot happening at once.
+To disable motion for people that prefer reduced motion we need to remove animations within a media query:
+
+```
+@media (prefers-reduced-motion: reduce) {
+  .viewport,
+  .content {
+    animation: none !important;
+  }
+}
+```
+
+This is a pretty quick fix, but you should ask this question yourself with each animation. Should we disable animations for people that prefer reduced motion? Don’t forget it, people appreciate it!
+Should you still use Radix?
+Radix is not as maintained as it used to be, and there are great alternatives these days like React Aria or Base UI. While Base UI is the shiny, new thing, Radix is mature and battle-tested. Also, code doesn’t stop working just because it’s not maintained.
+Again, you should carefully consider all the options and choose the one that makes the most sense for you. For me, it’s Radix at the moment. I haven’t run into any big issues with it, and in the worst case, you can always patch an issue or fork the library.
+The good news here is that Radix and Base UI implementations are very similar. If you want to refactor this component to use Base UI, you’ll only have to change a few CSS variables and data attributes. Less than 5 minutes of work.
+Trusting the hype
+When I was starting out Stitches was the hot new thing. Everyone thought it’s the future of styling so I decided to use it at a company I was working at. It was great... for a few months. At some point the Stitches team has moved on to other projects and it wasn’t maintained anymore.
+I made a mistake. I wanted to use the new shiny thing, because people in the community were impressed by it at that moment.
+Don’t chase the new shiny thing like I did. Think about the pros and cons and carefully consider all the options.
+Maybe Base UI will be the best thing that happened to the web, maybe it will be unmaintained in a year. I don’t know that. What I do know is that Radix solves a problem that I have and it won’t break because of lack of commits.
+To be clear, I am aware of Radix’s issues. I just don’t consider them big enough to make me switch to Base UI at this moment. With that being said, I want Base UI to succeed. The web deserves great primitives.Copy page

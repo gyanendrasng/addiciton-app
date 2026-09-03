@@ -1,0 +1,198 @@
+Practical Animation TipsThis lesson is a summary of what we learned so far in the form of practical tips, but there are also some tips we haven’t covered yet. You can treat this as a reference guide that you can come back to whenever you need to make a decision or feel stuck on an animation.
+RepetitionThis is not the only place where I reuse some content. That’s on purpose. Repetition is persuasive. I’d rather want you to look at the same example multiple times by showing it to you more than once so you actually get it, instead of creating new examples just for the sake of it.
+Record your animations
+When something about your animation feels off, but you can’t figure out what, record it and play it back frame by frame. This will not only help you see the animation in a new light, but also help you notice details that you might have missed at normal speed.
+ I record a ton of my own animations, but also those of others for inspiration.
+Fix shaky animations
+When you animate using CSS’s transform, the element might shift by 1px at the start and end of the transition in some browsers.
+ Notice the slight shift at the end of the animation.
+This happens because the browser tries to optimize the animation by swapping between GPU and CPU rendering. I won’t get into the details here, but GPU and CPU render things differently which can cause that 1px shift in some cases.
+We can fix this problem by using will-change property which will tell the browser that we want to animate this element soon so it can optimize the animation and let the GPU handle it.
+
+```
+.element {
+  will-change: transform;
+}
+```
+
+Give yourself a break
+Don’t code and ship your animations in one sitting. Take a break, step away from the code for a while. After you come back, you’ll notice things you might have missed, maybe you won’t like some of the decisions you made.
+The greatest animations take time, not only to code, but to review and improve them.
+The transitions in Sonner were done in a few days, but I kept replaying them literally every day until I published them. Who knows, maybe those additional few tweaks made Theo appreciate the animation the way he did.
+
+Scale your buttons
+The interface should feel as if it’s listening to the user. You should aim to give the user feedback on all of their actions as soon as possible. Submitting a form should show a loading state, copy to clipboard action should show a success state.
+One easy way to make your interface feel instantly more responsive is to add a subtle scale down effect when a button is pressed. A scale of 0.97 on the :active pseudo-class should do the job:
+PastePaste
+Don’t animate from scale(0)
+Elements that animate from scale(0) can make an animation feel off. Try animating from a higher initial scale instead (0.9+). It makes the movement feel more gentle, natural, and elegant.
+OptionsOptions
+scale(0) feels wrong because it looks like the element comes out of nowhere. A higher initial value resembles the real world more. Just like a balloon, even when deflated it has a visible shape, it never disappears completely.
+Don’t animate subsequent tooltips
+Tooltips should have a slight delay before appearing to prevent accidental activation. Once a tooltip is open however, hovering over other tooltips should open them with no delay and no animation.
+Radix UI and Base UI skip the delay once a tooltip is shown.
+Radix and Base UI, two unstyled component libraries, skip the delay once a tooltip is shown. Base UI allows you to skip the animation as well. To do that you’ll need to target the data-instant attribute and set the transition duration to 0ms.
+Here’s how the styles would look to achieve this:
+
+```
+.tooltip {
+  transition:
+    transform 0.125s ease-out,
+    opacity 0.125s ease-out;
+  transform-origin: var(--transform-origin);
+ 
+  &[data-starting-style],
+  &[data-ending-style] {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+ 
+  /** This takes care of disabling subsequent animations */
+  &[data-instant] {
+    transition-duration: 0ms;
+  }
+}
+```
+
+Make your animations origin aware
+A way to make your popovers feel better is to make them origin-aware. They should scale in from the trigger. You’ll need CSS’s transform-origin for this, but its default value is center, which is wrong in most cases.
+Click on the feedback button below to open the popover and see it animate from the center, close it, and press J tap on the grey X icon to set the correct origin and open the popover again. Pressing S will slow the animation down so you can see the difference better.
+FeedbackClick on the X icon to toggle between aware and unaware origins, then click on the button.Press J to toggle between aware and unaware origins, then click on the button.
+Base UI and Radix UI support origin-aware animations through CSS variables. This means that applying these variables will set the correct origin automatically.
+
+```
+.radix {
+  transform-origin: var(--radix-dropdown-menu-content-transform-origin);
+}
+ 
+.baseui {
+  transform-origin: var(--transform-origin);
+}
+```
+
+Keep your animations fast
+A faster-spinning spinner makes the app seem to load faster, even though the load time is the same. This improves the perceived performance.
+Which one works harder to load the data?
+A 180ms select animation feels more responsive than a 400ms one:
+Ethereum Ethereum 
+As a rule of thumb, UI animations should generally stay under 300ms.
+Don’t animate keyboard interactions
+These actions may be repeated hundreds of times a day, an animation would make them feel slow, delayed, and disconnected from the user’s actions. You should never animate them.
+To see it for yourself, focus on the input below and use arrow keys to navigate through the list. Notice how the highlight feels delayed compared to the keys you press. Now press  (shift) and see how this interaction feels without animation.
+AnimationNo animationCommand MenuSuggestionsLinearApplicationChatGPTApplicationCursorApplicationFigmaApplicationObsidianApplicationCommandsClipboard HistoryCommandEmoji PickerCommandOpen Application ↵Press shift to toggle the animation
+Be careful with adding animations to frequently used elements
+A hover effect is nice, but if used multiple times a day, it would likely benefit the most from having no animation at all.
+Imagine you interact with this list often during the day.
+I usually don’t animate elements when I know they might be used often during the day.
+You might not know yet which elements that will be in your case. The best advice here is to use your own product. Use it every day and with time you’ll notice which animations annoy you.
+Hover flicker
+When you add a hover animation that changes the position of the element, it sometimes means that the cursor is not on that element anymore. This causes the element to flicker back and forth between the hover and the initial state.
+ You might have seen this problem on some sites before.
+The solution here is to add a child to our box and change its position instead. This way hovering on the parent (.box) won’t cause it to change its position, only the child (.box-inner) will.
+
+```
+import "./styles.css";
+ 
+export default function SimpleTransformTransition() {
+  return (
+     <div className="box">
+        <div className="box-inner" />
+     </div>
+  );
+}
+```
+
+
+```
+.box:hover .box-inner {
+  transform: translateY(-20%);
+}
+ 
+.box-inner {
+  height: 56px;
+  width: 56px;
+  background: #fad655;
+  border-radius: 50%;
+  transition: transform 200ms ease;
+}
+```
+
+Thanks to that, the space underneath our yellow box when hovered will still be part of our .box element and thus the hover state will still be active. Here’s a visualization to make it more clear. The yellow outline represents the bounds of our .box element when hovered.
+The right one (our solution code) would not flicker on hover.
+Appropriate target area
+Sometimes you can have a button that is visually quite small which makes it harder to tap on touch devices. The fix here is to use a ::before pseudo-element to create a larger hit area without changing the layout.
+
+Apple recommends that interactive elements should have a minimum hit target of 44px. WCAG recommends the same size. Knowing this, and knowing that (almost) everyone uses Tailwind these days, we can create a touch-hitbox utility.
+
+```
+@utility touch-hitbox {
+  position: relative;
+ 
+  &::before {
+    content: "";
+    position: absolute;
+    display: block;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    min-height: 44px;
+    min-width: 44px;
+    z-index: 9999;
+  }
+}
+```
+
+This positions a pseudo-element in the center of the interactive element, and ensures it’s at least 44px in size. This way, even if the button is 24px, we’ll be able to tap on it easier.
+
+```
+<button className="touch-hitbox">
+  <BellIcon />
+</button>
+```
+
+Thanks to Freddie for sharing this on X.
+Use ease-out for enter and exit animations
+If you are animating something that is entering or exiting the screen, use ease-out. It accelerates at the beginning which gives the user a feeling of responsiveness.
+The dropdown on the left below uses ease-in, which starts slow. The one on the right uses ease-out, which starts fast, making the animation feel faster too.
+OptionsOptions
+The duration for these dropdowns is identical, 300ms (you can inspect the code to verify this), but the ease-in one feels slower. That’s the difference easing makes.
+You could decrease the duration to make ease-in work, but this easing is just not made for UI animations. It speeds up at the end, which is the opposite of what we want.
+Here’s a visual representation of both curves, blue is ease-out. Notice how much faster it moves at the beginning, that’s what we want for our animations.
+
+Use ease-in-out for elements that are already on the screen
+When something that is already on the screen needs to move, use ease-in-out. Think about the timeline component we discussed earlier. It mimics the motion of a car accelerating and decelerating, so it feels more natural.
+Notice how this movement mimics a car accelerating and decelerating.
+Disable hover effects on touch devices
+There’s no such thing as a hover on touch devices. When a user accidentally moves their finger over an element that has a hover effect, it will trigger that hover state, but that’s not the user’s intent 99% of the time. You should disable them to avoid confusion.
+Since Tailwind v4, the hover: class applies only when the input device supports hover. If you are not using Tailwind, you can use the hover media query to disable them as well.
+
+```
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    transform: scale(1.05);
+  }
+}
+```
+
+Use custom easing curves
+The built-in easing curves in CSS are usually not strong enough, which is why I almost never use them. Take a look at the example below where we compare two versions of the ease-in-out curve:
+Built-inCustom easing here feels more energetic.
+You can find the custom easing curves I use here. There’s also easings.co which has some great easings and visualizations as well.
+Use blur when nothing else works
+If you tried a few different easings and durations for your animation and something about it still feels off, try adding a bit of filter: blur() to mask those imperfections.
+Below we have a button that simply crossfades between two states, and another one that adds 2px of blur to that animation. It also uses tip #1 to scale the button down to 0.97 when pressed. Notice how much more pleasing the second button feels.
+Click the button to toggle between two states.
+ 
+Blur works here because it bridges the visual gap between the old and new states. Without it, you see two distinct objects, which feels less natural.
+It tricks the eye into seeing a smooth transition by blending the two states together.
+Notice how much more distinct the two states are without blur:
+progress0.5Scrub through the timeline to see the animation at different stages.
+Does this matter?
+I remember the moment when I found out about each of these tips either from a colleague, a friend, or X. I remember how happy I was knowing I’ll be able to improve and push my skills further thanks to them. I hope you feel the same way about this course.
+When I look at these tips, I know that some of them are absolutely game-changing, while others some people might not even notice.
+Both of them are equally important.
+They make the interface feel cohesive and consistent which makes it more predictable. It allows the user to focus on their task rather than the interface. They don’t have to think where to click next, because everything feels intuitive.
+“All those unseen details combine to produce something that’s just stunning, like a thousand barely audible voices all singing in tune.”Paul Graham,  Hackers and Painters
+I think it’s actually good when details go unnoticed. That means that users use our product without any friction, a seamless experience. That’s what great interfaces are all about. Not animations, not details, not delight, but enabling the user to achieve their goals with ease.Copy pageEmil Kowalski@emilkowalski·FollowTheo just made a great ad for SonnerWatch on X4:37 PM · Dec 27, 2023724ReplyCopy linkRead 25 replies

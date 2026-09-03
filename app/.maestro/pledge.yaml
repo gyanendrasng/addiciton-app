@@ -1,0 +1,25 @@
+# Press-and-hold pledge commits and persists across relaunch
+appId: host.exp.Exponent
+---
+- openLink: exp://localhost:8090
+- tapOn:
+    text: "Keep going"
+    optional: true
+- tapOn:
+    text: "×"
+    optional: true
+- tapOn:
+    text: "Home"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*clean, and counting.*"
+    timeout: 40000
+- longPressOn: "Hold to pledge"
+- extendedWaitUntil:
+    visible: "Pledged for today ✓"
+    timeout: 5000
+- stopApp
+- openLink: exp://localhost:8090
+- extendedWaitUntil:
+    visible: "Pledged for today ✓"
+    timeout: 40000

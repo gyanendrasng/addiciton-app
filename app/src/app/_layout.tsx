@@ -1,0 +1,78 @@
+import {
+  BricolageGrotesque_700Bold,
+  BricolageGrotesque_800ExtraBold,
+} from '@expo-google-fonts/bricolage-grotesque';
+import {
+  Figtree_400Regular,
+  Figtree_500Medium,
+  Figtree_600SemiBold,
+  Figtree_700Bold,
+} from '@expo-google-fonts/figtree';
+import { useFonts } from 'expo-font';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
+import { useCallback, useEffect } from 'react';
+import { Appearance } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+import { DbProvider } from '@/db/provider';
+import { loadDevOffset } from '@/features/settings/dev';
+import { SessionProvider } from '@/lib/session';
+import { activeScheme, palette } from '@/theme/palette';
+
+SplashScreen.preventAutoHideAsync();
+
+export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    BricolageGrotesque_700Bold,
+    BricolageGrotesque_800ExtraBold,
+    Figtree_400Regular,
+    Figtree_500Medium,
+    Figtree_600SemiBold,
+    Figtree_700Bold,
+  });
+  useEffect(() => {
+    // Force native chrome (tab bar, sheets, alerts) to match the chosen theme.
+    Appearance.setColorScheme?.(activeScheme);
+  }, []);
+  const onDbReady = useCallback(() => {
+    if (__DEV__) loadDevOffset();
+    SplashScreen.hideAsync();
+  }, []);
+  if (!fontsLoaded) return null; // splash stays up
+  return (
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: palette.bg }}>
+      <StatusBar style={activeScheme === 'light' ? 'dark' : 'light'} />
+      <ThemeProvider
+        value={{
+          ...(activeScheme === 'light' ? DefaultTheme : DarkTheme),
+          colors: {
+            ...(activeScheme === 'light' ? DefaultTheme : DarkTheme).colors,
+            background: palette.bg,
+            card: palette.surface,
+            primary: palette.accent,
+            text: palette.text,
+            border: palette.line,
+          },
+        }}>
+      <DbProvider onReady={onDbReady}>
+        <SessionProvider>
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.bg } }}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="onboarding" options={{ gestureEnabled: false, animation: 'fade' }} />
+          <Stack.Screen name="checkin" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="reasons" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="account" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="sign-in" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="urge" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
+          <Stack.Screen name="relapse" options={{ presentation: 'modal', animation: 'fade' }} />
+          <Stack.Screen name="milestone" options={{ presentation: 'fullScreenModal', animation: 'fade', gestureEnabled: false }} />
+          <Stack.Screen name="milestones" options={{ animation: 'slide_from_right' }} />
+        </Stack>
+        </SessionProvider>
+      </DbProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
+  );
+}

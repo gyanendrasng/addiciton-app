@@ -1,0 +1,74 @@
+PerformanceThe interactive examples in this article are crucial to understanding the concepts, which is why I decided to make this lesson text-only.
+Making animations that are performant on all devices is actually pretty tricky. What CSS properties should you animate? Should you use Javascript or CSS animations? What are hardware-accelerated animations? There are a lot of questions to answer, and we have to answer them, because if our animations are not performant, everything we learned so far will not create the desired effect.
+Imagine if Sonner ran on 30 frames per second. Theo probably wouldn’t be as excited as he was when it ran at 60 frames per second.
+ Sonner running at 30 frames per second
+What are performant animations?
+To keep it simple, performant animations are those that run at 60 frames per second, the same as most screen refresh rates. It means that we need to be able to re-render in ~16.7 milliseconds (1000/60). This is required in order for our brain to perceive motion as fluid.
+How do we make our animations performant?
+Let’s start by explaining how animations work in the browser.
+When we animate an element the browser needs to reflect this change. The steps a browser’s renderer takes to do this are:
+
+Layout: Calculate the size and position of elements on the page.
+Paint: Draw the page into graphical layers - essentially individual images that make up the page.
+Composite: Draw these layers to the viewport.
+
+Animating properties like padding, margin, and height will cause the browser to recalculate the layout of the page, because if our element is shrinking or growing, it might affect the position of other elements. This recalculation is expensive and might cause our animation to drop frames.
+Whether the animation will drop frames while using these properties depends on how much of the layout is affected. If the element has position: absolute or very few children, then we might get away with animating margin or padding.
+The animation below is using padding to create this "scale" animation and it works fine on my device, but I can imagine that it might drop frames on a slower device.
+
+Thankfully, we don’t have to take this risk. We can achieve the same animation by using scale in CSS and not worry about any of the potential issues mentioned above. The rule of thumb here is that you should try to animate with transform and opacity as they only trigger the third rendering step (composite) while padding or margin triggers all three. The less work the browser has to do, the better the performance.
+Transforms don’t trigger layout recalculation as they only affect the visual representation of an element, not its position in the document flow.
+This text does not moveThe blue rectangle shows the actual DOM position of the animated element.
+If we animated using margin instead, we’d see the text moving as well. This is an innocent example as we only move one text node, but imagine if we moved a whole dashboard view, by animating a sidebar, that’d be a lot of work for the browser.
+This text moves
+JS vs CSS animations
+CSS is usually the better choice when we are talking strictly about performance, if it’s done right.
+The problem with JS animations arises when they are using requestAnimationFrame to animate. Javascript code will always run on the main thread. This means that if the browser is busy doing something else, it might skip a frame, causing the animation to drop frames.
+Some CSS and WAAPI animations are hardware-accelerated, which means that the browser can offload the work to the GPU. A hardware-accelerated animation will remain smooth, no matter how busy the main thread is. If you are animating using transform in CSS the animation will likely be hardware-accelerated.
+The interactive demo below demonstrates how the business of the main thread affects animations. The more logos you add, the more work the browser has to do, and the more likely that the Framer Motion animation will drop frames, as it’s using requestAnimationFrame. CSS and WAAPI animations are hardware-accelerated and will remain smooth.
+CSSFramer MotionWAAPIThis example is inspired by the Sidebar Animation Performance post by Josh Wootonn.
+This issue happened in the Vercel’s dashboard where we animated the active highlight of a tab. The transition was done with Shared Layout Animations, and because the browser was busy loading the new page, the animation dropped frames. We fixed this by using CSS animations which moved the animation off the CPU.
+ 
+Transform shift
+Sometimes one animation can be handled by both the CPU and the GPU, there’s a hand-off between the two. This can cause our animation to shift sometimes. To avoid this, we can use the will-change property to ensure that the animation will be handled exclusively by the GPU.
+
+```
+.element {
+  /* This lets the browser know that this animation should be handled by the GPU. */
+  will-change: transform;
+}
+```
+
+I was aware of this fix for a while, but Josh Comeau’s css-for-js course helped me understand why I’m adding this property, and that’s where this part comes from.
+Re-renders in React
+When talking about animations in React we have to think about re-renders as well. Animations libraries like react-spring or Framer Motion animate things outside of React’s render cycle, but if you ever try to animate something in React that depends on state you might run into issues if you re-render too often.
+Below we modify the y position of each logo directly through the style property, we do that roughly every 16.7 milliseconds via requestAnimationFrame. When we click on the button to unoptimize, we’ll switch to updating the state rather than modifying the style directly. This will cause a re-render on every frame, which will then cause the animation to drop frames.
+Un-Optimize
+Hardware-accelerated animations in Framer Motion
+Hardware acceleration is also available in Framer Motion actually, but you have to remember to animate transforms as a string. Most people animate using x and y values, which is more readable, but if you’d need to hardware accelerate the animation, you can keep this in mind.
+
+Exceptions
+When I was building Vaul I ran into a performance issue that I couldn’t solve for days.
+Once the content of the drawer got bigger than ~20 list items the drag gesture became laggy, and I couldn’t figure out why. Dragging was done without any re-renders, so what could cause it to drop frames? Every time the drag position gets updated, I changed a CSS variable which is then used as the value for translateY().
+
+```
+const style = {
+  "--swipe-amount": `${draggedDistance}px`,
+};
+```
+
+Since CSS Variables are inheritable, changing them will cause style recalculation for all children, meaning the more items I have in my drawer, the more expensive the calculation gets. Updating the style directly on the element fixed the issue. This seems like a quick fix in retrospect, but it took me hours to figure out.
+
+```
+const style = {
+  transform: `translateY(${draggedDistance}px)`,
+};
+```
+
+Another exception is that blur animations become very laggy very quickly, especially on Safari. That’s why you should not use a higher value than ~20px for the blur filter.
+Does this mean I should avoid JS animations?
+No. The problem with JS animations arises when your website is performing heavy processing during an animation. This rarely happens, and if it does, you now read this article and know how to fix or avoid it.
+On top of that libraries like Framer Motion offer a lot more than CSS animations. You can use spring animations, shared layout animations, and more. Framer Motion does use requestAnimationFrame though and it’s a pretty big package, so you should really think about whether you need the features it offers.
+Personally, I often times combine CSS animations with Framer Motion. CSS for simple animations and those that should be hardware-accelerated, and Framer Motion for more complex/sophisticated animations.ResourcesSaving the Web, 16ms at a TimePerformance - MotionSidebar animation performanceCopy pageMatt Perry@mattgperry·Follow🧠@Framer Motion performance tip:
+
+If you're not animating transforms independently, move them to "transform" for battery-friendly, high performance hardware-accelerated animations. 9:30 AM · Oct 2, 2023262ReplyCopy linkRead 9 replies

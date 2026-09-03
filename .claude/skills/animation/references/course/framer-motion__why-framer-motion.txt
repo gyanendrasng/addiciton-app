@@ -1,0 +1,171 @@
+Why Framer MotionFramer Motion allows us to create very impressive, native-like animations with not a lot of code. Because of that, many things happen magically, and once you run into an issue it can be hard to debug.
+The OddyseyExplore unknown galaxies.GetAngry RabbitsThey are coming for you.GetGhost townScarry ghosts.GetPirates in the jungleFind the treasure.GetLost in the mountainsBe careful.Get
+The documentation often times follows a happy path. It covers simple animations, which are great for beginners, but don’t give you a lot of insight on how to craft more complex ones.
+That’s why, in this part, we’ll build a lot. We’ll cover the basics, but we’ll quickly transition into building more complex animations like the Feedback popover below. We’ll run into issues and solve them, so that you know what to do when you run into similar problems yourself.
+Feedback
+Before we start coding, let’s see why Framer Motion is so powerful and what makes it stand out from other libraries.
+The power of Framer Motion
+Everything that is possible with Framer Motion is possible with vanilla CSS and JS as well. It just usually takes a lot more time.
+How would you code the animation below without this library? You’d need to calculate the highlight’s new position based on the tab’s dimensions and its distance from the left side. That’s only the highlight part. Now, we’d need to find a way to smoothly change the direction (button in the bottom right corner) as well.
+Saved SitesCollections48 Following32 Followers
+This whole component, including the styles and inline SVGs, is only 76 lines of code. That alone would convince me to start using Framer Motion for more complex animations. You can view my implementation of this animation here.
+Remember the example below when we discussed spring animations? It consists of 33 lines of code, is interruptible and maintains momentum. Now, try building it again without Framer Motion or a similar library. It’d be a lot of work.
+
+Also, in React, it’s usually difficult to animate components once they’ve been removed from the DOM, because, well... they’re not there anymore. By wrapping your components with AnimatePresence provided by Framer Motion, you can animate them out as well.
+
+```
+import { motion, AnimatePresence } from "motion/react";
+ 
+export function Component({ isVisible }: { isVisible: boolean }) {
+  return (
+    <AnimatePresence>
+      {isVisible ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        />
+      ) : null}
+    </AnimatePresence>
+  );
+}
+```
+
+Additionally, thanks to layout animations, which we will cover in the next lesson,
+we are able to easily create interactions like the one below.
+
+You can also create drag-and-drop interactions, draw svgs, and more.
+Framer Motion is not the only animation library out there though. GSAP and react-spring are two popular alternatives. Let’s see how they compare.
+React Spring
+A spring-based library, powerful, and highly configurable. It has a steep learning curve, but at the same time it gives you a lot of control.
+Below you can see how you can create a simple fade-in animation with React Spring.
+
+```
+import { useSpring, animated } from "@react-spring/web";
+ 
+function MyComponent() {
+  const [props, api] = useSpring(
+    () => ({
+      from: { opacity: 0 },
+      to: { opacity: 1 },
+    }),
+    [],
+  );
+ 
+  return <animated.div style={props}>Hello World</animated.div>;
+}
+```
+
+It’s made by Poimandres, and because of that, this library works very well with other Poimandres libraries like use-gesture for example.
+ The code of this example is available here.
+Pros:
+
+Spring-based animations.
+Smaller package size than Framer Motion.
+Highly-configurable.
+
+Cons:
+
+Steep learning curve.
+It takes more time and more code to write the same animations as in Framer Motion.
+Documentation is hard to parse at times.
+
+GSAP
+The first animation library I’ve ever used. We’ve talked about websites on awwwwards in the lesson about taste, GSAP powers a lot of these. It’s framework-agnostic and doesn’t support spring animations. I see framework-agnostic as a con, because framework-specific libraries usually provide a better developer experience. Though GSAP has a React specific hook which you can see below.
+
+```
+import { useRef } from "react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+ 
+gsap.registerPlugin(useGSAP);
+ 
+const container = useRef();
+ 
+useGSAP(
+  () => {
+    gsap.to(".box", { opacity: 1 });
+  },
+  { scope: container },
+);
+```
+
+It’s open-source, but you can’t use it in commercial projects on the free plan. Additionally, it has a rich plugin system, but some plugins are only available on the paid plan. You can see the pricing here.
+Update to GSAP’s pricingSince this lesson was published, GSAP has been acquired by Webflow and all of its features are now free.
+ This is made with GSAP.
+Pros:
+
+A very useful timeline feature.
+Easier to learn than the alternatives (in my opinion).
+Framework-agnostic can be seen as a pro to some.
+Large community and good documentation.
+
+Cons:
+
+Some plugins require a paid plan.
+No spring animations.
+Not tailored to React.
+Paid plan for commercial projects.
+
+Framer Motion
+You can write declarative and imperative animations with it. Declarative ones can be defined as simple descriptions. This API avoids the need for you to interact with the DOM via selectors, refs or other kinds of error-prone wiring. There’s less room for error and it’s easier to scale.
+
+```
+<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} />
+```
+
+Imperative animations are more low-level, more powerful, but harder to write and maintain. You can read more about the differences here. I personally almost never use imperative animations myself.
+
+```
+function ImperativeComponent() {
+  const [scope, animate] = useAnimate();
+ 
+  useEffect(() => {
+    // This "li" selector will only select children
+    // of the element that receives `scope`.
+    animate("li", { opacity: 1 });
+  });
+ 
+  return <ul ref={scope}>{children}</ul>;
+}
+```
+
+Thanks to layout animations Framer Motion can animate properties that are not possible to animate with CSS, like flex-direction. The direction change in the example from the beginning of this lesson is done by simply changing the flex-direction from row to column.
+Saved SitesCollections48 Following32 Followers
+By using shared layout animations we can connect two components and create a transition between them when the first one is removed.
+That’s how the trash interaction is done. We aren’t moving the images ourselves. The images in the trash are completely different elements than the selectable ones. By using the same layoutId we tell Framer Motion to animate them to the place where the images in the trash will be rendered.
+My favorite example that showcases the power of Framer Motion is the one below. It feels incredibly native to me.
+ 
+Because these animations are relatively easy to build, there’s a lot of "magic" that is happening behind the scenes. I often run into a situation where something is not working, and I can’t understand why, because I don’t know how Framer Motion works under the hood.
+Docs often follow the happy path, which is great for beginners, but when you run into an issue that is not covered in the docs, it can be hard to find a solution.
+Pros:
+
+Spring animations.
+Layout animations are an absolute game-changer.
+Complex animations with not a lot of code.
+The API ties in well with React.
+
+Cons:
+
+Bundle size.
+Sometimes, it’s hard to understand why an animation is not working as expected.
+
+Framer Motion is now Motion
+Framer Motion has been renamed to Motion for React. Nothing except the import path has changed. To import motion from Motion for React you need to do the following:
+
+```
+import { motion } from "motion/react";
+```
+
+Previously, you would’ve imported it like this:
+
+```
+import { motion } from "framer-motion";
+```
+
+I will keep referring to it as Framer Motion in this course to avoid confusion as mentioned in the CSS Module, but the imports in all exercises have been updated.
+With that being said, Motion (not Motion for React) is a good alternative to Framer Motion when you’re not using React. You can read more about it here. If you are working with React, I would still recommend Framer Motion as it’s more tailored to the framework.
+Other alternatives
+We haven’t covered every library out there, only the most popular ones. There are many other libraries like Anime.js or Popmotion, but I haven’t tried any of those and basically stick to Framer Motion.
+There’s also the Web Animation API, which is a native browser API for animations. It’s not as powerful as the libraries we’ve discussed, but it’s definitely something you can check out.
+Let’s start building some animations now!ResourcesFramer Motion                                   GSAPReact SpringHighlight animationCopy page

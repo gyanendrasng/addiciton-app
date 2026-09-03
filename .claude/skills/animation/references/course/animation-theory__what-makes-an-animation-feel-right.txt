@@ -1,0 +1,43 @@
+What makes an animation feel right?I’m sure you’ve seen an animation that made you think, “Wow, that feels good!”. But can you explain why it felt that way? What actually made it work? That’s what we’ll be unpacking in this lesson, why some animations feel better than others.
+What’s the difference?
+Does this animation feel good to you?
+ 
+Probably not.
+How about this one?
+ 
+Better, right?
+The second one uses an easing type that works better with this type of animation, which helps make it feel more natural.
+The first one has a linear easing type, which feels robotic and unnatural as almost nothing in the world around us moves at a constant speed. It has no energy to its movement. It feels lifeless.
+An animation feels right when it mirrors the physics we experience every day. It feels right when you are not surprised by the way it animates, because it feels familiar.
+“It’s not so much that resembling nature is intrinsically good as that nature has had a long time to work on the problem.”Paul Graham,  Taste for Makers
+Next, consider these two buttons:
+
+The right one feels better because the subtle blur fills the visual gap between the object’s states. Without it, the eye sees two distinct objects. Which feels less natural. Blur tricks the eye into seeing a smooth transition by blending the two states together.
+Apple understands this really well. When you look at the Dynamic Island for example, it behaves like a living organism. The whole iOS UI feels very alive and natural as well.
+ 
+We can make our animations feel more natural through careful choices: the right easing, duration, and the properties we want to animate. Each decision shapes how the animation feels. We’ll learn about all the ingredients in the upcoming lessons.
+Purpose
+Just because animations can improve the user experience doesn’t mean that we have to animate everything on the screen. We have to pace animations through the experience. The more animations we add, the less valuable they become.
+Think about what the user wants to achieve and how often they will see an animation. The hover below looks nice in a demo, but if the user hovers over the item fifty times a day, even at 200ms animation starts feeling sluggish and creates friction.
+Imagine you interact with this list often during the day.
+A common mistake people make starting their animation journey is animating too much, trying to “delight” the user. Usually, when a user is using your product, they have a specific goal in mind. They don’t expect to be delighted, they just want to achieve their goal.
+That’s where adding animations can backfire. Instead of improving the experience, they make it worse.
+We’ll get to it in the Timing and Purpose lesson, but for now, know that an animation feels right when you and the user are not surprised or annoyed by its existence. It feels right when it’s obvious why it exists.
+For example a slight stagger of dropdown items might feel cool when you first click it, but notice how much quicker users can interact with the dropdown when there’s no animation of those items.
+OptionsOptions
+In the trash interaction below, we select images to delete and then we need some sort of UI to confirm the deletion. Since we’re already swapping states, we can make this moment a bit special by animating this transition.
+
+Taste
+Great animation, just like great design, follows a set of rules. The Easing Blueprint shows you how to choose the right easing for your animations. Timing and Purpose helps you know when and how to animate.
+These rules are a great starting point, but to get really good at animations, you need to develop great taste. And despite what some people think, taste is not just a personal preference, you can actually learn it.
+“If taste is just personal preference, then everyone’s  already perfect.”Paul Graham,  Y Combinator
+When you have developed taste, you know what looks good and what doesn’t. At that point you’ll have also built a collection of references that you can use to guide your work. You’ll then be prepared for every scenario, whether it’s covered in the blueprint or not.
+We’ll dive deeper into this in the taste lesson, but for now, know that animations that feel right are made by people with great taste.
+Summary
+Animations feel right when:
+
+They feel natural.
+They have a purpose.
+They are made with taste.
+
+The good news is that you’ll learn all of these ingredients in the upcoming lessons!ResourcesDesigning Fluid InterfacesGreat AnimationsCopy page

@@ -1,0 +1,240 @@
+FundamentalsWalkthroughsModule 01Family DrawerThe analysisFirst animationsCrossfadeThe finishing touchModule 02Dynamic IslandThe DesignRing viewTimer viewMorph effectModule 03Navigation menuKnow your toolsAnimating the menuClosing thoughtsModule 04Hero illustrationSVG introductionLines and dashesRotationClick animationClock animationPolishThe finishing touchWe have our height and crossfade animations working, but it doesn’t feel quite right yet. The drawer is too slow at the moment, it feels kinda robotic and the easing could be improved as well.
+Try it out
+When it comes to easing, I’ve tried a lot of different settings, and none of them felt great to me. It’s just trial and error like I told you before. In this case I landed on [0.26, 1, 0.5, 1] for the height animation, it’s a strong ease-out curve to make it snappy.
+
+When it comes to the body, I wanted something slower to ensure that the content transition is visible. I couldn’t use something else than an ease-out curve though, because it would feel out of sync. I chose [0.26, 0.08, 0.25, 1], which is a lighter version of the height easing.
+
+The duration was chosen after trying a bunch of stuff as well, I landed on 0.27s. It’s not a common duration, you usually go for 0.25s or 0.3s, but again, this just felt right to me after many tries.
+This is a creative process and I want to emphasize the importance of trying stuff out. I always start with choosing the right easing and only then I change the duration as the duration largely depends on the easing you choose.
+Here’s the same drawer, but with the updates I just described:
+Try it out
+Dynamic opacity transition
+One thing that annoys me a bit is the amount of fade we see when we transition from a relatively short drawer to another short one. It’s not the end of the world, but I’d like to make it better.
+ Notice how much fade we see when the drawer transitions from default state to the "Remove Wallet" state.
+We can’t just make it faster, as the transition from short to tall looks good. What we can do instead is make the duration of the opacity transition dynamic. Let’s try implementing it below!
+App.jscomponents.jsxicons.js
+```
+"use client";
+
+import { useMemo, useState, useRef } from "react";
+import { Drawer } from "vaul";
+import useMeasure from "react-use-measure";
+import { motion, AnimatePresence } from "motion/react";
+import { DefaultView, Key, Phrase, RemoveWallet } from "./components";
+import { CloseIcon } from "./icons";
+
+export default function FamilyDrawer() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [view, setView] = useState("default");
+  const [elementRef, bounds] = useMeasure();
+
+  const content = useMemo(() => {
+    switch (view) {
+      case "default":
+        return <DefaultView setView={setView} />;
+      case "remove":
+        return <RemoveWallet setView={setView} />;
+      case "phrase":
+        return <Phrase setView={setView} />;
+      case "key":
+        return <Key setView={setView} />;
+    }
+  }, [view]);
+
+  return (
+    <>
+      <button
+        className="focus-visible:shadow-focus-ring-button fixed top-1/2 left-1/2 h-[44px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-gray-200 bg-white px-4 py-2 font-medium text-black antialiased transition-colors hover:bg-[#F9F9F8] md:font-medium"
+        onClick={() => setIsOpen(true)}
+        style={{ fontFamily: "Open Runde" }}
+      >
+        Try it out
+      </button>
+      <Drawer.Root open={isOpen} onOpenChange={setIsOpen}>
+        <Drawer.Portal>
+          <Drawer.Overlay
+            className="fixed inset-0 z-10 bg-black/30"
+            onClick={() => setIsOpen(false)}
+          />
+          <Drawer.Content
+            asChild
+            className="fixed inset-x-4 bottom-4 z-10 mx-auto max-w-[361px] overflow-hidden rounded-[36px] bg-[#FEFFFE] outline-hidden md:mx-auto md:w-full"
+            style={{ fontFamily: "Open Runde" }}
+          >
+            <motion.div
+              animate={{
+                height: bounds.height,
+                transition: {
+                  duration: 0.27,
+                  ease: [0.25, 1, 0.5, 1],
+                },
+              }}
+            >
+              <Drawer.Close asChild>
+                <button
+                  data-vaul-no-drag=""
+                  className="focus-visible:shadow-focus-ring-button absolute top-7 right-8 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-[#F7F8F9] text-[#949595] transition-transform focus:scale-95 active:scale-75"
+                >
+                  <CloseIcon />
+                </button>
+              </Drawer.Close>
+              <div ref={elementRef} className="px-6 pt-2.5 pb-6 antialiased">
+                <AnimatePresence initial={false} mode="popLayout" custom={view}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    key={view}
+                    transition={{
+                      duration: 0.27,
+                      ease: [0.26, 0.08, 0.25, 1],
+                    }}
+                  >
+                    {content}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
+    </>
+  );
+}
+```
+
+View Solution
+Try it out
+Vaul’s duration
+Vaul, the drawer library that we use comes with a default animation duration of 500ms. This is a bit too slow for our use case, let’s change it to 200ms. We make this change to make everything feel more cohesive. The drawer should feel like a single entity, from opening it to animating the height.
+
+```
+[vaul-drawer] {
+  transition: transform 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+ 
+[vaul-overlay] {
+  transition: opacity 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+```
+
+Try it out
+I chose a high duration of 500ms for Vaul, because it fits the iOS’ Sheet animation. This does look slow when you have a small drawer that is not touching the edge of the window. The 500ms animation looks way better if you have it styled like the iOS component, you can see an example here.
+Conclusion
+And that’s basically it. While this component might look a bit complicated at first, it’s just a simple combination of height animation, AnimatePresence, and the right easing.
+Here’s the full code. Feel free to play around with it, remix it, make it your own, and most importantly, have fun with it!
+App.jscomponents.jsxicons.jsstyles.css
+```
+"use client";
+
+import { useMemo, useState, useRef } from "react";
+import { Drawer } from "vaul";
+import useMeasure from "react-use-measure";
+import { motion, AnimatePresence } from "motion/react";
+import { DefaultView, Key, Phrase, RemoveWallet } from "./components";
+import { CloseIcon } from "./icons";
+
+export default function FamilyDrawer() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [view, setView] = useState("default");
+  const [elementRef, bounds] = useMeasure();
+  const previousHeightRef = useRef();
+
+  const content = useMemo(() => {
+    switch (view) {
+      case "default":
+        return <DefaultView setView={setView} />;
+      case "remove":
+        return <RemoveWallet setView={setView} />;
+      case "phrase":
+        return <Phrase setView={setView} />;
+      case "key":
+        return <Key setView={setView} />;
+    }
+  }, [view]);
+
+  const opacityDuration = useMemo(() => {
+    const currentHeight = bounds.height;
+    const previousHeight = previousHeightRef.current;
+
+    const MIN_DURATION = 0.15;
+    const MAX_DURATION = 0.27;
+
+    if (!previousHeightRef.current) {
+      previousHeightRef.current = currentHeight;
+      return MIN_DURATION;
+    }
+
+    const heightDifference = Math.abs(currentHeight - previousHeight);
+    previousHeightRef.current = currentHeight;
+
+    const duration = Math.min(
+      Math.max(heightDifference / 500, MIN_DURATION),
+      MAX_DURATION,
+    );
+
+    return duration;
+  }, [bounds.height]);
+
+  return (
+    <>
+      <button
+        className="focus-visible:shadow-focus-ring-button fixed top-1/2 left-1/2 h-[44px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-gray-200 bg-white px-4 py-2 font-medium text-black antialiased transition-colors hover:bg-[#F9F9F8] md:font-medium"
+        onClick={() => setIsOpen(true)}
+        style={{ fontFamily: "Open Runde" }}
+      >
+        Try it out
+      </button>
+      <Drawer.Root open={isOpen} onOpenChange={setIsOpen}>
+        <Drawer.Portal>
+          <Drawer.Overlay
+            className="fixed inset-0 z-10 bg-black/30"
+            onClick={() => setIsOpen(false)}
+          />
+          <Drawer.Content
+            asChild
+            className="fixed inset-x-4 bottom-4 z-10 mx-auto max-w-[361px] overflow-hidden rounded-[36px] bg-[#FEFFFE] outline-hidden md:mx-auto md:w-full"
+            style={{ fontFamily: "Open Runde" }}
+          >
+            <motion.div
+              animate={{
+                height: bounds.height,
+                transition: {
+                  duration: 0.27,
+                  ease: [0.25, 1, 0.5, 1],
+                },
+              }}
+            >
+              <Drawer.Close asChild>
+                <button
+                  data-vaul-no-drag=""
+                  className="focus-visible:shadow-focus-ring-button absolute top-7 right-8 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-[#F7F8F9] text-[#949595] transition-transform focus:scale-95 active:scale-75"
+                >
+                  <CloseIcon />
+                </button>
+              </Drawer.Close>
+              <div ref={elementRef} className="px-6 pt-2.5 pb-6 antialiased">
+                <AnimatePresence initial={false} mode="popLayout" custom={view}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    key={view}
+                    transition={{
+                      duration: opacityDuration,
+                      ease: [0.26, 0.08, 0.25, 1],
+                    }}
+                  >
+                    {content}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
+    </>
+  );
+}
+```
+Copy page
