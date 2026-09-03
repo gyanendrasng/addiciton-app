@@ -109,7 +109,17 @@ export const auth = betterAuth({
   trustedOrigins: [
     'curb://',
     'https://joincurb.app',
-    ...(isProd ? [] : ['exp://', 'http://localhost:3000', 'http://localhost:8090']),
+    // Expo Go serves the app from exp://<lan-ip>:<port>, which changes with
+    // the network — the docs' wildcards are the only workable dev entry.
+    ...(isProd
+      ? []
+      : [
+          'exp://',
+          'exp://**',
+          'exp://192.168.*.*:*/**',
+          'http://localhost:3000',
+          'http://localhost:8090',
+        ]),
   ],
 
   plugins: [
@@ -117,6 +127,9 @@ export const auth = betterAuth({
       otpLength: 6,
       expiresIn: 60 * 5, // 5 minutes
       allowedAttempts: 3,
+      // Codes are short-lived, but a leaked database dump shouldn't hand
+      // anyone a live sign-in code either.
+      storeOTP: 'hashed',
       // First sign-in with a code creates the account — there is no separate
       // sign-up step in the app.
       disableSignUp: false,

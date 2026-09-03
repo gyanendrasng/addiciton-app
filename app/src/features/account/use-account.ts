@@ -37,9 +37,13 @@ export const NO_ENTITLEMENT: Entitlement = {
 /** Ask the server whether this user is premium. */
 export async function fetchEntitlement(): Promise<Entitlement | null> {
   try {
+    // The Expo client keeps the session cookie in SecureStore, not in a cookie
+    // jar, so it has to be attached by hand. `credentials: 'omit'` is what the
+    // docs prescribe — without it RN can attach a stale jar cookie instead.
     const cookie = await authClient.getCookie();
     const res = await fetch(`${AUTH_BASE_URL}/api/entitlement`, {
       headers: cookie ? { Cookie: cookie } : undefined,
+      credentials: 'omit',
     });
     if (!res.ok) return null;
     const data = (await res.json()) as Entitlement & { signedIn: boolean };
