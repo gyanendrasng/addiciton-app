@@ -36,7 +36,7 @@ async function ensureAndroidChannel() {
   await Notifications.setNotificationChannelAsync('reminders', {
     name: 'Daily reminders',
     importance: Notifications.AndroidImportance.DEFAULT,
-    lightColor: '#3FDE9C',
+    lightColor: '#31C983',
     sound: null,
     vibrationPattern: [0, 200],
   });

@@ -77,7 +77,8 @@ export default function AccountScreen() {
     // The reactive session store doesn't notify on Expo (#10545) — pull it.
     await refreshSession();
     setBusy(false);
-    router.back();
+    if (router.canGoBack()) router.back();
+    else router.replace('/');
   };
 
   const revokeOthers = async () => {
@@ -141,10 +142,12 @@ export default function AccountScreen() {
 
       <Card style={s.card}>
         <View style={s.row}>
+          {/* Champagne, not the accent green — subscription surfaces are the
+              one place this app is allowed to look expensive. */}
           <SymbolChip
             name={premium ? 'checkmark.seal.fill' : 'seal'}
-            tint={premium ? palette.accent : palette.textFaint}
-            wash={premium ? palette.accentWash : palette.surface3}
+            tint={premium ? hues.premium.solid : palette.textFaint}
+            wash={premium ? hues.premium.wash : palette.surface3}
           />
           <View style={{ flex: 1 }}>
             <Text style={s.rowLabel}>{premium ? 'Premium active' : 'No active subscription'}</Text>

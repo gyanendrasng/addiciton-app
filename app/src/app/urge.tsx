@@ -18,9 +18,11 @@ import { durations } from '@/theme/motion';
 import { palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
+import { useDismiss } from '@/lib/nav';
 
 export default function UrgeScreen() {
   const router = useRouter();
+  const dismiss = useDismiss();
   const navigation = useNavigation();
   const [state, dispatch] = useReducer(urgeReducer, { step: 'breathe' as UrgeStep, completed: [], startedAt: now() });
   const urgeId = useRef<number | null>(null);
@@ -70,7 +72,7 @@ export default function UrgeScreen() {
   return (
     <View style={[s.root, { paddingTop: Math.max(insets.top, 12), paddingBottom: Math.max(insets.bottom, 12) }]}>
       <View style={s.header}>
-        <Tap haptic="none" onPress={() => router.back()} style={s.close} accessibilityLabel="Close">
+        <Tap haptic="none" onPress={dismiss} style={s.close} accessibilityLabel="Close">
           <Text style={s.closeGlyph}>×</Text>
         </Tap>
       </View>

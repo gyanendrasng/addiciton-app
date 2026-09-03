@@ -24,12 +24,18 @@ export function Screen({
 }) {
   const router = useRouter();
   const Body = scroll ? ScrollView : View;
+  // Deep links land here with no history — `router.back()` would throw
+  // "GO_BACK was not handled by any navigator".
+  const goBack = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace('/');
+  };
   return (
     <SafeAreaView style={s.root} edges={['top', 'bottom']}>
       {(back || title) && (
         <View style={s.header}>
           {back ? (
-            <Tap haptic="none" onPress={() => router.back()} accessibilityLabel="Back" style={s.back}>
+            <Tap haptic="none" onPress={goBack} accessibilityLabel="Back" style={s.back}>
               <Chevron />
             </Tap>
           ) : (

@@ -10,7 +10,7 @@ const features = [
   },
   {
     icon: '✋',
-    color: '#3FDE9C',
+    color: '#31C983',
     wash: 'rgba(63,222,156,.16)',
     title: 'A streak per habit',
     body: "Quitting more than one thing? Each habit has its own counter. Slipping on one doesn't erase the others.",
@@ -38,7 +38,7 @@ const features = [
   },
   {
     icon: '◆',
-    color: '#3FDE9C',
+    color: '#31C983',
     wash: 'rgba(63,222,156,.16)',
     title: 'Milestones worth reaching',
     body: 'Ten tiers from Spark to Free. A slip restarts the climb — never the map.',

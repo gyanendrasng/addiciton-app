@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -8,9 +8,10 @@ import { RelapseFlow } from '@/features/relapse/RelapseFlow';
 import { palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
+import { useDismiss } from '@/lib/nav';
 
 export default function RelapseScreen() {
-  const router = useRouter();
+  const dismiss = useDismiss();
   const insets = useSafeAreaInsets();
   const { profile } = useProfile();
   const { urgeId, habit } = useLocalSearchParams<{ urgeId?: string; habit?: string }>();
@@ -18,7 +19,7 @@ export default function RelapseScreen() {
   return (
     <View style={[s.root, { paddingTop: 8, paddingBottom: Math.max(insets.bottom, 12) }]}>
       <View style={s.header}>
-        <Tap haptic="none" onPress={() => router.back()} style={s.close} accessibilityLabel="Close">
+        <Tap haptic="none" onPress={dismiss} style={s.close} accessibilityLabel="Close">
           <Text style={s.closeGlyph}>×</Text>
         </Tap>
       </View>

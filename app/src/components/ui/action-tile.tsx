@@ -12,6 +12,7 @@ export const HUE_SYMBOL: Record<Hue, SFSymbol> = {
   checkin: 'face.smiling.fill',
   reasons: 'heart.fill',
   progress: 'chart.bar.fill',
+  premium: 'checkmark.seal.fill',
 };
 
 /** Native symbol on iOS; a hue dot elsewhere. */

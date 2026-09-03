@@ -25,6 +25,7 @@ import { Platform } from 'react-native';
 
 import { track } from '@/lib/analytics';
 import { authClient } from '@/lib/auth-client';
+import { humanError } from '@/lib/errors';
 
 export type Provider = 'apple' | 'google' | 'email';
 
@@ -56,7 +57,7 @@ async function signInWithApple(): Promise<SignInResult> {
       ],
     });
     if (!credential.identityToken) {
-      return { ok: false, message: 'Apple did not return an identity token.' };
+      return { ok: false, message: 'Apple didn’t return a sign-in token. Please try again.' };
     }
     const { error } = await authClient.signIn.social({
       provider: 'apple',
@@ -77,13 +78,13 @@ async function signInWithApple(): Promise<SignInResult> {
         },
       },
     });
-    if (error) return { ok: false, message: error.message ?? 'Sign in failed.' };
+    if (error) return { ok: false, message: humanError(error, 'signin') };
     track('signin_completed', { provider: 'apple' });
     return { ok: true };
   } catch (e) {
     const err = e as { code?: string; message?: string };
     if (err.code === 'ERR_REQUEST_CANCELED') return { ok: false, cancelled: true };
-    return { ok: false, message: err.message ?? 'Sign in failed.' };
+    return { ok: false, message: humanError(err, 'signin') };
   }
 }
 
@@ -93,11 +94,11 @@ async function signInWithGoogle(): Promise<SignInResult> {
       provider: 'google',
       callbackURL: 'curb://',
     });
-    if (error) return { ok: false, message: error.message ?? 'Sign in failed.' };
+    if (error) return { ok: false, message: humanError(error, 'signin') };
     track('signin_completed', { provider: 'google' });
     return { ok: true };
   } catch (e) {
-    return { ok: false, message: (e as Error).message ?? 'Sign in failed.' };
+    return { ok: false, message: humanError(e, 'signin') };
   }
 }
 
@@ -112,10 +113,10 @@ export async function sendEmailCode(email: string): Promise<SignInResult> {
       email: address,
       type: 'sign-in',
     });
-    if (error) return { ok: false, message: error.message ?? 'Could not send the code.' };
+    if (error) return { ok: false, message: humanError(error, 'code') };
     return { ok: true };
   } catch (e) {
-    return { ok: false, message: (e as Error).message ?? 'Could not send the code.' };
+    return { ok: false, message: humanError(e, 'code') };
   }
 }
 
@@ -126,11 +127,18 @@ export async function verifyEmailCode(email: string, code: string): Promise<Sign
       email: email.trim().toLowerCase(),
       otp: code.trim(),
     });
-    if (error) return { ok: false, message: error.message ?? 'That code didn’t work.' };
+    if (error) {
+      // Wrong or expired codes are the common case and deserve their own line.
+      const raw = (error.message ?? '').toLowerCase();
+      if (raw.includes('invalid') || raw.includes('expired') || raw.includes('otp')) {
+        return { ok: false, message: 'That code didn’t work. Check it, or send a new one.' };
+      }
+      return { ok: false, message: humanError(error, 'signin') };
+    }
     track('signin_completed', { provider: 'email' });
     return { ok: true };
   } catch (e) {
-    return { ok: false, message: (e as Error).message ?? 'That code didn’t work.' };
+    return { ok: false, message: humanError(e, 'signin') };
   }
 }
 

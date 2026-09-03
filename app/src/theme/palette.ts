@@ -10,41 +10,50 @@ import * as SQLite from 'expo-sqlite';
 export type ThemePref = 'light' | 'dark' | 'system';
 export type Scheme = 'light' | 'dark';
 
+/**
+ * Dark is the primary theme.
+ *
+ * The ground is a near-black with a slight cool cast rather than #000: pure
+ * black leaves nowhere for the surface ladder to go, and reads flat next to a
+ * tinted neutral. Every grey below carries the same ~217° cast so the raised
+ * surfaces look like one material lit from one direction, which is most of
+ * what separates an expensive-looking dark UI from a cheap one.
+ */
 const dark = {
-  bg: '#000000',
-  surface: '#111214',
-  surface2: '#1A1B1E',
-  surface3: '#232528',
-  line: '#2A2C30',
-  text: '#F2F3F5',
-  textDim: '#9A9FA8',
-  textFaint: '#5F646D',
-  accent: '#3FDE9C',
-  accentDeep: '#1E8A64',
+  bg: '#07080A',
+  surface: '#101216',
+  surface2: '#171A1F',
+  surface3: '#20242A',
+  line: '#2A2F36',
+  text: '#F5F6F8',
+  textDim: '#A0A6B0',
+  textFaint: '#727883',
+  accent: '#31C983',
+  accentDeep: '#1B8A5A',
   accentInk: '#06120D',
-  accentWash: 'rgba(63, 222, 156, 0.14)',
-  amber: '#F5B544',
-  amberWash: 'rgba(245, 181, 68, 0.16)',
-  danger: '#F0645A',
+  accentWash: 'rgba(49, 201, 131, 0.14)',
+  amber: '#E5BC58',
+  amberWash: 'rgba(229, 188, 88, 0.16)',
+  danger: '#E8695E',
   bright: '#FFFFFF',
 } as const;
 
 const light: Record<keyof typeof dark, string> = {
-  bg: '#ECEFED',
+  bg: '#F1F3F4',
   surface: '#FFFFFF',
   surface2: '#FFFFFF',
-  surface3: '#E4E8E5',
-  line: '#DCE1DE',
-  text: '#111C17',
-  textDim: '#586460',
-  textFaint: '#93A099',
-  accent: '#0E8F5E',
-  accentDeep: '#0B6E48',
+  surface3: '#E7EAEC',
+  line: '#DDE1E4',
+  text: '#111519',
+  textDim: '#4E5A56',
+  textFaint: '#606D66',
+  accent: '#0A7A4E',
+  accentDeep: '#06603C',
   accentInk: '#FFFFFF',
-  accentWash: 'rgba(14, 143, 94, 0.12)',
-  amber: '#B77B12',
-  amberWash: 'rgba(183, 123, 18, 0.14)',
-  danger: '#CF3E34',
+  accentWash: 'rgba(10, 122, 78, 0.12)',
+  amber: '#896815',
+  amberWash: 'rgba(137, 104, 21, 0.14)',
+  danger: '#C1372E',
   bright: '#0B1512',
 };
 
@@ -78,14 +87,46 @@ export const themePref: ThemePref = readPrefSync();
 export const activeScheme: Scheme = resolveScheme(themePref);
 export const palette = activeScheme === 'light' ? light : dark;
 
-/** Semantic action hues — same bright solids + dark inks in both themes. */
-export const hues = {
-  pledge: { solid: '#3FDE9C', ink: '#06120D', wash: 'rgba(63, 222, 156, 0.16)' },
-  urge: { solid: '#FF8A4C', ink: '#180A03', wash: 'rgba(255, 138, 76, 0.16)' },
-  checkin: { solid: '#5EA8FF', ink: '#04101F', wash: 'rgba(94, 168, 255, 0.16)' },
-  reasons: { solid: '#F5D04B', ink: '#171200', wash: 'rgba(245, 208, 75, 0.16)' },
-  progress: { solid: '#B48CFF', ink: '#120A24', wash: 'rgba(180, 140, 255, 0.16)' },
-} as const;
-export type Hue = keyof typeof hues;
+/**
+ * Semantic action hues. One meaning each — never decoration.
+ *
+ * These are jewel tones, not the candy brights they started as: each sits a
+ * step deeper and a step less saturated, which is what stops five accents on a
+ * dark ground from reading like a toy. Every solid clears 4.5:1 on its own
+ * theme's background, so a hue can carry text as well as an icon.
+ *
+ * Resolved per-theme at launch, exactly like `palette`, so call sites never
+ * change: on a near-white ground the same hue has to be far darker to stay
+ * legible.
+ */
+type Hue3 = { solid: string; ink: string; wash: string };
+
+const darkHues = {
+  /** kept a streak, made a pledge — this is also `accent` */
+  pledge: { solid: '#31C983', ink: '#06120D', wash: 'rgba(49, 201, 131, 0.16)' },
+  /** an urge, in the moment — warm, urgent, never red */
+  urge: { solid: '#EE7F4E', ink: '#180A03', wash: 'rgba(238, 127, 78, 0.16)' },
+  /** daily check-in, mood */
+  checkin: { solid: '#6D9DEF', ink: '#04101F', wash: 'rgba(109, 157, 239, 0.16)' },
+  /** your reasons for starting — antique gold, not lemon */
+  reasons: { solid: '#E5BC58', ink: '#171200', wash: 'rgba(229, 188, 88, 0.16)' },
+  /** history, stats, milestones */
+  progress: { solid: '#9F8AE8', ink: '#120A24', wash: 'rgba(159, 138, 232, 0.16)' },
+  /** subscription surfaces only — champagne, so premium looks premium */
+  premium: { solid: '#D8B888', ink: '#171004', wash: 'rgba(216, 184, 136, 0.16)' },
+} as const satisfies Record<string, Hue3>;
+
+const lightHues: Record<keyof typeof darkHues, Hue3> = {
+  pledge: { solid: '#1E7B50', ink: '#FFFFFF', wash: 'rgba(30, 123, 80, 0.12)' },
+  urge: { solid: '#BA4512', ink: '#FFFFFF', wash: 'rgba(186, 69, 18, 0.12)' },
+  checkin: { solid: '#1A65E6', ink: '#FFFFFF', wash: 'rgba(26, 101, 230, 0.12)' },
+  reasons: { solid: '#896815', ink: '#FFFFFF', wash: 'rgba(137, 104, 21, 0.12)' },
+  progress: { solid: '#7253DD', ink: '#FFFFFF', wash: 'rgba(114, 83, 221, 0.12)' },
+  premium: { solid: '#8A652D', ink: '#FFFFFF', wash: 'rgba(138, 101, 45, 0.12)' },
+};
+
+export const hues: Record<keyof typeof darkHues, Hue3> =
+  activeScheme === 'light' ? lightHues : darkHues;
+export type Hue = keyof typeof darkHues;
 
 export type Palette = typeof dark;
