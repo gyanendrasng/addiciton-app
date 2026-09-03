@@ -18,24 +18,7 @@ import { Notice } from '@/components/ui/notice';
 import { Tap } from '@/components/ui/tap';
 import { setPremium } from '@/db/repo/profile';
 import { usePremium } from '@/features/premium/use-premium';
-import {
-  BENEFITS,
-  OFFER_AFTER_VIEWS,
-  OFFER_PLAN,
-  PLANS,
-  PRIVACY_URL,
-  TERMS_URL,
-  type Plan,
-} from '@/features/premium/plans';
-import { getSetting, setSetting, useSetting } from '@/db/repo/settings';
-import { cancelOfferNudge, scheduleOfferNudge } from '@/features/premium/offer-nudge';
-import {
-  formatCountdown,
-  OFFER_OPENED_KEY,
-  openWindow,
-  windowFrom,
-} from '@/features/premium/offer-window';
-import { now } from '@/lib/clock';
+import { BENEFITS, PLANS, PRIVACY_URL, TERMS_URL, type Plan } from '@/features/premium/plans';
 import { track } from '@/lib/analytics';
 import { humanError } from '@/lib/errors';
 import { hues, palette } from '@/theme/palette';
@@ -50,26 +33,13 @@ import { type } from '@/theme/type';
  * the billing period and links to Terms and Privacy to be visible here, plus a
  * Restore control, so none of those are optional decoration.
  */
-/** How many times this user has landed on the wall without subscribing. */
-const VIEWS_KEY = 'paywall.views.v1';
-
-/**
- * One count per app launch.
- *
- * The gate can remount this route several times in a session — navigating
- * away and back, a state change re-running the redirect — and each of those is
- * the same visit, not a fresh decision to walk away. Module scope resets when
- * the app does, which is exactly the granularity "came back" means.
- */
-let countedThisLaunch = false;
-
 export default function PaywallScreen() {
   const router = useRouter();
   const { premium, refresh, checking } = usePremium();
-  const { value: views, loading: viewsLoading } = useSetting<number>(VIEWS_KEY, 0);
-  const { value: openedAt } = useSetting<number | null>(OFFER_OPENED_KEY, null);
-  // Ticks the countdown. A second is the right resolution for a 12-hour clock.
-  const [, tick] = useState(0);
+
+  const [selected, setSelected] = useState<Plan['id'] | null>(null);
+  const [busy, setBusy] = useState<'buy' | 'restore' | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   /**
    * The gate decides *whether* the wall shows; the wall has to dismiss itself.
@@ -78,64 +48,11 @@ export default function PaywallScreen() {
    * restore and a background entitlement refresh too.
    */
   useEffect(() => {
-    if (!premium) return;
-    // Nobody wants a discount notification for something they just bought.
-    void cancelOfferNudge();
-    router.replace('/');
+    if (premium) router.replace('/');
   }, [premium, router]);
-  const [selected, setSelected] = useState<Plan['id'] | null>(null);
-  const [busy, setBusy] = useState<'buy' | 'restore' | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
-  /**
-   * Count each arrival at the wall. Someone who saw it, left without paying and
-   * came back has genuinely hesitated — that, not a countdown we invented, is
-   * what earns the lower price.
-   */
-  useEffect(() => {
-    if (premium || countedThisLaunch) return;
-    countedThisLaunch = true;
-    void (async () => {
-      // Read straight from the database rather than from the hook. On the
-      // first render `useSetting` still holds its fallback, so
-      // `setSetting(views + 1)` wrote 1 every single time — the counter could
-      // never reach 2 and the offer could never fire.
-      const seen = (await getSetting<number>(VIEWS_KEY)) ?? 0;
-      await setSetting(VIEWS_KEY, seen + 1);
-      // Reached the wall and didn't buy: half an hour from now, one
-      // notification about the discounted year. No-ops if notifications aren't
-      // already allowed, and only ever schedules once.
-      await scheduleOfferNudge();
-    })();
-    // Once per launch.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Don't decide while the setting is still loading, or the offer flickers in.
-  const earned = !viewsLoading && (views ?? 0) >= OFFER_AFTER_VIEWS;
-  const window = windowFrom(openedAt ?? null, now());
-  // Earned AND inside the 12 hours. Once it lapses the price really does go
-  // back — restarting the clock on every visit is what makes a countdown a lie.
-  const offered = earned && window.state !== 'expired';
-
-  // Open the window the first time the offer is actually shown, not when it's
-  // earned: a notification that arrives face-down shouldn't burn the 12 hours.
-  useEffect(() => {
-    if (!earned || premium || openedAt != null) return;
-    void openWindow();
-  }, [earned, openedAt, premium]);
-
-  useEffect(() => {
-    if (!offered || window.state !== 'open') return;
-    const id = setInterval(() => tick((n) => n + 1), 1000);
-    return () => clearInterval(id);
-  }, [offered, window.state]);
-  // The offer replaces the standard yearly *in place* — two yearly rows at
-  // different prices is a puzzle, and moving it to the top would break the
-  // weekly → monthly → yearly reading order that makes the year look cheap.
-  const plans = offered ? PLANS.map((p) => (p.id === 'yearly' ? OFFER_PLAN : p)) : PLANS;
   // Weekly is preselected — the lowest number to say yes to.
-  const plan = plans.find((p) => p.id === selected) ?? plans[0];
+  const plan = PLANS.find((p) => p.id === selected) ?? PLANS[0];
 
   const buy = async () => {
     if (busy) return;
@@ -213,17 +130,8 @@ export default function PaywallScreen() {
           ))}
         </View>
 
-        {offered ? (
-          <View style={s.offerRow}>
-            <Text style={s.offer}>You came back — so here’s half off the year.</Text>
-            {window.state === 'open' ? (
-              <Text style={s.countdown}>{formatCountdown(window.msLeft)} left</Text>
-            ) : null}
-          </View>
-        ) : null}
-
         <View style={s.plans}>
-          {plans.map((p) => {
+          {PLANS.map((p) => {
             const on = p.id === plan.id;
             return (
               <Tap
@@ -335,25 +243,7 @@ const s = StyleSheet.create({
   },
   benefitText: { flex: 1, color: palette.textDim, fontSize: 14.5, lineHeight: 21, fontFamily: type.body },
 
-  offerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-    marginTop: Spacing.five,
-  },
-  offer: { flex: 1, color: hues.premium.solid, fontSize: 14, lineHeight: 20, fontFamily: type.bodyMed },
-  countdown: {
-    color: hues.premium.ink,
-    backgroundColor: hues.premium.solid,
-    fontSize: 13,
-    fontFamily: type.bodySemi,
-    fontVariant: ['tabular-nums'],
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  plans: { marginTop: Spacing.three, gap: Spacing.two },
+  plans: { marginTop: Spacing.five, gap: Spacing.two },
   plan: {
     minHeight: 72,
     borderRadius: 16,

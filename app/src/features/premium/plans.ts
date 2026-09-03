@@ -11,7 +11,7 @@
  * duration be shown, so once RevenueCat is wired the store price wins.
  */
 export type Plan = {
-  id: 'weekly' | 'monthly' | 'yearly' | 'yearly_offer';
+  id: 'weekly' | 'monthly' | 'yearly';
   /** RevenueCat / store product identifier */
   productId: string;
   name: string;
@@ -65,35 +65,6 @@ export const PLANS: Plan[] = [
     recurring: true,
   },
 ];
-
-/**
- * The come-back offer.
- *
- * Shown when someone reaches the wall, leaves without subscribing, and comes
- * back — a real signal, not a timer we invented. It then runs for a real 12
- * hours (see offer-window.ts): the countdown is on the *discount*, never on
- * the standard price, and when it lapses the price genuinely returns to
- * $59.99. A clock that silently restarts on every visit is the dishonest
- * version of this, and it's the version App Review objects to.
- *
- * It needs a matching promotional/introductory offer in App Store Connect and
- * Google Play, wired through RevenueCat — a discounted price shown in-app with
- * no real offer behind it fails review.
- */
-export const OFFER_PLAN: Plan = {
-  id: 'yearly_offer',
-  productId: 'curb.premium.yearly.offer',
-  name: 'Yearly',
-  price: '$29.99',
-  period: '/year',
-  sub: 'Half the usual $59.99 — about $2.50 a month',
-  badge: 'SAVE 83%',
-  disclosure: '$29.99 for the first year, then $59.99 per year. Cancel any time.',
-  recurring: true,
-};
-
-/** How many times the wall must have been seen before the offer appears. */
-export const OFFER_AFTER_VIEWS = 2;
 
 /** What the money buys. Concrete features, no promised outcomes. */
 export const BENEFITS = [

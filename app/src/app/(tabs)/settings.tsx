@@ -22,7 +22,6 @@ import { wipeEverything } from '@/features/onboarding/complete';
 import { habits as ALL_HABITS } from '@/features/onboarding/content';
 import { Eyebrow, Title } from '@/features/onboarding/components/chrome';
 import { clearToday, DEV_SKIP_AUTH_KEY, seedDemo, travel } from '@/features/settings/dev';
-import { resetOfferNudge, scheduleOfferNudge } from '@/features/premium/offer-nudge';
 import { TABLES } from '@/db/schema';
 import { getTimeOffset } from '@/lib/clock';
 import { activeScheme, hues, palette, themePref, type ThemePref } from '@/theme/palette';
@@ -259,20 +258,6 @@ export default function SettingsScreen() {
               sub="Count what is queued."
               onPress={async () => Alert.alert('Scheduled', String((await listScheduled()).map((n) => n.identifier).join('\n') || 'none'))}
               chevron
-            />
-            <Row
-              label="Fire the offer nudge"
-              sub="Reschedules the $29.99 notification for 5 seconds from now."
-              onPress={async () => {
-                await resetOfferNudge();
-                const ok = await scheduleOfferNudge(5);
-                Alert.alert(
-                  ok ? 'Scheduled' : 'Not scheduled',
-                  ok
-                    ? 'Arriving in 5 seconds. Background the app to see it.'
-                    : 'Notifications aren’t allowed yet — turn on daily reminders first.',
-                );
-              }}
             />
             <Row label="Reset onboarding" sub="Wipe and start the quiz again." onPress={deleteEverything} danger />
           </Section>
