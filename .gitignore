@@ -21,6 +21,9 @@ expo-env.d.ts
 out/
 .vercel/
 
+# Google OAuth client secret files, as downloaded from the Cloud Console
+client_secret*.json
+
 # native signing material — never commit these
 *.orig.*
 *.jks
