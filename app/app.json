@@ -77,6 +77,12 @@
     },
     "backgroundColor": "#07080A",
     "description": "Quit any addiction. A private, on-device recovery companion.",
-    "primaryColor": "#3FDE9C"
+    "primaryColor": "#3FDE9C",
+    "owner": "gyanendrasingh2003",
+    "extra": {
+      "eas": {
+        "projectId": "61ba9994-90aa-4962-b8f0-a05823981145"
+      }
+    }
   }
 }
