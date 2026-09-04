@@ -21,7 +21,7 @@ import { Notice } from '@/components/ui/notice';
 import { authClient } from '@/lib/auth-client';
 import { humanError } from '@/lib/errors';
 import { openManageSubscription } from '@/features/premium/manage';
-import { track } from '@/lib/analytics';
+import { resetAnalytics, track } from '@/lib/analytics';
 import { hues, palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
@@ -112,6 +112,9 @@ export default function AccountScreen() {
       try {
         await authClient.deleteUser();
         track('account_deleted');
+        // Ordered after the event: capture it as the user who deleted, then
+        // stop attributing anything on this device to a deleted account.
+        resetAnalytics();
         await refreshSession();
         router.replace('/');
       } catch {

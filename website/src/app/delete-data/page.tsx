@@ -11,8 +11,8 @@ export default function Page() {
     <LegalPage title={'Delete my data'} updated={'Two places to delete from: your phone, and our servers.'}>
 <Callout>
     <p>There are two places to delete from: the copy on your phone, and your account on
-    our servers. Doing both leaves us holding nothing about you. Each is a couple of taps,
-    and both are below.</p>
+    our servers. Each is a couple of taps, and both are below. If you also turned on
+    analytics, there is a third step — see <a href="#usage">usage data</a>.</p>
   </Callout>
 
   <h2>Option 1 — Delete from inside the app</h2>
@@ -38,7 +38,20 @@ export default function Page() {
   <a href="mailto:privacy@joincurb.app">privacy@joincurb.app</a> from the address you
   signed in with and we will delete the account for you.</p>
 
-  <h2>Option 3 — Delete the app</h2>
+  <h2 id="usage">Option 3 — Delete your usage data</h2>
+  <p>If you turned on <em>Share usage data</em>, Curb has sent product analytics to PostHog:
+  which screens you opened, which habits you track, how long your streaks ran. Deleting your
+  account does not automatically delete that, because it is stored separately.</p>
+  <ol>
+    <li>Turn it off in <strong>Settings → Your data → Share usage data</strong>. Collection
+    stops immediately.</li>
+    <li>Email <a href="mailto:privacy@joincurb.app">privacy@joincurb.app</a> to have what was
+    already collected deleted. Do this <em>before</em> deleting your account if you can, so we
+    can still match your request to your records.</li>
+  </ol>
+  <p>Anything not deleted on request is removed automatically 12 months after collection.</p>
+
+  <h2>Option 4 — Delete the app</h2>
   <p>Uninstalling Curb removes its private storage, and with it all of your data.</p>
   <ul>
     <li><strong>iOS:</strong> press and hold the Curb icon → Remove App → Delete App.</li>

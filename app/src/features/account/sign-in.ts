@@ -26,7 +26,7 @@ import { Platform } from 'react-native';
 import { setPremium } from '@/db/repo/profile';
 import { setSetting } from '@/db/repo/settings';
 import { DEV_SKIP_AUTH_KEY } from '@/features/settings/dev';
-import { track } from '@/lib/analytics';
+import { resetAnalytics, track } from '@/lib/analytics';
 import { authClient } from '@/lib/auth-client';
 import { humanError } from '@/lib/errors';
 
@@ -180,4 +180,8 @@ export async function signOutEverywhere() {
   }
   await setPremium(false);
   if (__DEV__) await setSetting(DEV_SKIP_AUTH_KEY, false);
+  // Drop the analytics identity with the session. Without this the device keeps
+  // the signed-out user's distinct_id, so the next person to sign in on this
+  // phone is recorded as them.
+  resetAnalytics();
 }

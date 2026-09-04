@@ -125,6 +125,10 @@ export default function Page() {
   sensitive personal information. It is used to improve Curb — never sold, never shared
   for advertising, and never used to build a profile of you for anyone else. You can turn
   analytics off in <em>Settings</em>; the rest of the app works exactly the same.</p>
+  <p>Usage and progress data is retained for <strong>12 months</strong> and then deleted.
+  Turning analytics off stops collection from that moment; to have data already collected
+  removed, email <a href="mailto:privacy@joincurb.app">privacy@joincurb.app</a> and we will
+  delete it.</p>
 
   <h3 id="updates">d. App updates</h3>
   <p>Curb can receive improvements and fixes without a full store update, using{' '}

@@ -1,0 +1,33 @@
+Curb is subscription-only with no free tier, so the paywall appears immediately
+after onboarding.
+
+TEST ACCOUNT (credentials are also entered under App access)
+  Email: review@joincurb.app
+  Code:  418574
+
+Sign-in is a one-time code sent by email. For this address the code is fixed at
+418574, so no mailbox access is needed: enter the email, tap Continue, then
+enter 418574. This account already holds an active subscription, so the whole
+app is reachable without making a purchase.
+
+Sign-in also works with Google, with Apple, or with a code sent to any other
+address you choose.
+
+CRISIS INFORMATION
+Crisis lines and a medical disclaimer are in Settings > Support > Get help, and
+are deliberately reachable without an account or a subscription.
+
+MEDICAL POSITIONING
+Curb is a self-tracking tool for people reducing or stopping a habit. It makes
+no treatment claims, is not a medical device, and does not diagnose or treat any
+condition. The disclaimer in Get help says so, and advises anyone physically
+dependent on alcohol or benzodiazepines to speak to a doctor before stopping.
+
+SUBSCRIPTION TERMS
+Prices and renewal terms are shown on the paywall before purchase, and in the
+store listing. Terms: https://joincurb.app/terms — Privacy: https://joincurb.app/privacy
+
+ACCOUNT DELETION
+Settings > Manage account > Delete account removes the account and its data.
+Settings > Your data > Delete everything wipes all recovery data on the device.
+Web-accessible instructions: https://joincurb.app/delete-data
