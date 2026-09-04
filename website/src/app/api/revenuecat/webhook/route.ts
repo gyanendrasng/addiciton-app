@@ -127,7 +127,10 @@ export async function POST(request: Request) {
     console.error('[revenuecat] webhook sync failed', e);
     // Let the retry re-do the work rather than stranding the claim.
     if (event.id) await releaseEvent(event.id).catch(() => {});
-    return NextResponse.json({ error: 'sync failed' }, { status: 500 });
+    // The reason travels in the body so it shows up in RevenueCat's delivery
+    // log. Safe: this route is unreachable without the shared secret.
+    const reason = e instanceof Error ? e.message : 'sync failed';
+    return NextResponse.json({ error: reason }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

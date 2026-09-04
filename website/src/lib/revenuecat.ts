@@ -68,6 +68,14 @@ function restConfigured(): boolean {
  * create a customer record for an id that doesn't exist. Requires a V2-version
  * secret key with `customer_information:customers:read`.
  */
+/** Upstream failure, carrying the status so it reaches the webhook response. */
+export class RestError extends Error {
+  constructor(readonly status: number, readonly body: string) {
+    super(`RevenueCat REST ${status}: ${body}`);
+    this.name = 'RestError';
+  }
+}
+
 async function fetchActiveEntitlements(appUserId: string): Promise<
   { active: boolean; expiresAt: Date | null } | null
 > {
@@ -84,8 +92,11 @@ async function fetchActiveEntitlements(appUserId: string): Promise<
   });
   if (res.status === 404) return { active: false, expiresAt: null }; // no such customer
   if (!res.ok) {
-    console.error(`[revenuecat] ${res.status} on active_entitlements: ${await res.text()}`);
-    return null; // leave the row alone rather than wrongly revoking
+    const body = await res.text();
+    console.error(`[revenuecat] ${res.status} on active_entitlements: ${body}`);
+    // Carries the upstream status so the 500 we answer with names the cause.
+    // Only RevenueCat sees it: the route rejects anything without the secret.
+    throw new RestError(res.status, body.slice(0, 200));
   }
 
   const body = (await res.json()) as ActiveEntitlementsResponse;
