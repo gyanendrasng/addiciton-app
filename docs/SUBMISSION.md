@@ -35,6 +35,29 @@ parallel with everything else here and nothing can shorten it.
 - Crisis lines and a medical disclaimer **inside** the app (`/help`), reachable
   from Settings, the urge outcome and after a slip, and deliberately not behind
   the paywall.
+- **App Store Connect record created** — `app.joincurb.curb`, SKU `curb-ios`,
+  Apple ID 6808528188.
+- **App Information complete** — name, subtitle `Quit tracker for any habit`,
+  privacy policy URL, Health & Fitness / Lifestyle, content rights, standard
+  EULA, encryption keys already in `app.json` (no documentation upload needed).
+- **Age rating 13+** (12+ Vietnam/Korea). Declared Infrequent on substances,
+  Infrequent on medical/wellness, Yes on health topics, Infrequent on mature
+  themes, None on all sexual content — the answer that keeps it off 18+.
+- **Regulated Medical Device: No.** Required because of the Health & Fitness
+  category, not the rating; without it the EU pulls distribution post-launch.
+- **DSA trader status declared** — required to sell in the EU at all.
+- **App Privacy filled**: Name, Email, User ID, Device ID, Purchases. All
+  App Functionality, all Linked, **none used for tracking**. Health is
+  deliberately **not** declared — the server schema holds only account and
+  entitlement rows, and nothing else is transmitted today.
+- **Subscription group `Curb Premium`** with all three products created at
+  levels 1/2/3, ids matching `plans.ts`. Group localization uses the custom app
+  name **`Curb`** rather than the full store name, so iPhone Settings →
+  Subscriptions doesn't advertise what the app is for.
+- Family Sharing **off** on every plan — a shared subscription is visible to
+  the whole family, which is the wrong default for a recovery app.
+- **Accessibility label drafted** — Dark Interface and Sufficient Contrast on
+  iPhone. Can only be published once a version is live.
 
 ---
 
@@ -67,18 +90,28 @@ parallel with everything else here and nothing can shorten it.
 
 ---
 
-## 2. Purchases — the app currently cannot take money
+## 2. Purchases — the remaining work
 
-`react-native-purchases` is **not installed**; `paywall.tsx` grants premium
-locally under `__DEV__` and throws in production. Until this is done the app
-is unshippable.
+`react-native-purchases` 10.9 **is installed** and wired through
+`features/premium/purchases.ts` behind a lazy require, so Expo Go still runs.
+What's missing is the account plumbing.
 
-- [ ] Create the subscription group and 3 products in App Store Connect and
-      Play Console, ids matching `app/src/features/premium/plans.ts`:
-      `curb.premium.weekly` $9.99 · `curb.premium.monthly` $14.99 ·
-      `curb.premium.yearly` $59.99.
-- [ ] RevenueCat project → entitlement id **`premium`** → attach all 3.
-- [ ] `npx expo install react-native-purchases`, wire `buy()` and `restore()`.
+- [x] Apple subscription group + 3 products created.
+- [ ] Same three ids in **Play Console**.
+- [ ] **In-App Purchase key** (Users and Access → Integrations) — the `.p8`
+      downloads **once**.
+- [ ] **App-Specific Shared Secret** (App Information → Manage).
+- [ ] RevenueCat project → entitlement id **`premium`** → attach all 3 →
+      an offering containing all three packages.
+- [ ] `EXPO_PUBLIC_REVENUECAT_IOS_KEY` / `_ANDROID_KEY` in the app env.
+- [ ] **App Store Server Notifications** production URL → RevenueCat's endpoint
+      (App Information page). Without it, cancellations reach you late.
+- [ ] Sandbox tester (Users and Access → Sandbox) on an email that has never
+      been an Apple ID.
+- [ ] Paywall **review screenshot** on each of the 3 products — needs a build,
+      and it's the only thing keeping them at Missing Metadata.
+- [ ] Click **Add for Review** on the group once the screenshots are attached;
+      the first subscription group ships with the 1.0 binary.
 - [ ] Point the RevenueCat webhook at `https://joincurb.app/api/revenuecat/webhook`
       with the shared secret in the Authorization header.
 - [ ] Set the app's RevenueCat App User ID to the Better Auth user id — this is
@@ -123,7 +156,9 @@ is unshippable.
 - [ ] Screenshots: iPhone 6.9" **and** 6.5" (Apple), plus Android. Take them
       from a real build with real data, not the placeholder state.
 - [ ] Play **feature graphic** 1024×500.
-- [ ] Description, keywords, subtitle, category (Health & Fitness).
+- [x] Subtitle, category, age rating — done on App Information.
+- [ ] Keywords, promotional text and description on the **version** page —
+      all in `docs/STORE_LISTING.md`, character counts verified.
 - [ ] Support URL `joincurb.app/support`, privacy URL `joincurb.app/privacy`.
 - [ ] Terms (EULA) in App Store Connect, or Apple's standard EULA.
 - [ ] Age rating. Apple moved to 4+/9+/13+/16+/18+ in July 2025 — answer the
@@ -133,12 +168,13 @@ is unshippable.
 
 ## 6. Privacy declarations — get these right
 
-- [ ] **Apple privacy nutrition labels.** "Data Not Collected" is not available.
-      Declare *Contact Info → Email*, *Purchases*, *Usage Data*, and — because
-      the habits someone tracks are health information — *Health & Fitness*,
-      or *Sensitive Info* depending on how the questionnaire routes you. All
-      linked to identity, used for App Functionality and Analytics, **not** for
-      tracking. Getting this wrong is the top takedown risk.
+- [x] **Apple privacy nutrition labels** — filled and matching the binary.
+- [ ] ⚠️ **Re-answer App Privacy before any version that ships PostHog or
+      server-side recovery data.** Today Health is declared *not* collected,
+      which is true: the server schema holds account and entitlement rows only.
+      The moment habits or streaks are transmitted, that label is false, and a
+      shipped app collecting more than it declares is the top takedown risk for
+      this category. `app/src/lib/analytics.ts` says the same in its header.
 - [ ] **Play Data safety form** — same answers, plus: encrypted in transit,
       deletable in-app, and the analytics opt-out in Settings.
 - [ ] Confirm the shipped app matches both filings. A mismatch between the
