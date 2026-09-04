@@ -17,6 +17,15 @@ import { type } from '@/theme/type';
 import { Tap } from '@/components/ui/tap';
 import { nextMilestone } from '@/features/recovery/timeline';
 
+/**
+ * A count of one gets the singular. "1 slips" is the kind of detail that makes
+ * an app feel unfinished, and it lands on the screen someone opens the morning
+ * after a lapse.
+ */
+function plural(n: number, one: string, many: string) {
+  return n === 1 ? one : many;
+}
+
 export default function ProgressScreen() {
   const today = useDayKey();
   const { profile } = useProfile();
@@ -46,9 +55,9 @@ export default function ProgressScreen() {
           <Tile value={String(state.totalClean)} label="clean days total" color={palette.text} />
         </View>
         <View style={s.tiles}>
-          <Tile value={String(data.urgesSurvived)} label="urges survived" color={hues.urge.solid} />
-          <Tile value={String(data.relapses.length)} label="slips" color={palette.danger} />
-          <Tile value={String(data.checkins.length)} label="check-ins" color={hues.checkin.solid} />
+          <Tile value={String(data.urgesSurvived)} label={plural(data.urgesSurvived, 'urge survived', 'urges survived')} color={hues.urge.solid} />
+          <Tile value={String(data.relapses.length)} label={plural(data.relapses.length, 'slip', 'slips')} color={palette.danger} />
+          <Tile value={String(data.checkins.length)} label={plural(data.checkins.length, 'check-in', 'check-ins')} color={hues.checkin.solid} />
         </View>
 
         <Card>
