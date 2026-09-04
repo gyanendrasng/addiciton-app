@@ -11,7 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppLogo } from '@/components/ui/app-logo';
@@ -33,7 +33,7 @@ import {
 } from '@/features/account/sign-in';
 import { skipAuthForDev } from '@/features/settings/dev';
 import { useSession } from '@/lib/session';
-import { durations, stagger } from '@/theme/motion';
+import { curves, durations, stagger } from '@/theme/motion';
 import { palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
@@ -176,7 +176,10 @@ export default function SignInScreen() {
       </View>
 
       <KeyboardAvoidingView style={s.fill} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <Animated.View entering={FadeIn.duration(280)} style={s.fill}>
+        {/* No entrance on this container. The children below stagger in, and
+            stacking a fade here made the screen settle twice — the classic
+            nested-entrance jiggle the animation skill warns about. */}
+        <View style={s.fill}>
           {/* Hero at the top, actions in the thumb zone at the bottom, and the
               slack between them. Vertical rhythm is deliberately uneven — one
               gap value everywhere is what makes a block read flat: 36 under the
@@ -193,7 +196,7 @@ export default function SignInScreen() {
                 behind it. Entrances rise 10px — enough to read as arriving,
                 not enough to look like it fell. */}
             <Animated.Text
-              entering={FadeInDown.delay(260).duration(durations.base).springify().damping(20)}
+              entering={FadeInDown.delay(260).duration(durations.base).easing(curves.out)}
               style={[s.h1, pane === 'providers' && s.h1AfterMark]}>
               {heading}
             </Animated.Text>
@@ -202,7 +205,7 @@ export default function SignInScreen() {
                 email panes do: the user needs to know a code is coming. */}
             {subheading ? (
               <Animated.Text
-                entering={FadeInDown.delay(300).duration(durations.base).springify().damping(20)}
+                entering={FadeInDown.delay(300).duration(durations.base).easing(curves.out)}
                 style={s.sub}>
                 {subheading}
               </Animated.Text>
@@ -254,7 +257,7 @@ export default function SignInScreen() {
             {pane === 'providers' ? (
               <>
                 <Animated.View
-                  entering={FadeInDown.delay(340).duration(durations.base).springify().damping(20)}>
+                  entering={FadeInDown.delay(340).duration(durations.base).easing(curves.out)}>
                 {showRealAppleButton ? (
                   <AppleButton
                     available
@@ -268,9 +271,7 @@ export default function SignInScreen() {
 
                 <Animated.View
                   entering={FadeInDown.delay(340 + stagger)
-                    .duration(durations.base)
-                    .springify()
-                    .damping(20)}>
+                    .duration(durations.base).easing(curves.out)}>
                   <GoogleButton
                     onPress={() => go('google')}
                     busy={busy === 'google'}
@@ -280,9 +281,7 @@ export default function SignInScreen() {
 
                 <Animated.View
                   entering={FadeInDown.delay(340 + stagger * 2)
-                    .duration(durations.base)
-                    .springify()
-                    .damping(20)}>
+                    .duration(durations.base).easing(curves.out)}>
                   <Tap
                     haptic="none"
                     onPress={() => {
@@ -335,7 +334,7 @@ export default function SignInScreen() {
               </>
             )}
           </View>
-        </Animated.View>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
