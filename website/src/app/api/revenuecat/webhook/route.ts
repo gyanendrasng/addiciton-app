@@ -111,12 +111,23 @@ export async function POST(request: Request) {
     willRenew: event.type !== 'CANCELLATION' && event.type !== 'NON_RENEWING_PURCHASE',
   };
 
+  // A dashboard-granted promotional entitlement is NOT reported by v2
+  // `active_entitlements`, so re-reading canonical state right after one is
+  // granted comes back empty and revokes it. Verified against a real grant:
+  // RevenueCat showed "Active - unlimited duration" while the REST read
+  // returned no `premium` item, and the row was written active:false. For
+  // these the event payload is the only source that knows, and it is complete
+  // -- NON_RENEWING_PURCHASE with entitlement_id, store and period_type
+  // PROMOTIONAL. Revocation arrives as EXPIRATION on the same path, so access
+  // is still withdrawn correctly.
+  const promotional = (event.store ?? '').toUpperCase() === 'PROMOTIONAL';
+
   try {
     for (const appUserId of customers) {
-      if (restConfigured()) {
+      if (restConfigured() && !promotional) {
         await resyncFromRevenueCat(appUserId, hint);
       } else {
-        // No REST key configured yet — fall back to the event payload.
+        // No REST key configured, or a promotional grant REST cannot see.
         const userId = await resolveUserId(appUserId);
         if (userId) {
           await applyEventDirectly(userId, { ...event, type: event.type as string }, appUserId);
