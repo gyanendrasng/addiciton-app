@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 
+import { setAnalyticsPref } from '@/features/settings/analytics';
 import { Spacing } from '@/theme/spacing';
 import { palette } from '@/theme/palette';
 import { type } from '@/theme/type';
@@ -175,6 +176,56 @@ export function Notifications({ onNext }: { onNext: () => void }) {
           disabled={busy}
         />
         {!denied ? <Cta label="Maybe later" variant="ghost" onPress={onNext} /> : null}
+      </View>
+    </View>
+  );
+}
+
+/**
+ * The analytics ask.
+ *
+ * Asked here rather than left to a switch in Settings because almost nobody
+ * finds a switch in Settings — and asked at all because of *what* is sent.
+ * Alongside interaction events, PostHog receives which habits someone tracks
+ * and how their streaks run, which is health data: special category under GDPR
+ * and consent-bound under India's DPDP Act. Neither store requires this prompt;
+ * the law does.
+ *
+ * Both buttons write the preference, so a decline is recorded as a decision
+ * rather than left at the default.
+ */
+export function Analytics({ onNext }: { onNext: () => void }) {
+  const [busy, setBusy] = useState(false);
+
+  async function choose(on: boolean) {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await setAnalyticsPref(on);
+    } catch {
+      // Never block onboarding on a settings write.
+    }
+    onNext();
+  }
+
+  return (
+    <View style={s.wrap}>
+      <View style={s.centerBlock}>
+        <Animated.View entering={FadeIn.duration(350)}>
+          <Title>Help make Curb better?</Title>
+          <Subtitle>
+            Curb can report which features get used and how streaks progress, so the parts that
+            help get better and the parts that don’t get cut.
+          </Subtitle>
+          <Text style={s.notifNote}>
+            Never what you write — your reasons, notes and check-ins are not part of it. You can
+            change this any time in Settings.
+          </Text>
+        </Animated.View>
+      </View>
+      <View style={{ gap: Spacing.two }}>
+        <Cta label="Share usage data" onPress={() => choose(true)} disabled={busy} />
+        <Cta label="Not now" variant="ghost" onPress={() => choose(false)} />
       </View>
     </View>
   );

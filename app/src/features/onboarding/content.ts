@@ -130,7 +130,8 @@ export type Step =
   | { kind: 'date' }
   | { kind: 'plan' }
   | { kind: 'signature' }
-  | { kind: 'notifications' };
+  | { kind: 'notifications' }
+  | { kind: 'analytics' };
 
 export const steps: Step[] = [
   { kind: 'welcome' },
@@ -245,6 +246,7 @@ export const steps: Step[] = [
   { kind: 'plan' },
   { kind: 'signature' },
   { kind: 'notifications' },
+  { kind: 'analytics' },
   // The paywall is NOT an onboarding step any more — the tabs gate routes
   // through /sign-in then /paywall once the profile exists, so the wall is in
   // one place instead of two.
