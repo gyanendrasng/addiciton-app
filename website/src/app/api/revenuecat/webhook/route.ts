@@ -6,6 +6,7 @@ import {
   applyEventDirectly,
   claimEvent,
   releaseEvent,
+  isGrant,
   resolveUserId,
   restConfigured,
   resyncFromRevenueCat,
@@ -122,10 +123,32 @@ export async function POST(request: Request) {
   // is still withdrawn correctly.
   const promotional = (event.store ?? '').toUpperCase() === 'PROMOTIONAL';
 
+  const grants = isGrant(event.type);
+
   try {
     for (const appUserId of customers) {
       if (restConfigured() && !promotional) {
-        await resyncFromRevenueCat(appUserId, hint);
+        const synced = await resyncFromRevenueCat(appUserId, hint);
+        // The re-read is canonical for purchases -- except when it flatly
+        // contradicts a grant event. v2 `active_entitlements` has been observed
+        // to report nothing for a customer who demonstrably has access: first a
+        // dashboard promotional grant, then a real StoreKit sandbox purchase
+        // (curb.premium.weekly, APP_STORE) that arrived, synced, and was written
+        // active:false. Believing the empty read means a customer who just paid
+        // is shown the paywall.
+        //
+        // So a grant event wins over an empty read. Losing access still works:
+        // EXPIRATION and CANCELLATION are not grants, so they fall through to
+        // the resync and revoke normally.
+        if (grants && synced && !synced.active) {
+          console.warn(
+            `[revenuecat] ${event.type} for ${appUserId} but active_entitlements was empty — trusting the event`,
+          );
+          const userId = await resolveUserId(appUserId);
+          if (userId) {
+            await applyEventDirectly(userId, { ...event, type: event.type as string }, appUserId);
+          }
+        }
       } else {
         // No REST key configured, or a promotional grant REST cannot see.
         const userId = await resolveUserId(appUserId);

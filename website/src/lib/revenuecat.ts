@@ -122,11 +122,31 @@ async function fetchActiveEntitlements(appUserId: string): Promise<
   return { active: true, expiresAt };
 }
 
+/**
+ * Event types that mean "this customer should have access now".
+ *
+ * Declared here because both the resync and the caller's disagreement check
+ * need it.
+ */
+const GRANTS = new Set([
+  'INITIAL_PURCHASE',
+  'RENEWAL',
+  'NON_RENEWING_PURCHASE',
+  'UNCANCELLATION',
+  'SUBSCRIPTION_EXTENDED',
+  'PRODUCT_CHANGE',
+  'REFUND_REVERSED',
+  'TEMPORARY_ENTITLEMENT_GRANT',
+]);
+
 /** Re-read one customer from RevenueCat and write the result to our cache. */
-export async function resyncFromRevenueCat(appUserId: string, hint: Hint = {}) {
+export async function resyncFromRevenueCat(
+  appUserId: string,
+  hint: Hint = {},
+): Promise<{ active: boolean } | null> {
   const userId = await resolveUserId(appUserId);
   // Unknown ids are expected — a purchase can happen before sign-in.
-  if (!userId) return;
+  if (!userId) return null;
 
   const state = await fetchActiveEntitlements(appUserId);
   // Throw rather than return. A silent return answered the webhook 200, which
@@ -146,6 +166,12 @@ export async function resyncFromRevenueCat(appUserId: string, hint: Hint = {}) {
     isLifetime,
     revenuecatId: appUserId,
   });
+  return { active: state.active };
+}
+
+/** Does this event type mean the customer should HAVE access right now? */
+export function isGrant(type: string): boolean {
+  return GRANTS.has(type);
 }
 
 /**
@@ -163,17 +189,6 @@ export async function resyncFromRevenueCat(appUserId: string, hint: Hint = {}) {
  * There is no REFUND event type: a refund surfaces as CANCELLATION with a
  * `cancel_reason`, then an EXPIRATION.
  */
-const GRANTS = new Set([
-  'INITIAL_PURCHASE',
-  'RENEWAL',
-  'NON_RENEWING_PURCHASE',
-  'UNCANCELLATION',
-  'SUBSCRIPTION_EXTENDED',
-  'PRODUCT_CHANGE',
-  'REFUND_REVERSED',
-  'TEMPORARY_ENTITLEMENT_GRANT',
-]);
-
 export async function applyEventDirectly(
   userId: string,
   event: {
