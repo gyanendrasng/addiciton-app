@@ -60,7 +60,7 @@ parallel with everything else here and nothing can shorten it.
       purchases never reach the database. Silent failure. Set it before you
       take a payment.
 
-### Store accounts
+### Store accounts 
 - [ ] Apple Developer Program — $99/yr, 24–48h to activate.
 - [ ] Google Play Console — $25 once.
 - [ ] **Start Play closed testing immediately** (12 testers × 14 days).

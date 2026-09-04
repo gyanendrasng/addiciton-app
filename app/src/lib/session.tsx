@@ -21,6 +21,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
+import { configurePurchases, logOutPurchases } from '@/features/premium/purchases';
 import { authClient } from './auth-client';
 
 type SessionData = Awaited<ReturnType<typeof authClient.getSession>>['data'];
@@ -87,6 +88,20 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     });
     return () => sub.remove();
   }, [refresh]);
+
+  /**
+   * Keep RevenueCat's App User ID pointed at the signed-in account.
+   *
+   * This is the line that makes a subscription follow the person to a new
+   * phone rather than staying with the device. On sign-out we log out too, or
+   * the next person to buy on this device would be attributed to the last
+   * account.
+   */
+  useEffect(() => {
+    const id = session?.user?.id;
+    if (id) void configurePurchases(id);
+    else void logOutPurchases();
+  }, [session?.user?.id]);
 
   return (
     <SessionContext.Provider value={{ session, loading, refresh }}>

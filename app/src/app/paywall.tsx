@@ -17,10 +17,15 @@ import { AppLogo } from '@/components/ui/app-logo';
 import { Notice } from '@/components/ui/notice';
 import { Tap } from '@/components/ui/tap';
 import { setPremium } from '@/db/repo/profile';
+import {
+  fetchPrices,
+  purchasePlan,
+  purchasesAvailable,
+  restorePurchases,
+  type StorePrice,
+} from '@/features/premium/purchases';
 import { usePremium } from '@/features/premium/use-premium';
 import { BENEFITS, PLANS, PRIVACY_URL, TERMS_URL, type Plan } from '@/features/premium/plans';
-import { track } from '@/lib/analytics';
-import { humanError } from '@/lib/errors';
 import { hues, palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
@@ -40,6 +45,22 @@ export default function PaywallScreen() {
   const [selected, setSelected] = useState<Plan['id'] | null>(null);
   const [busy, setBusy] = useState<'buy' | 'restore' | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /**
+   * Live prices from the store. Apple requires the real, localised price be
+   * shown — the strings in plans.ts are USD fallbacks for the moment before
+   * this resolves, and lose to it.
+   */
+  const [prices, setPrices] = useState<Record<string, StorePrice>>({});
+
+  useEffect(() => {
+    let alive = true;
+    void fetchPrices().then((p) => {
+      if (alive) setPrices(p);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   /**
    * The gate decides *whether* the wall shows; the wall has to dismiss itself.
@@ -58,20 +79,28 @@ export default function PaywallScreen() {
     if (busy) return;
     setError(null);
     setBusy('buy');
-    try {
-      // TODO(revenuecat): Purchases.purchasePackage(pkg for plan.productId).
-      // The RevenueCat webhook then writes the entitlement, and `refresh()`
-      // below picks it up. Until the SDK is wired (it needs a dev build),
-      // development grants premium locally so the rest of the app is reachable.
-      if (__DEV__) {
-        await setPremium(true);
-        track('paywall_viewed', { plan: plan.id });
-      } else {
-        throw new Error('Purchases are not available yet.');
+
+    if (purchasesAvailable()) {
+      const result = await purchasePlan(plan);
+      if (result.ok) {
+        // The store confirmed. RevenueCat's webhook writes the server-side
+        // entitlement; refresh pulls it, and premium going true dismisses this
+        // screen via the effect above.
+        await refresh();
+      } else if (!result.cancelled) {
+        setError(result.message);
       }
+      setBusy(null);
+      return;
+    }
+
+    // Expo Go has no native purchase SDK. Grant locally so the rest of the app
+    // stays reachable while developing; production has no such path.
+    if (__DEV__) {
+      await setPremium(true);
       await refresh();
-    } catch (e) {
-      setError(humanError(e, 'generic'));
+    } else {
+      setError('Purchases aren’t available right now. Please try again.');
     }
     setBusy(null);
   };
@@ -80,15 +109,19 @@ export default function PaywallScreen() {
     if (busy) return;
     setError(null);
     setBusy('restore');
-    try {
-      // TODO(revenuecat): Purchases.restorePurchases(), then refresh.
-      await refresh();
-      if (!premium) {
-        setError('No previous purchase found on this account.');
-      }
-    } catch (e) {
-      setError(humanError(e, 'generic'));
+
+    if (purchasesAvailable()) {
+      const result = await restorePurchases();
+      if (result.ok) await refresh();
+      else if (!result.cancelled) setError(result.message);
+      setBusy(null);
+      return;
     }
+
+    // No store to ask — fall back to re-reading the server entitlement, which
+    // is what a signed-in user on a new device actually needs.
+    await refresh();
+    if (!premium) setError('No previous purchase found on this account.');
     setBusy(null);
   };
 
@@ -157,7 +190,7 @@ export default function PaywallScreen() {
                   <Text style={s.planSub}>{p.sub}</Text>
                 </View>
                 <Text style={s.planPrice}>
-                  {p.price}
+                  {prices[p.productId]?.price ?? p.price}
                   <Text style={s.planPeriod}>{p.period}</Text>
                 </Text>
               </Tap>
@@ -178,7 +211,7 @@ export default function PaywallScreen() {
             <ActivityIndicator color={palette.accentInk} />
           ) : (
             <Text style={s.ctaLabel}>
-              {plan.recurring ? `Subscribe — ${plan.price}${plan.period}` : `Buy — ${plan.price}`}
+              {`Subscribe — ${prices[plan.productId]?.price ?? plan.price}${plan.period}`}
             </Text>
           )}
         </Tap>
