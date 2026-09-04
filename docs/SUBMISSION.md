@@ -112,9 +112,8 @@ What's missing is the account plumbing.
 - [x] Vercel has all four `REVENUECAT_*` vars (Production) and has redeployed.
 - [ ] Same three ids in **Play Console**.
 - [ ] Sandbox Server URL in App Store Connect (same RevenueCat endpoint).
-- [ ] `EXPO_PUBLIC_REVENUECAT_IOS_KEY` in `app/.env` — **the file does not exist
-      yet**. Without it `purchasesAvailable()` is false and every purchase path
-      returns "Purchases aren't available right now", silently, in a real build.
+- [x] `EXPO_PUBLIC_REVENUECAT_IOS_KEY` in `app/.env` (gitignored).
+- [ ] `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` once the Play app exists.
 - [ ] Sandbox tester (Users and Access → Sandbox) on an email that has never
       been an Apple ID.
 - [ ] Paywall **review screenshot** on each of the 3 products — needs a build,
