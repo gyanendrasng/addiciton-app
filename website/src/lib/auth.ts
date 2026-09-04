@@ -139,6 +139,32 @@ export const auth = betterAuth({
   plugins: [
     emailOTP({
       otpLength: 6,
+      /**
+       * A fixed code for the store-review account, and only that account.
+       *
+       * Google Play requires credentials for any app with restricted content,
+       * and for one-time-password apps states it plainly: "make sure to provide
+       * reusable login credentials that can bypass these requirements." A code
+       * that changes every five minutes and lands in an inbox the reviewer
+       * cannot open is not reusable.
+       *
+       * This is deliberately NOT a hidden reviewer mode. Play's Deceptive
+       * Behavior policy forbids an app that "behaves differently for reviewers
+       * versus regular users", and nothing here changes app behaviour: the
+       * account signs in through the ordinary email-code flow, sees the
+       * ordinary screens, and its premium comes from a RevenueCat promotional
+       * entitlement like any granted subscription. Only the code is fixed, and
+       * it is disclosed to Google in the Sign in details declaration.
+       *
+       * Inert unless BOTH env vars are set, so it cannot be switched on by
+       * accident. Returning undefined falls through to the random generator.
+       */
+      generateOTP: ({ email }) => {
+        const reviewer = process.env.REVIEW_EMAIL?.toLowerCase();
+        const code = process.env.REVIEW_OTP;
+        if (reviewer && code && email.toLowerCase() === reviewer) return code;
+        return undefined;
+      },
       expiresIn: 60 * 5, // 5 minutes
       allowedAttempts: 3,
       // Codes are short-lived, but a leaked database dump shouldn't hand
