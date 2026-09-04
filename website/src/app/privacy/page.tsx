@@ -208,9 +208,9 @@ export default function Page() {
   does not remove your account — <a href="#rights">section 8</a> covers deletion.</p>
 
   <h2 id="children">9. Children</h2>
-  <p>Curb is for adults and is not directed to children. Both stores list it for an adult
-  audience, and the Terms require you to be at least 18. We do not knowingly collect
-  personal information from anyone under 18. If you believe someone younger has given us
+  <p>Curb is for adults and is not directed to children. The Terms require you to be at
+  least 18, and we do not knowingly collect personal information from anyone under 18. The
+  store age ratings describe the app’s content rather than who may use it. If you believe someone younger has given us
   information, contact us and we will delete it and close the account.</p>
 
   <h2 id="retention">10. Retention and deletion</h2>
