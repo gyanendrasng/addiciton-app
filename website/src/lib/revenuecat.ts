@@ -108,7 +108,12 @@ export async function resyncFromRevenueCat(appUserId: string, hint: Hint = {}) {
   if (!userId) return;
 
   const state = await fetchActiveEntitlements(appUserId);
-  if (!state) return; // transient API failure; the next event will retry
+  // Throw rather than return. A silent return answered the webhook 200, which
+  // RevenueCat reads as delivered and never retries -- and a promotional grant
+  // has no "next event" to retry with, so the entitlement was simply lost. The
+  // route turns this into a 500, which releases the idempotency claim and buys
+  // five more attempts.
+  if (!state) throw new Error(`active_entitlements unavailable for ${appUserId}`);
 
   const isLifetime = state.active && state.expiresAt === null;
   await upsertEntitlement(userId, {
