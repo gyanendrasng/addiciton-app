@@ -164,3 +164,35 @@ Play splits the description in two:
 
 Play also needs a **feature graphic** at 1024×500, which Apple has no
 equivalent of.
+
+---
+
+## In-App Purchase metadata
+
+One subscription group, three products. Ids must match
+`app/src/features/premium/plans.ts` exactly — a typo here is a purchase that
+silently fails in production.
+
+**Subscription Group** — reference name `Curb Premium`, display name
+`Curb Premium`. The display name is what users see in Settings → Subscriptions
+on their phone, so it has to read as a product, not a SKU.
+
+| Product ID | Duration | Price | Display Name (30) | Description (45) |
+|---|---|---|---|---|
+| `curb.premium.weekly` | 1 week | $9.99 | Curb Premium Weekly | Full access, billed every week. |
+| `curb.premium.monthly` | 1 month | $14.99 | Curb Premium Monthly | Full access, billed every month. |
+| `curb.premium.yearly` | 1 year | $59.99 | Curb Premium Yearly | Full access, billed once a year. |
+
+No introductory offers and no free trial — that's a product decision, and the
+paywall copy in `plans.ts` states the price and renewal on every plan to satisfy
+3.1.2.
+
+**Review screenshot** (required per product): a capture of `/paywall` from a
+real build. The same image can be reused for all three.
+
+**Review notes** per product:
+```
+Curb has no free tier. The paywall appears immediately after onboarding and
+this product unlocks the full app. Sign in with any email to reach it.
+```
+
