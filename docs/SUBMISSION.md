@@ -97,15 +97,24 @@ parallel with everything else here and nothing can shorten it.
 What's missing is the account plumbing.
 
 - [x] Apple subscription group + 3 products created.
+- [x] **In-App Purchase key** uploaded to RevenueCat (key `42F8Q44BDH`, issuer
+      `bd79e031-…`), plus an App Store Connect API key so products import and
+      prices stay in sync.
+- [x] RevenueCat project `a34a8d56` → app `Curb (App Store)` → products
+      imported → entitlement **`premium`** with all three attached → `default`
+      offering repointed at the App Store products.
+- [x] **App Store Server Notifications** production URL set to RevenueCat's
+      endpoint.
+- [x] **Webhook verified end to end** — RevenueCat test event returns **200**
+      from `joincurb.app/api/revenuecat/webhook`. Note this only proves auth and
+      reachability: the test event's `app_user_id` matches no row, so the
+      entitlement write is still unexercised until a sandbox purchase.
+- [x] Vercel has all four `REVENUECAT_*` vars (Production) and has redeployed.
 - [ ] Same three ids in **Play Console**.
-- [ ] **In-App Purchase key** (Users and Access → Integrations) — the `.p8`
-      downloads **once**.
-- [ ] **App-Specific Shared Secret** (App Information → Manage).
-- [ ] RevenueCat project → entitlement id **`premium`** → attach all 3 →
-      an offering containing all three packages.
-- [ ] `EXPO_PUBLIC_REVENUECAT_IOS_KEY` / `_ANDROID_KEY` in the app env.
-- [ ] **App Store Server Notifications** production URL → RevenueCat's endpoint
-      (App Information page). Without it, cancellations reach you late.
+- [ ] Sandbox Server URL in App Store Connect (same RevenueCat endpoint).
+- [ ] `EXPO_PUBLIC_REVENUECAT_IOS_KEY` in `app/.env` — **the file does not exist
+      yet**. Without it `purchasesAvailable()` is false and every purchase path
+      returns "Purchases aren't available right now", silently, in a real build.
 - [ ] Sandbox tester (Users and Access → Sandbox) on an email that has never
       been an Apple ID.
 - [ ] Paywall **review screenshot** on each of the 3 products — needs a build,
