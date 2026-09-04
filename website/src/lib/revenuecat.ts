@@ -58,7 +58,7 @@ export async function resolveUserId(appUserId?: string | null): Promise<string |
 }
 
 function restConfigured(): boolean {
-  return !!(process.env.REVENUECAT_API_KEY && process.env.REVENUECAT_PROJECT_ID);
+  return !!(process.env.REVENUECAT_API_KEY?.trim() && process.env.REVENUECAT_PROJECT_ID?.trim());
 }
 
 /**
@@ -79,8 +79,11 @@ export class RestError extends Error {
 async function fetchActiveEntitlements(appUserId: string): Promise<
   { active: boolean; expiresAt: Date | null } | null
 > {
-  const project = process.env.REVENUECAT_PROJECT_ID as string;
-  const key = process.env.REVENUECAT_API_KEY as string;
+  // Trimmed: pasting into a dashboard env field commonly carries a trailing
+  // newline or wrapping quotes, which RevenueCat rejects as "Invalid API key"
+  // while the value looks correct on screen.
+  const project = (process.env.REVENUECAT_PROJECT_ID as string).trim();
+  const key = (process.env.REVENUECAT_API_KEY as string).trim().replace(/^["']|["']$/g, '');
   // App User IDs can contain `$` and `:` ($RCAnonymousID:…) — must be encoded.
   const url =
     `https://api.revenuecat.com/v2/projects/${encodeURIComponent(project)}` +
@@ -94,6 +97,13 @@ async function fetchActiveEntitlements(appUserId: string): Promise<
   if (!res.ok) {
     const body = await res.text();
     console.error(`[revenuecat] ${res.status} on active_entitlements: ${body}`);
+    if (res.status === 401) {
+      // Shape only -- never the key itself. Distinguishes "wrong key" from
+      // "empty/truncated env var", which look identical from the 401 alone.
+      console.error(
+        `[revenuecat] key len=${key.length} prefix=${key.slice(0, 3)} project=${project}`,
+      );
+    }
     // Carries the upstream status so the 500 we answer with names the cause.
     // Only RevenueCat sees it: the route rejects anything without the secret.
     throw new RestError(res.status, body.slice(0, 200));
