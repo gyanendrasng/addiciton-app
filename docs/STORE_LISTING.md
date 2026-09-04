@@ -135,20 +135,36 @@ may differ.
 
 ```
 Curb is subscription-only with no free tier, so the paywall appears
-immediately after onboarding. A demo account is not required — a reviewer can
-create one with any email; the sign-in code is delivered by email.
+immediately after onboarding.
 
-Sign in with Apple, Google, and email code are all supported.
+TO GET PAST THE PAYWALL
+Tap Subscribe on any plan. The purchase runs in the App Review sandbox at no
+charge and unlocks the full app. The three subscriptions are submitted with
+this build.
 
-The app stores recovery entries on the device. The account exists only to
-carry the subscription across devices.
+SIGNING IN
+No demo account is needed. Sign in with Apple, with Google, or with an email
+code sent to any address you choose.
 
-Crisis lines and a medical disclaimer are in Settings → Support → Get help,
-and are reachable without a subscription.
+CRISIS INFORMATION
+Crisis lines and a medical disclaimer are in Settings > Support > Get help,
+and are deliberately reachable without an account or a subscription.
+
+MEDICAL POSITIONING
+Curb is a self-tracking tool. It makes no treatment claims and the disclaimer
+in Get help says so, including advising anyone physically dependent on alcohol
+or benzodiazepines to speak to a doctor before stopping.
 ```
 
-Filling that in preempts the two questions reviewers ask about paywalled
-health apps: how do I get in, and where's your safety information.
+Filling that in preempts the questions a reviewer asks about a paywalled health
+app: how do I get in, and where is your safety information.
+
+The first one has a real dependency behind it — a reviewer gets past the
+paywall by purchasing in the App Review sandbox, which only works if the
+subscriptions are submitted **with** the build (Add for Review on the group)
+and the purchase chain actually completes: purchase → RevenueCat → webhook →
+`entitlement` row → unlock. A reviewer who pays nothing and receives nothing
+files a rejection.
 
 ---
 

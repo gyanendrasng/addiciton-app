@@ -134,6 +134,7 @@ export type Step =
   | { kind: 'analytics' };
 
 export const steps: Step[] = [
+  { kind: 'analytics' },
   { kind: 'welcome' },
   { kind: 'framing' },
   {
