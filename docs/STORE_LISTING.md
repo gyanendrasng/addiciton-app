@@ -95,10 +95,11 @@ BUILT FOR 2AM
 Dark and light themes. Reminders you control. No feed, no followers, nothing
 to perform.
 
-Curb is a self-tracking tool, not treatment and not medical advice. If you are
-physically dependent on alcohol or benzodiazepines, stopping suddenly can be
-dangerous — talk to a doctor about how to withdraw safely. Crisis and support
-lines are built into the app.
+Curb is a self-tracking tool. It is not a medical device and does not diagnose,
+treat, cure or prevent any medical condition. Consult a healthcare professional
+for medical advice, diagnosis or treatment. If you are physically dependent on
+alcohol or benzodiazepines, stopping suddenly can be dangerous — talk to a doctor
+about how to withdraw safely. Crisis and support lines are built into the app.
 ```
 
 ## URLs

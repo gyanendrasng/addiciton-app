@@ -38,8 +38,19 @@ if (__DEV__ && !isConfigured) {
 export const posthog = isConfigured
   ? new PostHog(projectToken as string, {
       host: host ?? 'https://us.i.posthog.com',
-      // Lifecycle events (install / update / open / background) are fine —
-      // they carry no PII.
+      /**
+       * Start opted OUT, at construction.
+       *
+       * `analytics.ts` also calls `optOut()`, but that runs *after* the client
+       * is built, and lifecycle capture is enabled — so an app-open event can
+       * race the opt-out and reach PostHog before anyone consented. Play's User
+       * Data policy requires consent "before your app can begin to collect or
+       * access the personal and sensitive user data", and which habits someone
+       * is quitting is health data. `defaultOptIn: false` closes the window.
+       */
+      defaultOptIn: false,
+      // Lifecycle events (install / update / open / background) carry no PII,
+      // and are suppressed entirely until the user opts in.
       captureAppLifecycleEvents: true,
       flushAt: 20,
       flushInterval: 10_000,
