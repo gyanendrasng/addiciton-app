@@ -141,7 +141,7 @@ function SavingsScreen() {
       <Text style={s.foot}>
         Per {profile.habits.length > 1 ? 'one of each' : `one ${savings.rates[profile.habits[0]]?.unit ?? 'time'}`}.
         Leave it at zero for anything that costs you time rather than money — that one still counts
-        toward the hours. Nothing here is sent anywhere.
+        toward the hours.
       </Text>
 
       {savings.moneyUnknown ? null : (

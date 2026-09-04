@@ -212,9 +212,9 @@ export default function Page() {
   <h2 id="security">11. Security</h2>
   <p>Curb’s database is stored inside the app’s private container, protected by your
   device’s operating-system sandbox and, on modern devices, by full-disk encryption tied to
-  your passcode or biometrics. Network requests use HTTPS. Because we hold no copy of your
-  data, there is no server of ours that can be breached — but keeping your device locked and
-  updated remains the most important protection.</p>
+  your passcode or biometrics. Network requests use HTTPS, and anything we do receive is held
+  on access-controlled infrastructure. No system is perfectly secure, so keeping your device
+  locked and updated remains an important protection.</p>
 
   <h2 id="changes">12. Changes to this policy</h2>
   <p>If we change this policy we will update the effective date above and, for material
