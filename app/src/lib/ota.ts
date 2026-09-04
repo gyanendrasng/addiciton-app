@@ -27,7 +27,14 @@ export const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.
 
 export type UpdateState = 'idle' | 'checking' | 'downloading' | 'ready' | 'unavailable' | 'error';
 
-export const otaEnabled = !isExpoGo && Updates.isEnabled;
+/**
+ * `Updates.isEnabled` is true in a development build, but the API itself is
+ * not: `checkForUpdateAsync()` throws NotAvailableInDevClientException and the
+ * catch below logged a warning on every launch and every foreground. Guard on
+ * __DEV__ too — fetching a production bundle into a dev client is never what
+ * you want anyway.
+ */
+export const otaEnabled = !__DEV__ && !isExpoGo && Updates.isEnabled;
 
 export async function reloadApp(): Promise<void> {
   if (!otaEnabled) return;
