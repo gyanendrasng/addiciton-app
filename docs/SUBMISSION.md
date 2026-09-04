@@ -22,6 +22,16 @@ parallel with everything else here and nothing can shorten it.
   exist. In-app links to Terms and Privacy (Apple 3.1.2) and a
   "Manage or cancel" route (Play policy) are in Settings.
 - Account deletion in-app (Apple 5.1.1(v)), cascading to every table.
+- **Website is deployed and live** — `/`, `/privacy`, `/terms`, `/support`,
+  `/crisis` and `/api/auth/get-session` all return 200 on joincurb.app.
+- **DNS on Cloudflare**, zone active (`hassan`/`lina.ns.cloudflare.com`).
+- **Email works both ways.** Inbound: Cloudflare Email Routing, catch-all →
+  info@gyanendra.dev, so `support@`, `privacy@` and `hello@` all receive.
+  Outbound: Resend DKIM + SPF verified, with its MX correctly on the
+  `send.joincurb.app` subdomain rather than the root — so it doesn't collide
+  with Email Routing's MX. DMARC published at `p=none`.
+- **Legal identity filled** — Gyanendra Singh, Delhi Cantt, governed by Indian
+  law, across the privacy policy and terms.
 - Crisis lines and a medical disclaimer **inside** the app (`/help`), reachable
   from Settings, the urge outcome and after a slip, and deliberately not behind
   the paywall.
@@ -30,27 +40,22 @@ parallel with everything else here and nothing can shorten it.
 
 ## 1. Blocking — nothing ships without these
 
-### Legal identity ✅ filled — verify before submitting
-Selling as an **individual**: Gyanendra Singh, 110/05 Pinto Park, Delhi Cantt,
-New Delhi 110010, India. Governing law India.
-- [ ] The App Store Connect and Play seller name must match **Gyanendra Singh**
-      exactly, or Apple flags the mismatch against the policy.
+### Carried over from the legal identity — still to confirm
+- [ ] The App Store Connect and Play **seller name must be exactly
+      "Gyanendra Singh"**, or it won't match the policy.
 - [ ] That postal address becomes public — both stores publish the seller
       address for paid apps. Swap it for a registered office if you'd rather not
-      publish a home address; it appears in `privacy/page.tsx` and
-      `terms/page.tsx`.
-- [ ] India as an individual seller: check whether GST registration applies to
-      your app revenue before you take payments.
+      publish a home address; it's in `privacy/page.tsx` and `terms/page.tsx`.
+- [ ] India, individual seller: check whether GST registration applies to app
+      revenue before taking payments.
 
-### Email
-- [ ] Create `support@`, `privacy@` and `hello@joincurb.app`. A catch-all
-      forward covers all three. **`hello@` must be on a domain verified in
-      Resend** or sign-in codes never send.
-
-### Deploy the website
-- [ ] Deploy to Vercel, point `joincurb.app` at it.
-- [ ] Set every env var from `.env.example` in **Production and Preview**.
-- [ ] `BETTER_AUTH_SECRET` — `openssl rand -base64 32`. Not yet generated.
+### Environment variables — the remaining deploy work
+- [ ] Set every var from `.env.example` in Vercel, **Production and Preview**.
+      The site is live but these can't be verified from outside.
+- [ ] `BETTER_AUTH_SECRET` — `openssl rand -base64 32`. Without it Better Auth
+      falls back to a default secret and logs an error at build time.
+- [ ] `RESEND_API_KEY` — sending-access key, restricted to joincurb.app. The
+      DNS side is verified; without the key, production sign-in codes throw.
 - [ ] ⚠️ `REVENUECAT_WEBHOOK_SECRET`: if unset, **every webhook 401s** and
       purchases never reach the database. Silent failure. Set it before you
       take a payment.
