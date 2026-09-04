@@ -103,8 +103,10 @@ Play blocks release until all of these are done:
 
 - Short description — 80 chars: `docs/store/` (Play-specific line in STORE_LISTING.md)
 - Full description — 4000 chars: reuse `docs/store/description.txt`
-- App icon 512×512
-- **Feature graphic 1024×500** — Play only, Apple has no equivalent
+- App icon **512×512** — `brand/play/icon-512.png` (no alpha; Play rejects it)
+- **Feature graphic 1024×500** — `brand/play/feature-1024x500.png`. Play only;
+  Apple has no equivalent. Generated from the brand mark on the brand tile,
+  flat colour, regenerable from `scripts/` if the mark changes.
 - Phone screenshots: at least 2, up to 8. The iOS captures work; Play accepts
   16:9 or 9:16 between 320px and 3840px
 
