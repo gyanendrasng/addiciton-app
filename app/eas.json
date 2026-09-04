@@ -40,7 +40,7 @@
     "production": {
       "android": {
         "track": "alpha",
-        "releaseStatus": "draft",
+        "releaseStatus": "completed",
         "serviceAccountKeyPath": "../secrets/play-service-account.json"
       },
       "ios": {}
