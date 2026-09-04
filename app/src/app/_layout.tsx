@@ -18,6 +18,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { DbProvider } from '@/db/provider';
 import { loadDevOffset } from '@/features/settings/dev';
+import { checkOnLaunch } from '@/lib/ota';
 import { SessionProvider } from '@/lib/session';
 import { activeScheme, palette } from '@/theme/palette';
 
@@ -50,6 +51,23 @@ export default function RootLayout() {
     apply();
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'active') apply();
+    });
+    return () => sub.remove();
+  }, []);
+  /**
+   * Pull any newer JS bundle in the background.
+   *
+   * Deliberately fire-and-forget: a downloaded update applies on the NEXT
+   * launch, never mid-session, so this can never interrupt someone in the
+   * middle of an urge. Re-checked on foreground because the app is opened far
+   * more often than it is cold-started.
+   *
+   * No-ops in Expo Go and in any build where updates are disabled.
+   */
+  useEffect(() => {
+    void checkOnLaunch();
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') void checkOnLaunch();
     });
     return () => sub.remove();
   }, []);

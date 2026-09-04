@@ -154,8 +154,11 @@ What's missing is the account plumbing.
 - [ ] **Dev build** — `eas build --profile development --platform ios`. Required
       for native Apple sign-in and RevenueCat; neither runs in Expo Go.
 - [ ] Production builds for both platforms.
-- [ ] OTA: `expo-updates` is **not installed**; `src/lib/ota.ts` is a no-op stub
-      with an ACTIVATE block to uncomment. Optional for v1 — see `docs/OTA.md`.
+- [x] OTA: `expo-updates` ~57.0.21 installed and `src/lib/ota.ts` activated;
+      `checkOnLaunch()` runs at launch and on foreground.
+- [ ] `eas login && eas init`, then **`eas update:configure`** — writes the
+      updates URL and `runtimeVersion` into `app.json`. Until this runs,
+      `Updates.isEnabled` is false and OTA stays inert.
 
 ---
 

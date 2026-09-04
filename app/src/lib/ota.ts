@@ -8,41 +8,24 @@
  * storefront for other code, and doesn't bypass signing/sandbox/IAP.
  *
  * ─────────────────────────────────────────────────────────────────────────────
- * NOT ACTIVE YET — deliberately.
+ * ACTIVE as of the first development build.
  *
- * `expo-updates` cannot be installed while we develop in Expo Go: its native
- * module initializes an internal database that crashes the Expo Go runtime
- * ("UNIQUE constraint failed: updates.scope_key"). Activate it the day we cut
- * the development build:
+ * This was a stub for as long as the app ran in Expo Go — `expo-updates`
+ * initializes a native database that crashes the Expo Go runtime with
+ * "UNIQUE constraint failed: updates.scope_key". That constraint is gone now
+ * that we build our own client, and `isExpoGo` below still guards the paths
+ * for anyone who opens the project in Expo Go.
  *
- *   1) npx expo install expo-updates
- *   2) eas update:configure          # writes the updates URL + runtimeVersion
- *   3) uncomment the ACTIVATE block below (and delete the stub above it)
- *
- * Publish an update afterwards with:  npm run ota:production
+ * Publish an update with:  npm run ota:production
  * ─────────────────────────────────────────────────────────────────────────────
  */
 import Constants, { ExecutionEnvironment } from 'expo-constants';
+import * as Updates from 'expo-updates';
 
 /** True inside Expo Go, where OTA is unavailable and JS reload is unreliable. */
 export const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 export type UpdateState = 'idle' | 'checking' | 'downloading' | 'ready' | 'unavailable' | 'error';
-
-/* ── STUB (remove when activating) ─────────────────────────────────────────── */
-export const otaEnabled = false;
-/** Reload the JS bundle. No-op until expo-updates is installed. */
-export async function reloadApp(): Promise<void> {}
-/** Check for a newer bundle and download it. Returns whether one is ready. */
-export async function fetchUpdate(): Promise<UpdateState> {
-  return 'unavailable';
-}
-/** Check on launch, download in the background, apply on the next launch. */
-export async function checkOnLaunch(): Promise<void> {}
-/* ── end stub ──────────────────────────────────────────────────────────────── */
-
-/* ── ACTIVATE: uncomment this block once expo-updates is installed ───────────
-import * as Updates from 'expo-updates';
 
 export const otaEnabled = !isExpoGo && Updates.isEnabled;
 
@@ -73,4 +56,3 @@ export async function checkOnLaunch(): Promise<void> {
   if (!otaEnabled) return;
   await fetchUpdate();
 }
-─────────────────────────────────────────────────────────────────────────── */
