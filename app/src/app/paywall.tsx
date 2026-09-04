@@ -26,7 +26,7 @@ import {
   type StorePrice,
 } from '@/features/premium/purchases';
 import { usePremium } from '@/features/premium/use-premium';
-import { BENEFITS, PLANS, PRIVACY_URL, TERMS_URL, type Plan } from '@/features/premium/plans';
+import { BENEFITS, disclosureFor, PLANS, PRIVACY_URL, TERMS_URL, type Plan } from '@/features/premium/plans';
 import { hues, palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
@@ -201,7 +201,10 @@ export default function PaywallScreen() {
                   <Text style={s.planSub}>{p.sub}</Text>
                 </View>
                 <Text style={s.planPrice}>
-                  {prices[p.productId]?.price ?? p.price}
+                  {/* Never render the USD placeholder to a non-US store — a
+                      price in the wrong currency is worse than none, and the
+                      purchase sheet would contradict it a tap later. */}
+                  {prices[p.productId]?.price ?? '—'}
                   <Text style={s.planPeriod}>{p.period}</Text>
                 </Text>
               </Tap>
@@ -220,13 +223,17 @@ export default function PaywallScreen() {
             <ActivityIndicator color={palette.accentInk} />
           ) : (
             <Text style={s.ctaLabel}>
-              {`Subscribe — ${prices[plan.productId]?.price ?? plan.price}${plan.period}`}
+              {prices[plan.productId]
+                ? `Subscribe — ${prices[plan.productId].price}${plan.period}`
+                : 'Subscribe'}
             </Text>
           )}
         </Tap>
 
         {/* Apple 3.1.2: price and billing period, stated plainly. */}
-        <Text style={s.disclosure}>{plan.disclosure}</Text>
+        <Text style={s.disclosure}>
+          {disclosureFor(plan, prices[plan.productId]?.price)}
+        </Text>
 
         <View style={s.legal}>
           <Tap haptic="none" onPress={restore} accessibilityRole="button" style={s.legalTap}>

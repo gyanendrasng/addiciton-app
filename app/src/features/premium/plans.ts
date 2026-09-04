@@ -20,8 +20,10 @@ export type Plan = {
   period: string;
   sub: string;
   badge?: string;
-  /** the exact disclosure shown under the button */
-  disclosure: string;
+  /** "per week" / "per month" / "per year" — used to rebuild the disclosure */
+  per: string;
+  /** "billed weekly" / "billed monthly" / "billed yearly" */
+  billed: string;
   recurring: boolean;
 };
 
@@ -39,7 +41,8 @@ export const PLANS: Plan[] = [
     price: '$9.99',
     period: '/week',
     sub: 'Try it a week at a time',
-    disclosure: '$9.99 per week, billed weekly. Renews until you cancel.',
+    per: 'per week',
+    billed: 'billed weekly',
     recurring: true,
   },
   {
@@ -49,7 +52,8 @@ export const PLANS: Plan[] = [
     price: '$14.99',
     period: '/month',
     sub: 'Cancel whenever you want',
-    disclosure: '$14.99 per month, billed monthly. Renews until you cancel.',
+    per: 'per month',
+    billed: 'billed monthly',
     recurring: true,
   },
   {
@@ -61,7 +65,8 @@ export const PLANS: Plan[] = [
     // $59.99 ÷ 12 = $5.00; against $14.99/mo that's 67% off, computed not guessed.
     sub: 'Works out to $5 a month',
     badge: 'SAVE 67%',
-    disclosure: '$59.99 per year, billed yearly. Renews until you cancel.',
+    per: 'per year',
+    billed: 'billed yearly',
     recurring: true,
   },
 ];
@@ -77,3 +82,20 @@ export const BENEFITS = [
 
 export const TERMS_URL = 'https://joincurb.app/terms';
 export const PRIVACY_URL = 'https://joincurb.app/privacy';
+
+/**
+ * The Apple 3.1.2 disclosure, built from the *store's* price.
+ *
+ * The prices in this file are USD and exist only as a placeholder before
+ * StoreKit answers. Rendering them to someone outside the US states a price in
+ * the wrong currency, which is precisely what 3.1.2 forbids — and the purchase
+ * sheet would then quote a different number, which is how you lose someone's
+ * trust at the exact moment you ask for money.
+ *
+ * With no live price we say the cadence and omit the amount. A missing number
+ * is recoverable; a wrong one is not.
+ */
+export function disclosureFor(plan: Plan, storePrice?: string): string {
+  if (!storePrice) return `${plan.billed[0].toUpperCase()}${plan.billed.slice(1)}. Renews until you cancel.`;
+  return `${storePrice} ${plan.per}, ${plan.billed}. Renews until you cancel.`;
+}
