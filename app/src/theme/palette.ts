@@ -85,9 +85,18 @@ function readPrefSync(): ThemePref {
   return 'system';
 }
 
+/**
+ * `app.json` must keep `userInterfaceStyle: "automatic"`. Setting it to "dark"
+ * writes `UIUserInterfaceStyle = Dark` into Info.plist, which pins the whole
+ * app dark at the OS level — `Appearance.getColorScheme()` then returns "dark"
+ * on a light phone and the "system" preference silently stops working. That is
+ * invisible in Expo Go, where Expo Go's own plist governs instead of ours.
+ */
 function resolveScheme(pref: ThemePref): Scheme {
-  if (pref === 'system') return Appearance.getColorScheme() === 'light' ? 'light' : 'dark';
-  return pref;
+  if (pref !== 'system') return pref;
+  // Only an explicit "dark" means dark. A null read (appearance not resolved
+  // yet) must not fall through to the darker of the two.
+  return Appearance.getColorScheme() === 'dark' ? 'dark' : 'light';
 }
 
 export const themePref: ThemePref = readPrefSync();
