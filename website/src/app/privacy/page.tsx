@@ -3,7 +3,7 @@ import { LegalPage, Callout } from '@/components/legal';
 
 export const metadata = {
   title: 'Privacy Policy',
-  description: 'How Curb handles your data: what stays on your device, what we receive, and what we never collect.',
+  description: 'How Curb handles your data: what we collect, why, how long we keep it, and how to have it deleted.',
 };
 
 export default function Page() {
@@ -189,24 +189,36 @@ export default function Page() {
   protection authority (in the UK, the Information Commissioner’s Office).</p>
 
   <h2 id="legal-basis">8. Legal basis for processing</h2>
-  <p>For users in the UK/EEA: because your recovery entries never reach us and we hold no
-  means of identifying you from them, we do not act as a controller of that data. For the
-  on-device processing the app performs at your direction, the basis is your{' '}
-  <strong>consent</strong> (Article 6(1)(a)), and for health-related entries your{' '}
-  <strong>explicit consent</strong> (Article 9(2)(a)), given by choosing to record them.
-  For purchase data the basis is <strong>performance of a contract</strong> (Article
-  6(1)(b)). You may withdraw consent at any time by deleting your data or the app.</p>
+  <p>For users in the UK/EEA, Gyanendra Singh is the controller of the data described in
+  this policy. The bases are:</p>
+  <ul>
+    <li className="ml-4">Your account and your subscription —{' '}
+    <strong>performance of a contract</strong> (Article 6(1)(b)). Without them we cannot
+    give you access to what you paid for, or carry it to another device.</li>
+    <li className="ml-4">Usage and progress data —{' '}
+    <strong>consent</strong> (Article 6(1)(a)), and because what you are quitting says
+    something about your health, <strong>explicit consent</strong> (Article 9(2)(a)). You
+    give it on a screen during setup that asks in plain words, and nothing is sent unless
+    you do. You can withdraw it at any time in <em>Settings</em>, which stops collection
+    immediately.</li>
+    <li className="ml-4">Entries you make in the app and keep on your device —{' '}
+    <strong>consent</strong>, given by choosing to record them.</li>
+  </ul>
+  <p>Withdrawing consent does not affect processing carried out before you withdrew it, and
+  does not remove your account — <a href="#rights">section 8</a> covers deletion.</p>
 
   <h2 id="children">9. Children</h2>
-  <p>Curb is not directed to children. It is rated 16+/18+ and is intended for adults. We do
-  not knowingly collect personal information from children under 13 (or under 16 where
-  local law sets that threshold). If you believe a child has provided us with information,
-  contact us and we will act on it — though in practice the app collects nothing from
-  anyone.</p>
+  <p>Curb is for adults and is not directed to children. Both stores list it for an adult
+  audience, and the Terms require you to be at least 18. We do not knowingly collect
+  personal information from anyone under 18. If you believe someone younger has given us
+  information, contact us and we will delete it and close the account.</p>
 
   <h2 id="retention">10. Retention and deletion</h2>
-  <p>We retain nothing, because we receive nothing. Your data persists on your device until
-  you delete it or remove the app. Purchase records held by Apple, Google and RevenueCat
+  <p>Your account and entitlement records are kept for as long as the account exists, and are
+  deleted when you delete it — see <a href="#rights">section 8</a>. Recovery entries you make
+  in the app persist until you delete them or remove the app. Usage and progress data sent to
+  PostHog, if you have turned that on, is retained under the schedule described in
+  <a href="#analytics">section 3c</a>. Purchase records held by Apple, Google and RevenueCat
   are retained under their own policies and applicable tax and accounting law.</p>
 
   <h2 id="security">11. Security</h2>

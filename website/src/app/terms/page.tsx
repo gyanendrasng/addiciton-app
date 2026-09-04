@@ -31,8 +31,9 @@ export default function Page() {
   (“we”, “us”) governing your use of the Curb mobile application and joincurb.app (together,
   the “Service”). By downloading, installing or using Curb you agree to these Terms. If you
   do not agree, do not use the Service.</p>
-  <p>Curb is intended for adults. You must be at least 16 years old — or 18 where required
-  by the app’s store rating in your country — and able to form a binding contract.</p>
+  <p>Curb is for adults. You must be at least 18 years old and able to form a binding
+  contract. The app is not directed to anyone younger, and we do not knowingly provide the
+  Service to them.</p>
 
   <h2 id="what">2. What Curb is</h2>
   <p>Curb helps you record and reduce addictive habits: it tracks streaks, offers a guided
@@ -100,10 +101,9 @@ export default function Page() {
   special, consequential or punitive damages, or for lost profits, lost data, or any harm
   arising from your use of, or inability to use, the Service — including any relapse,
   health outcome, or decision made in reliance on it.</p>
-  <p><strong>Data loss:</strong> Curb stores everything you write on your device only, and we
-  cannot recover it for you. Deleting the app,
-  losing or resetting the device, or a device fault will permanently destroy that data. We
-  hold no backup and cannot restore it.</p>
+  <p><strong>Data loss:</strong> Deleting the app, losing or resetting the device, or a
+  device fault can permanently destroy the entries you have made, and we may be unable to
+  recover them for you. Export your data from <em>Settings</em> if it matters to you.</p>
   <p>Our total liability for any claim relating to the Service is limited to the greater of
   the amount you paid us in the twelve months before the claim, or USD 50. Nothing in these
   Terms excludes liability that cannot lawfully be excluded, including for death or personal
