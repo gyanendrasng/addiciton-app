@@ -19,6 +19,13 @@ export type Scheme = 'light' | 'dark';
  * surfaces look like one material lit from one direction, which is most of
  * what separates an expensive-looking dark UI from a cheap one.
  */
+/**
+ * `textFaint` is set by the DARKEST raised surface it can land on
+ * (`surface3`), not by `bg` — faint text mostly lives inside cards. Tuned
+ * against `bg` alone it looks fine and measures 3.51:1 on a card, which fails
+ * AA and breaks the Sufficient Contrast claim on the App Store product page.
+ * Both themes clear 4.5:1 on all four grounds; don't darken either for taste.
+ */
 const dark = {
   bg: '#07080A',
   surface: '#101216',
@@ -27,7 +34,7 @@ const dark = {
   line: '#2A2F36',
   text: '#F5F6F8',
   textDim: '#A0A6B0',
-  textFaint: '#727883',
+  textFaint: '#868C95',
   accent: '#31C983',
   accentDeep: '#1B8A5A',
   accentInk: '#06120D',
@@ -46,7 +53,7 @@ const light: Record<keyof typeof dark, string> = {
   line: '#DDE1E4',
   text: '#111519',
   textDim: '#4E5A56',
-  textFaint: '#606D66',
+  textFaint: '#5E6B64',
   accent: '#0A7A4E',
   accentDeep: '#06603C',
   accentInk: '#FFFFFF',
