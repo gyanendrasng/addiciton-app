@@ -107,16 +107,24 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   /**
    * Identify the user in analytics using the opaque Better Auth user ID.
    * No email, no name — just the stable anonymous ID. Resets on sign-out.
+   *
+   * Reset fires on the TRANSITION out of a signed-in state, tracked in a ref,
+   * not on "there is no id right now". Two reasons: signed-out is `session ===
+   * null`, the same value as "not loaded yet", so a plain null check would also
+   * fire on every cold start and mint a fresh anonymous distinct_id each launch,
+   * fragmenting anonymous funnels. And a transient offline `refresh()` keeps the
+   * previous session rather than nulling it, so it correctly resets nothing.
    */
+  const identified = useRef<string | null>(null);
   useEffect(() => {
-    const id = session?.user?.id;
+    const id = session?.user?.id ?? null;
     if (id) {
+      identified.current = id;
       identify(id);
-    } else if (session !== null && !loading) {
-      // Signed-out state settled — reset so subsequent events are anonymous.
+    } else if (!loading && identified.current !== null) {
+      identified.current = null;
       resetAnalytics();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id, loading]);
 
   return (
