@@ -217,7 +217,7 @@ export function Analytics({ onNext }: { onNext: () => void }) {
             Curb can report which features get used and how streaks progress, so the parts that
             help get better and the parts that don’t get cut.
           </Subtitle>
-          <Text style={s.notifNote}>
+          <Text style={s.consentNote}>
             Never what you write — your reasons, notes and check-ins are not part of it. You can
             change this any time in Settings.
           </Text>
@@ -262,6 +262,18 @@ const s = StyleSheet.create({
     marginTop: Spacing.three,
     color: palette.amber,
     fontSize: 13.5,
+    fontFamily: type.body,
+  },
+  /**
+   * Supporting copy, not a caution. `notifNote` is amber because it only ever
+   * appears after a permission is denied; borrowing it here made a plain
+   * reassurance read as a warning.
+   */
+  consentNote: {
+    marginTop: Spacing.three,
+    color: palette.textDim,
+    fontSize: 13.5,
+    lineHeight: 20,
     fontFamily: type.body,
   },
   benefits: { marginTop: Spacing.four, gap: Spacing.two },
