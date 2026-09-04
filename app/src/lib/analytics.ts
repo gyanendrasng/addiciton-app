@@ -17,7 +17,13 @@
  *    lengths, slip and urge counts, milestones. Disclosed in /privacy §3c as
  *    sensitive personal information, and switchable off in Settings.
  * 3. No session recording, no autocapture, no heatmaps.
- * 4. Anonymous device-scoped id only. Never the user's email.
+ * 4. Identity is the opaque Better Auth user id — account-scoped, not
+ *    device-scoped, so progress follows the person across devices. Never the
+ *    email, never the name. `session.tsx` calls `identify()` with it and
+ *    `resetAnalytics()` on sign-out.
+ *    NOTE for the App Store privacy labels: because this id is also the
+ *    account id, User ID is collected for App Functionality *and* Analytics,
+ *    and everything sent alongside it counts as linked to the user.
  * 5. Honour `optedOut` — it is user-facing in Settings and defaults to OFF
  *    (i.e. analytics disabled) until the user opts in.
  *
