@@ -18,6 +18,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PostHogProvider } from 'posthog-react-native';
 
 import { DbProvider } from '@/db/provider';
+import { loadAnalyticsPref } from '@/features/settings/analytics';
 import { loadDevOffset } from '@/features/settings/dev';
 import { checkOnLaunch } from '@/lib/ota';
 import { posthog } from '@/lib/posthog';
@@ -74,6 +75,9 @@ export default function RootLayout() {
     return () => sub.remove();
   }, []);
   const onDbReady = useCallback(() => {
+    // Analytics stay opted out until this resolves — the seam and the PostHog
+    // client both default to off, so a slow read can only under-report.
+    void loadAnalyticsPref();
     if (__DEV__) loadDevOffset();
     SplashScreen.hideAsync();
   }, []);

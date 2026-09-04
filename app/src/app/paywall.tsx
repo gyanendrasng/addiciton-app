@@ -171,6 +171,9 @@ export default function PaywallScreen() {
           ))}
         </View>
 
+      </ScrollView>
+
+      <View style={s.actions}>
         <View style={s.plans}>
           {PLANS.map((p) => {
             const on = p.id === plan.id;
@@ -205,9 +208,7 @@ export default function PaywallScreen() {
             );
           })}
         </View>
-      </ScrollView>
 
-      <View style={s.actions}>
         {error ? <Notice>{error}</Notice> : null}
 
         <Tap
@@ -258,8 +259,7 @@ export default function PaywallScreen() {
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: palette.bg },
   fill: { flex: 1 },
-  // Bottom padding so the last plan can scroll clear of the sticky footer.
-  content: { paddingHorizontal: Spacing.four, paddingTop: Spacing.four, paddingBottom: Spacing.five },
+  content: { paddingHorizontal: Spacing.four, paddingTop: Spacing.four, paddingBottom: Spacing.three },
 
   head: { gap: Spacing.three },
   h1: {
@@ -284,7 +284,7 @@ const s = StyleSheet.create({
   },
   benefitText: { flex: 1, color: palette.textDim, fontSize: 14.5, lineHeight: 21, fontFamily: type.body },
 
-  plans: { marginTop: Spacing.five, gap: Spacing.two },
+  plans: { gap: Spacing.two, marginBottom: Spacing.two },
   plan: {
     minHeight: 72,
     borderRadius: 16,
@@ -328,8 +328,21 @@ const s = StyleSheet.create({
     fontFamily: type.bodySemi,
   },
 
+  /**
+   * The plan choice lives here, not in the ScrollView.
+   *
+   * It used to sit at the end of the scrolling content, and on a 6.3" phone
+   * that put Yearly — the SAVE 67% plan — below the fold, with Monthly sitting
+   * flush above the button so the list read as finished. A false bottom on the
+   * highest-value option. Pinned here it survives any screen size and any
+   * Dynamic Type setting, and the choice sits next to the button that acts on
+   * it. The hairline says the content above continues.
+   */
   actions: {
     paddingHorizontal: Spacing.four,
+    paddingTop: Spacing.three,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: palette.line,
     // No bottom padding: the safe-area inset already clears the home
     // indicator, and stacking our own on top of it left a visible dead band
     // under the legal links.

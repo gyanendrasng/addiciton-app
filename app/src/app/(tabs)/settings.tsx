@@ -12,6 +12,7 @@ import { Tap } from '@/components/ui/tap';
 import { getDb } from '@/db/client';
 import { setHabits, setPremium, useProfile } from '@/db/repo/profile';
 import { setSetting, useSetting } from '@/db/repo/settings';
+import { ANALYTICS_KEY, setAnalyticsPref } from '@/features/settings/analytics';
 import {
   cancelDailyReminders,
   listScheduled,
@@ -37,6 +38,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { profile } = useProfile();
   const { signedIn, user, refreshSession } = useAccount();
+  const analyticsOn = useSetting<boolean>(ANALYTICS_KEY, false);
   const remindersOn = useSetting<boolean>('reminders.enabled', false);
   const morning = useSetting<number>('reminders.morning', 8);
   const evening = useSetting<number>('reminders.evening', 21);
@@ -291,6 +293,19 @@ export default function SettingsScreen() {
         </Section>
 
         <Section label="Your data">
+          <Row
+            icon="chart.bar.fill"
+            iconTint={hues.progress.solid}
+            iconWash={hues.progress.wash}
+            label="Share usage data"
+            sub="Which features get used and how streaks progress. Never what you write.">
+            <Switch
+              value={analyticsOn.value}
+              onValueChange={setAnalyticsPref}
+              trackColor={{ true: palette.accentDeep, false: palette.surface3 }}
+              thumbColor={palette.text}
+            />
+          </Row>
           <Row icon="square.and.arrow.up" iconTint={hues.checkin.solid} iconWash={hues.checkin.wash} label="Export everything" sub="A JSON file of all your data." onPress={busy ? undefined : exportData} chevron />
           <Row icon="trash.fill" iconTint={palette.danger} iconWash="rgba(240, 100, 90, 0.16)" label="Delete everything" sub="Permanent. Starts you over." onPress={deleteEverything} danger />
         </Section>
