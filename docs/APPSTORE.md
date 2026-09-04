@@ -23,10 +23,16 @@ App: **Curb — Quit Any Addiction** · `app.joincurb.curb` · Apple ID `6808528
 - [x] Encryption: `ITSAppUsesNonExemptEncryption: false` already in `app.json`,
       so no documentation upload and no per-build prompt
 
-**App Privacy** — Name, Email, User ID, Device ID, Purchases. All *App
-Functionality*, all *Linked*, **none used for tracking**.
-- [x] Answers match the shipped binary: the server schema holds account and
-      entitlement rows only, so Health and Usage Data are correctly absent
+**App Privacy** — filed as Name, Email, User ID, Device ID, Purchases. All
+*App Functionality*, all *Linked*, **none used for tracking**.
+- [ ] ⚠️ **Must be re-answered — PostHog now ships.** Those answers were true of
+      the binary at the time. `posthog-react-native` is now installed, wired and
+      switchable on in Settings, and per `privacy/page.tsx` §3c it receives
+      streak lengths, slip and urge counts, and which habits someone tracks.
+      Add **Usage Data → Product Interaction** and **Health & Fitness → Health**
+      (habits are health data), still App Functionality + Analytics, Linked, not
+      tracking. A shipped app collecting more than its label declares is the top
+      takedown risk in this category.
 
 **Monetization**
 - [x] Group `Curb Premium`; `curb.premium.yearly` $59.99 · `.monthly` $14.99 ·
@@ -104,7 +110,22 @@ All copy is in `docs/STORE_LISTING.md`, character counts verified.
       the 1.0 binary
 - [ ] Pricing and Availability: app free, revenue via subscription
 
-## 6 · Worth doing before you submit
+## 6 · Recently fixed — no action needed
+
+- [x] `textFaint` failed AA on every raised surface (3.51:1 at worst) across 60
+      usages in 32 files, including paywall, sign-in, settings and help — all
+      "common tasks" under Apple's criteria. Recomputed against the darkest
+      surface instead of the background.
+- [x] The paywall put Yearly (`SAVE 67%`) below a false bottom; the plan
+      selector is now pinned in the footer and all three are visible on first
+      paint.
+- [x] PostHog was installed but could never send anything — nothing called
+      `setAnalyticsOptOut(false)` and the Settings control §3c promises did not
+      exist. Added, defaulting to off.
+- [x] `eas.json` had no `env` blocks, so every EAS build would have shipped with
+      an empty RevenueCat key and a dead PostHog client.
+
+## 7 · Worth doing before you submit
 
 - [ ] Add **Sufficient Contrast** to the accessibility draft — it's true now
       that `textFaint` was fixed; it wasn't before
