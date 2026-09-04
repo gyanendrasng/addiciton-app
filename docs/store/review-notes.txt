@@ -1,0 +1,11 @@
+Curb is subscription-only with no free tier, so the paywall appears
+immediately after onboarding. A demo account is not required — a reviewer can
+create one with any email; the sign-in code is delivered by email.
+
+Sign in with Apple, Google, and email code are all supported.
+
+The app stores recovery entries on the device. The account exists only to
+carry the subscription across devices.
+
+Crisis lines and a medical disclaimer are in Settings → Support → Get help,
+and are reachable without a subscription.
