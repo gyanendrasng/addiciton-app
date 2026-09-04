@@ -204,7 +204,7 @@ export default function PaywallScreen() {
                   {/* Never render the USD placeholder to a non-US store — a
                       price in the wrong currency is worse than none, and the
                       purchase sheet would contradict it a tap later. */}
-                  {prices[p.productId]?.price ?? '—'}
+                  {prices[p.packageId]?.price ?? '—'}
                   <Text style={s.planPeriod}>{p.period}</Text>
                 </Text>
               </Tap>
@@ -223,8 +223,8 @@ export default function PaywallScreen() {
             <ActivityIndicator color={palette.accentInk} />
           ) : (
             <Text style={s.ctaLabel}>
-              {prices[plan.productId]
-                ? `Subscribe — ${prices[plan.productId].price}${plan.period}`
+              {prices[plan.packageId]
+                ? `Subscribe — ${prices[plan.packageId].price}${plan.period}`
                 : 'Subscribe'}
             </Text>
           )}
@@ -232,7 +232,7 @@ export default function PaywallScreen() {
 
         {/* Apple 3.1.2: price and billing period, stated plainly. */}
         <Text style={s.disclosure}>
-          {disclosureFor(plan, prices[plan.productId]?.price)}
+          {disclosureFor(plan, prices[plan.packageId]?.price)}
         </Text>
 
         <View style={s.legal}>

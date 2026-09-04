@@ -12,8 +12,16 @@
  */
 export type Plan = {
   id: 'weekly' | 'monthly' | 'yearly';
-  /** RevenueCat / store product identifier */
+  /**
+   * RevenueCat / store product identifier. Apple only.
+   *
+   * Play does not use this shape: a Play subscription's RevenueCat product id
+   * is `subscriptionId:basePlanId`, so matching on it finds nothing on Android.
+   * Match on `packageId` instead — that is identical on both stores.
+   */
   productId: string;
+  /** RevenueCat package identifier. The same on Apple and Play. */
+  packageId: '$rc_weekly' | '$rc_monthly' | '$rc_annual';
   name: string;
   /** fallback display price; replaced by the store's localised string */
   price: string;
@@ -37,6 +45,7 @@ export const PLANS: Plan[] = [
   {
     id: 'weekly',
     productId: 'curb.premium.weekly',
+    packageId: '$rc_weekly',
     name: 'Weekly',
     price: '$9.99',
     period: '/week',
@@ -48,6 +57,7 @@ export const PLANS: Plan[] = [
   {
     id: 'monthly',
     productId: 'curb.premium.monthly',
+    packageId: '$rc_monthly',
     name: 'Monthly',
     price: '$14.99',
     period: '/month',
@@ -59,6 +69,7 @@ export const PLANS: Plan[] = [
   {
     id: 'yearly',
     productId: 'curb.premium.yearly',
+    packageId: '$rc_annual',
     name: 'Yearly',
     price: '$59.99',
     period: '/year',

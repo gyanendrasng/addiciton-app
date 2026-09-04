@@ -104,7 +104,9 @@ export async function fetchPrices(): Promise<Record<string, StorePrice>> {
     const out: Record<string, StorePrice> = {};
     for (const pkg of packages) {
       const p = pkg.product;
-      out[p.identifier] = {
+      // Keyed by package identifier so the paywall can look prices up the same
+      // way on both stores.
+      out[pkg.identifier] = {
         productId: p.identifier,
         price: p.priceString,
         period: p.subscriptionPeriod ?? '',
@@ -134,8 +136,10 @@ export async function purchasePlan(plan: Plan): Promise<PurchaseResult> {
   }
   try {
     const offerings = await m.default.getOfferings();
+    // By package, not product: Play reports `subscriptionId:basePlanId` as the
+    // product identifier, so a product-id match silently fails on Android.
     const pkg = offerings.current?.availablePackages.find(
-      (p) => p.product.identifier === plan.productId,
+      (p) => p.identifier === plan.packageId,
     );
     if (!pkg) {
       return { ok: false, message: 'That plan isn’t available right now.' };
