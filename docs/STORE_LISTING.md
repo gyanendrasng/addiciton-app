@@ -22,24 +22,27 @@ as ranking terms.
 ## Subtitle — 30 chars
 
 ```
-Streak tracker & urge toolkit
+Quit tracker for any habit
 ```
-29 chars. Says what the app *is* — a counter, and something to do when the
-counter is about to break. That second half is the product; most competitors'
-subtitles only describe the first.
+25 chars. Live in App Store Connect. Leads on the multi-addiction angle — "any
+habit" is the differentiator against single-vice competitors.
 
-Alternatives, all under 30: `Track streaks, ride out urges` · `Quit tracker for any habit` ·
-`Streaks, urges and slip logs`
+Alternatives held in reserve: `Streak tracker & urge toolkit` (29, adds two more
+indexed terms) · `Track streaks, ride out urges` (29)
 
 ## Keywords — 100 chars, comma-separated, no spaces
 
 ```
-sober,craving,recovery,nofap,smoking,alcohol,vaping,weed,gambling,habit,relapse,counter,quitting
+sober,craving,recovery,nofap,smoking,alcohol,vaping,weed,gambling,relapse,counter,streak,urges,porn
 ```
-96 chars. **Nothing here repeats the name or subtitle** — Apple indexes name +
-subtitle + keywords as one pool, so "quit", "addiction", "streak", "urge" and
-"tracker" are all deliberately absent. Every repeated word is a wasted slot;
-dropping them bought "gambling" and "quitting".
+99 chars. **Tuned to the subtitle that actually shipped.** Apple indexes name +
+subtitle + keywords as one pool, so "quit", "tracker", "habit" and "addiction"
+are absent — they're already in the name and subtitle, and a repeated word earns
+nothing twice. That frees the slots for "streak" and "urges", which the current
+subtitle no longer covers.
+
+If the subtitle ever changes to `Streak tracker & urge toolkit`, swap "streak"
+and "urges" back out for "habit" and "quitting".
 
 No spaces after commas (each space costs a character). No plurals where Apple
 already stems them.
