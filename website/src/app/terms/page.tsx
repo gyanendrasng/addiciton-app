@@ -100,7 +100,8 @@ export default function Page() {
   special, consequential or punitive damages, or for lost profits, lost data, or any harm
   arising from your use of, or inability to use, the Service — including any relapse,
   health outcome, or decision made in reliance on it.</p>
-  <p><strong>Data loss:</strong> Curb stores your data only on your device. Deleting the app,
+  <p><strong>Data loss:</strong> Curb stores everything you write on your device only, and we
+  cannot recover it for you. Deleting the app,
   losing or resetting the device, or a device fault will permanently destroy that data. We
   hold no backup and cannot restore it.</p>
   <p>Our total liability for any claim relating to the Service is limited to the greater of

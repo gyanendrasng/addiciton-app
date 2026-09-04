@@ -22,6 +22,9 @@ parallel with everything else here and nothing can shorten it.
   exist. In-app links to Terms and Privacy (Apple 3.1.2) and a
   "Manage or cancel" route (Play policy) are in Settings.
 - Account deletion in-app (Apple 5.1.1(v)), cascading to every table.
+- Crisis lines and a medical disclaimer **inside** the app (`/help`), reachable
+  from Settings, the urge outcome and after a slip, and deliberately not behind
+  the paywall.
 
 ---
 
@@ -120,25 +123,27 @@ is unshippable.
 
 ## 6. Privacy declarations — get these right
 
-- [ ] **Apple privacy nutrition labels.** You cannot claim "Data Not Collected":
-      the account stores an email, and RevenueCat collects a purchase identifier.
-      Declare *Contact Info → Email* and *Purchases*, both linked to identity,
-      used for App Functionality. Recovery data is genuinely not collected.
-- [ ] **Play Data safety form** — same answers. Declare the email and purchase
-      data, and that data is encrypted in transit and deletable in-app.
+- [ ] **Apple privacy nutrition labels.** "Data Not Collected" is not available.
+      Declare *Contact Info → Email*, *Purchases*, *Usage Data*, and — because
+      the habits someone tracks are health information — *Health & Fitness*,
+      or *Sensitive Info* depending on how the questionnaire routes you. All
+      linked to identity, used for App Functionality and Analytics, **not** for
+      tracking. Getting this wrong is the top takedown risk.
+- [ ] **Play Data safety form** — same answers, plus: encrypted in transit,
+      deletable in-app, and the analytics opt-out in Settings.
+- [ ] Confirm the shipped app matches both filings. A mismatch between the
+      declaration and the SDK's actual traffic is what gets apps pulled.
 - [ ] **Play Health apps declaration** — Curb is habit/recovery support, not
       medical. Answer accordingly.
-- [ ] Confirm nothing claims "nothing leaves your device". The accurate line,
-      used throughout, is *"your recovery data never leaves your device"*.
+- [ ] Confirm no surface claims "no servers" or "your recovery data never
+      leaves your device" — both false since accounts and analytics. The
+      accurate line, used throughout, is *"what you write never leaves your
+      phone"*.
 
 ---
 
 ## 7. Content review risks — worth a pass before submitting
 
-- [ ] **Medical disclaimer + crisis lines inside the app.** `website/crisis`
-      exists but the app links to neither. Alcohol especially: unsupervised
-      withdrawal can be dangerous, and reviewers look for this in recovery apps.
-      This is the most likely rejection reason left.
 - [ ] Re-read onboarding for outcome claims. Already softened once; the score
       and "rewired" framing are the remaining candidates.
 - [ ] Confirm the paywall shows price, period, Terms, Privacy and Restore

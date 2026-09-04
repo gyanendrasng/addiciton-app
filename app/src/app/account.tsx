@@ -76,8 +76,8 @@ export default function AccountScreen() {
         <Eyebrow>Account</Eyebrow>
         <Title>Not signed in.</Title>
         <Subtitle>
-          Sign in to carry your premium subscription to a new phone. Your recovery data stays on
-          this device regardless.
+          Sign in to carry your premium subscription to a new phone. What you write stays on
+          this device either way.
         </Subtitle>
         <View style={{ height: Spacing.four }} />
         <Cta label="Sign in" onPress={() => router.push('/sign-in')} />
@@ -168,8 +168,8 @@ export default function AccountScreen() {
       <Eyebrow>Account</Eyebrow>
       <Title>{user?.email ?? 'Signed in'}</Title>
       <Subtitle>
-        Only your email and subscription status live on our servers — never your streaks, slips or
-        notes.
+        Your email and subscription live on our servers, along with usage data. What you write —
+        notes, reasons, journal — never leaves this phone.
       </Subtitle>
 
       <Text style={s.section}>Profile</Text>

@@ -8,11 +8,12 @@ export const metadata = {
 
 export default function Page() {
   return (
-    <LegalPage title={'Delete my data'} updated={'Curb has no accounts, so deletion is immediate and entirely in your hands.'}>
+    <LegalPage title={'Delete my data'} updated={'Two places to delete from: your phone, and our servers.'}>
 <Callout>
-    <p>Everything you record in Curb is stored only on your device. There is no account to
-    close and no server-side copy for us to erase — deleting it on your phone deletes it
-    everywhere.</p>
+    <p>Everything you <em>write</em> in Curb — journal notes, reasons, slip notes — is
+    stored only on your device, so deleting it on your phone deletes it everywhere. Your
+    account (email address, subscription status) and your usage data live on our servers
+    and are deleted separately. Both routes are below.</p>
   </Callout>
 
   <h2>Option 1 — Delete from inside the app</h2>
@@ -24,7 +25,21 @@ export default function Page() {
   <p>This permanently removes your streaks, slips, check-ins, urges, reasons, journal entries
   and preferences, and returns the app to its first-run state.</p>
 
-  <h2>Option 2 — Delete the app</h2>
+  <h2>Option 2 — Delete your account</h2>
+  <p>This removes your email address, sign-in records and subscription record from our
+  servers, and your usage data along with them.</p>
+  <ol>
+    <li>Open Curb and go to the <strong>Settings</strong> tab.</li>
+    <li>Tap <strong>Manage account</strong>, then <strong>Delete account</strong>.</li>
+    <li>Confirm twice.</li>
+  </ol>
+  <p>Deleting your account does not cancel billing — cancel that in your Apple or Google
+  subscription settings — and does not touch the data on your phone.</p>
+  <p>No longer have the app installed? Email{' '}
+  <a href="mailto:privacy@joincurb.app">privacy@joincurb.app</a> from the address you
+  signed in with and we will delete the account for you.</p>
+
+  <h2>Option 3 — Delete the app</h2>
   <p>Uninstalling Curb removes its private storage, and with it all of your data.</p>
   <ul>
     <li><strong>iOS:</strong> press and hold the Curb icon → Remove App → Delete App.</li>

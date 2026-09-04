@@ -43,9 +43,13 @@ screen finished from reading the code.
   every font from `type.ts`. The brand mark is the one deliberate exception.
 - **Never surface a raw error.** Everything user-facing goes through
   `app/src/lib/errors.ts`.
-- **Recovery data never leaves the device.** The server stores an email address
-  and a subscription status, nothing else. Never write the claim "nothing leaves
-  your device" — purchases and OTA updates do use the network.
+- **What the user WRITES never leaves the device** — journal and check-in notes,
+  reasons, slip notes. That is the claim the app is sold on, and the only one
+  that is true. Structured progress data (habits tracked, streak lengths, slip
+  counts) IS sent to analytics, along with the account email and subscription
+  status. Never write "your recovery data never leaves your device" or
+  "no servers" — both are false. `website/src/app/privacy/page.tsx` §3 is the
+  authority; keep the code and that section in agreement.
 - Time is read through `app/src/lib/clock.ts`, never `Date.now()` directly.
 
 ## Verifying

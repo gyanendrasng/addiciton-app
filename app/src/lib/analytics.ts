@@ -9,17 +9,21 @@
  * RULES — these are not style preferences, they protect the app's privacy claim
  * and its store filings:
  *
- * 1. NEVER send recovery content. No habit names, journal text, reasons,
- *    relapse notes, mood notes, or trigger free-text. Interaction events only.
- * 2. Numbers are fine (streak length, urges survived). Content is not.
+ * 1. NEVER send anything the user WROTE. No journal text, no reasons, no
+ *    relapse or check-in notes, no free-text triggers. Not truncated, not
+ *    hashed, not "just the first few words". This is the line the privacy
+ *    policy draws and the one the app is sold on.
+ * 2. Structured progress data IS sent: which habits are tracked, streak
+ *    lengths, slip and urge counts, milestones. Disclosed in /privacy §3c as
+ *    sensitive personal information, and switchable off in Settings.
  * 3. No session recording, no autocapture, no heatmaps.
  * 4. Anonymous device-scoped id only. Never the user's email.
  * 5. Honour `optedOut` — it is user-facing in Settings and defaults to OFF
  *    (i.e. analytics disabled) until the user opts in.
  *
  * Turning this on changes the app's privacy posture. Before shipping a provider:
- *   - update /privacy on the website (it currently says "not a single
- *     third-party tracking SDK")
+ *   - /privacy §3c already describes PostHog and what it receives; keep the
+ *     code and that section in agreement, in both directions
  *   - update Apple's App Privacy answers (Usage Data)
  *   - update Google Play's Data safety form
  * A mismatch between those and the shipped app is the top policy-takedown risk.

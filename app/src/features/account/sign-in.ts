@@ -14,8 +14,8 @@
  * Email code exists because it is the only method that behaves identically on
  * both platforms: someone who subscribed on an iPhone with Sign in with Apple
  * and later moves to Android has no other way back into the same account, and
- * with recovery data on-device, being locked out of the entitlement is the exact
- * failure accounts were added to prevent.
+ * with everything you've written held on the device, being locked out of the
+ * entitlement is the exact failure accounts were added to prevent.
  *
  * NOTE: callers must `refreshSession()` after a successful sign-in rather than
  * waiting for a re-render — see `@/lib/session`.

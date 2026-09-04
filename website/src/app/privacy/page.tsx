@@ -3,27 +3,32 @@ import { LegalPage, Callout } from '@/components/legal';
 
 export const metadata = {
   title: 'Privacy Policy',
-  description: 'How Curb handles your data: recovery data stays on your device, no accounts, no analytics, no tracking.',
+  description: 'How Curb handles your data: what stays on your device, what we receive, and what we never collect.',
 };
 
 export default function Page() {
   return (
     <LegalPage title={'Privacy Policy'} updated={'Effective 3 September 2026 · Version 1.0'}>
 <Callout>
-    <p><strong>The short version.</strong> Everything you record in Curb — what you’re
-    quitting, your streaks, slips, mood check-ins, journal notes and reasons — is stored
-    in a database <strong>on your device</strong> and is never transmitted to us or anyone
-    else. Curb has no user accounts and no servers that receive your entries. We do not
-    use analytics or advertising trackers. The only network activity is for{' '}
-    <a href="#purchases">subscription purchases</a> and{' '}
-    <a href="#updates">app updates</a>, described below.</p>
+    <p><strong>The short version.</strong> <strong>Everything you write stays on your
+    phone.</strong> Your journal notes, the reasons you wrote for quitting, slip notes and
+    check-in notes are stored in a database on your device and are never transmitted to
+    us. We never see the words you write.</p>
+    <p>We do receive some things: your <a href="#account">email address</a> if you create
+    an account, your <a href="#purchases">subscription status</a>, and{' '}
+    <a href="#analytics">usage and progress data</a> — which habits you track, how long
+    your streaks run, and how you move through the app. We use that to understand what is
+    and isn’t working. We do not sell it, and we do not advertise.</p>
   </Callout>
 
   <div className="my-8 rounded-2xl bg-surface px-6 py-5">
     <ol>
       <li><a href="#who">Who we are</a></li>
-      <li><a href="#ondevice">Data that stays on your device</a></li>
+      <li><a href="#ondevice">What Curb stores on your device</a></li>
       <li><a href="#leaves">Data that leaves your device</a></li>
+      <li className="ml-4"><a href="#account">— Your account</a></li>
+      <li className="ml-4"><a href="#purchases">— Subscription purchases</a></li>
+      <li className="ml-4"><a href="#analytics">— Usage and progress data</a></li>
       <li><a href="#notifications">Notifications</a></li>
       <li><a href="#export">Exporting your data</a></li>
       <li><a href="#nosale">No selling, sharing or advertising</a></li>
@@ -47,7 +52,7 @@ export default function Page() {
     <strong>Email:</strong> <a href="mailto:privacy@joincurb.app">privacy@joincurb.app</a>
   </p>
 
-  <h2 id="ondevice">2. Data that stays on your device</h2>
+  <h2 id="ondevice">2. What Curb stores on your device</h2>
   <p>Curb stores the following in a local database inside the app’s private storage area
   on your phone. <strong>None of it is transmitted to us, and we have no ability to access
   it.</strong></p>
@@ -64,19 +69,36 @@ export default function Page() {
       <tr><td>Preferences</td><td>Reminder times, theme, whether reminders are on</td></tr>
     </tbody>
   </table>
-  <p>Some of this is sensitive information about health and behaviour. We have designed
-  Curb so that this category of data is never collected by us in the first place.</p>
+  <p><strong>Everything you write in free text — journal and check-in notes, the reasons
+  you wrote, slip notes — stays here and is never transmitted to us.</strong> Some of the
+  structured data above (which habits you track, streak lengths) is also sent to us as{' '}
+  <a href="#analytics">usage and progress data</a>; that section says exactly what and
+  why. This is sensitive information about health and behaviour, and we treat it as
+  such.</p>
   <Callout tone="warn">
-    <p><strong>Because your data is only on your device, it is only as durable as your
-    device.</strong> If you delete the app, reset your phone, or lose it, your Curb history
-    is permanently gone and cannot be recovered by us. Use{' '}
-    <em>Settings → Export everything</em> to keep your own copy.</p>
+    <p><strong>We hold no backup of any of this.</strong> If you delete the app, reset
+    your phone, or lose it, your Curb history is permanently gone — the copy on your
+    device is the only one that can be restored from, and we cannot recover it for you.
+    Use <em>Settings → Export everything</em> to keep your own.</p>
   </Callout>
 
   <h2 id="leaves">3. Data that leaves your device</h2>
-  <p>Three narrow exceptions, none of which involve your recovery entries.</p>
+  <p>Five things, described in full below. None of them is anything you have written.</p>
 
-  <h3 id="purchases">a. Subscription purchases</h3>
+  <h3 id="account">a. Your account</h3>
+  <p>Curb requires an account so that a subscription you buy on one phone works on your
+  next one. When you sign in with Apple, Google or an email code, we store on our servers:
+  your <strong>email address</strong>, an internal user identifier, the sign-in provider
+  you used, an optional display name you can set yourself, and session records (created
+  date, and the device type and IP address of the sign-in, used to let you sign out other
+  devices).</p>
+  <p>If you use <strong>Sign in with Apple</strong> and choose “Hide My Email”, we receive
+  only Apple’s private relay address, never your real one. We do not store passwords —
+  there are none.</p>
+  <p>Deleting your account in <em>Settings → Manage account → Delete account</em> removes
+  all of this from our servers. Your on-device data is untouched by that.</p>
+
+  <h3 id="purchases">b. Subscription purchases</h3>
   <p>Curb offers a paid subscription and a one-time lifetime option. Payment is handled
   entirely by <strong>Apple</strong> or <strong>Google</strong> — we never see or receive
   your card details, billing address, or Apple/Google account credentials.</p>
@@ -90,7 +112,26 @@ export default function Page() {
   used for app functionality and analytics, not linked to your identity, and not used to
   track you across apps or websites.</p>
 
-  <h3 id="updates">b. App updates</h3>
+  <h3 id="analytics">c. Usage and progress data</h3>
+  <p>Curb sends product analytics to{' '}
+  <a href="https://posthog.com/privacy" rel="noopener noreferrer" target="_blank">PostHog</a>,
+  so we can see which parts of the app help and which are ignored. It receives:</p>
+  <ul>
+    <li><strong>Interaction events</strong> — screens opened, buttons used, where people
+    stop during onboarding, whether a purchase was started or completed.</li>
+    <li><strong>Progress data</strong> — which habits you are tracking, how long your
+    streaks run, how many slips and urges you have logged, which milestones you reach.</li>
+    <li><strong>Technical context</strong> — app version, platform, device model, and a
+    pseudonymous identifier.</li>
+  </ul>
+  <p><strong>It never receives anything you write.</strong> No journal or check-in notes,
+  no reasons, no slip notes, no free text of any kind.</p>
+  <p>Because the habits you track say something about your health, we treat this as
+  sensitive personal information. It is used to improve Curb — never sold, never shared
+  for advertising, and never used to build a profile of you for anyone else. You can turn
+  analytics off in <em>Settings</em>; the rest of the app works exactly the same.</p>
+
+  <h3 id="updates">d. App updates</h3>
   <p>Curb can receive improvements and fixes without a full store update, using{' '}
   <strong>Expo Application Services (EAS Update)</strong>. When the app launches it asks
   Expo’s servers whether a newer version of the app’s code is available. That request
@@ -99,7 +140,7 @@ export default function Page() {
   internet request, your IP address. It contains none of your content. See{' '}
   <a href="https://expo.dev/privacy" rel="noopener noreferrer" target="_blank">Expo’s privacy policy</a>.</p>
 
-  <h3>c. This website</h3>
+  <h3>e. This website</h3>
   <p>joincurb.app is a static site. It sets no cookies and runs no advertising or analytics
   scripts. Fonts are loaded from Google Fonts, which receives your IP address as part of
   serving the font files.</p>
@@ -122,9 +163,10 @@ export default function Page() {
   <p><strong>We do not sell or share personal information</strong> as those terms are
   defined by the California Consumer Privacy Act as amended by the CPRA, and we do not
   process personal information for cross-context behavioural advertising. Curb contains no
-  advertising SDKs, no analytics SDKs, and no social-media SDKs. We do not use sensitive
-  personal information to infer characteristics about you, so the CPRA right to “limit the
-  use of my sensitive personal information” does not arise. We have never sold or shared
+  advertising SDKs and no social-media SDKs. It does contain a product-analytics SDK,
+  described in <a href="#analytics">section 3c</a>, used only to improve the app. You can
+  switch it off in Settings, which is how we honour the CPRA right to limit the use of
+  sensitive personal information. We have never sold or shared
   personal information, including in the preceding twelve months.</p>
   <p>Curb does not track you across other companies’ apps or websites, and does not request
   permission to do so.</p>
