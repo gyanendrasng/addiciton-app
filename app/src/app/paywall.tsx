@@ -106,8 +106,8 @@ export default function PaywallScreen() {
           <AppLogo size={52} />
           <Text style={s.h1}>Everything, from{'\n'}day one.</Text>
           <Text style={s.sub}>
-            Curb has no free tier and no ads. One subscription, everything unlocked, and your
-            notes stay on this phone.
+            Curb has no free tier and no ads. One subscription, everything unlocked, on
+            every device you sign in on.
           </Text>
         </Animated.View>
 

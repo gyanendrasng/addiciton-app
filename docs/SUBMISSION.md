@@ -30,12 +30,17 @@ parallel with everything else here and nothing can shorten it.
 
 ## 1. Blocking — nothing ships without these
 
-### Legal identity
-- [ ] Decide the selling entity (sole trader vs. company). This is who the
-      contract is with and who Apple pays.
-- [ ] Replace **`[LEGAL ENTITY NAME]`**, **`[REGISTERED ADDRESS]`** and
-      **`[JURISDICTION]`** — 8 occurrences across `website/src/app/terms/page.tsx`
-      and `privacy/page.tsx`. Apple rejects placeholder legal text.
+### Legal identity ✅ filled — verify before submitting
+Selling as an **individual**: Gyanendra Singh, 110/05 Pinto Park, Delhi Cantt,
+New Delhi 110010, India. Governing law India.
+- [ ] The App Store Connect and Play seller name must match **Gyanendra Singh**
+      exactly, or Apple flags the mismatch against the policy.
+- [ ] That postal address becomes public — both stores publish the seller
+      address for paid apps. Swap it for a registered office if you'd rather not
+      publish a home address; it appears in `privacy/page.tsx` and
+      `terms/page.tsx`.
+- [ ] India as an individual seller: check whether GST registration applies to
+      your app revenue before you take payments.
 
 ### Email
 - [ ] Create `support@`, `privacy@` and `hello@joincurb.app`. A catch-all
@@ -135,10 +140,10 @@ is unshippable.
       declaration and the SDK's actual traffic is what gets apps pulled.
 - [ ] **Play Health apps declaration** — Curb is habit/recovery support, not
       medical. Answer accordingly.
-- [ ] Confirm no surface claims "no servers" or "your recovery data never
-      leaves your device" — both false since accounts and analytics. The
-      accurate line, used throughout, is *"what you write never leaves your
-      phone"*.
+- [ ] Confirm no surface makes a data-locality claim at all — "no servers",
+      "never leaves your device", "what you write stays on your phone". All
+      removed deliberately: recovery data is expected to become server-side,
+      and a retracted privacy claim is worse than one never made.
 
 ---
 

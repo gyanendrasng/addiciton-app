@@ -16,8 +16,7 @@ const isProd = process.env.NODE_ENV === 'production';
  * Curb auth.
  *
  * Accounts exist for ONE reason: syncing premium entitlements across a user's
- * devices. Recovery data (streaks, slips, journal, moods) never leaves the
- * device and is never stored here.
+ * devices.
  *
  * Providers: Sign in with Apple (iOS) + Google (iOS and Android) + a six-digit
  * email code. Apple requires Sign in with Apple to be offered wherever another

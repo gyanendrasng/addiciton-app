@@ -26,11 +26,11 @@ export const metadata: Metadata = {
     template: '%s — Curb',
   },
   description:
-    'Curb is a private recovery companion. Track a streak for every habit, ride out urges with a guided toolkit, and log slips without shame. What you write never leaves your phone.',
+    'Curb is a recovery companion. Track a streak for every habit, ride out urges with a guided toolkit, and log slips without shame.',
   openGraph: {
     title: 'Curb — Quit any addiction',
     description:
-      'A private recovery companion. Streaks, an urge toolkit, and shame-free slip logging.',
+      'A recovery companion. Streaks, an urge toolkit, and shame-free slip logging.',
     url: 'https://joincurb.app',
     siteName: 'Curb',
     type: 'website',

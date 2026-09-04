@@ -43,13 +43,13 @@ screen finished from reading the code.
   every font from `type.ts`. The brand mark is the one deliberate exception.
 - **Never surface a raw error.** Everything user-facing goes through
   `app/src/lib/errors.ts`.
-- **What the user WRITES never leaves the device** — journal and check-in notes,
-  reasons, slip notes. That is the claim the app is sold on, and the only one
-  that is true. Structured progress data (habits tracked, streak lengths, slip
-  counts) IS sent to analytics, along with the account email and subscription
-  status. Never write "your recovery data never leaves your device" or
-  "no servers" — both are false. `website/src/app/privacy/page.tsx` §3 is the
-  authority; keep the code and that section in agreement.
+- **Make no privacy or data-locality claims in product copy.** Not "never leaves
+  your device", not "no servers", not "what you write stays on your phone" —
+  recovery data is expected to become server-side, and a claim that has to be
+  retracted later is worse than one never made. Describe what the app *does*,
+  not where bytes live. The one place that discusses data handling is
+  `website/src/app/privacy/page.tsx`, which is written to permit server-side
+  storage; keep code and policy in agreement, in both directions.
 - Time is read through `app/src/lib/clock.ts`, never `Date.now()` directly.
 
 ## Verifying

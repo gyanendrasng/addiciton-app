@@ -10,15 +10,15 @@ export default function Page() {
   return (
     <LegalPage title={'Privacy Policy'} updated={'Effective 3 September 2026 · Version 1.0'}>
 <Callout>
-    <p><strong>The short version.</strong> <strong>Everything you write stays on your
-    phone.</strong> Your journal notes, the reasons you wrote for quitting, slip notes and
-    check-in notes are stored in a database on your device and are never transmitted to
-    us. We never see the words you write.</p>
-    <p>We do receive some things: your <a href="#account">email address</a> if you create
-    an account, your <a href="#purchases">subscription status</a>, and{' '}
-    <a href="#analytics">usage and progress data</a> — which habits you track, how long
-    your streaks run, and how you move through the app. We use that to understand what is
-    and isn’t working. We do not sell it, and we do not advertise.</p>
+    <p><strong>The short version.</strong> Curb keeps your recovery record — habits,
+    streaks, check-ins, urges, slips, reasons and notes — so the app can show it back to
+    you. It is held on your device and, where needed to provide the service, on our
+    servers. We also hold your <a href="#account">email address</a>, your{' '}
+    <a href="#purchases">subscription status</a> and{' '}
+    <a href="#analytics">usage and progress data</a>.</p>
+    <p><strong>We do not sell it, we do not share it for advertising, and we do not use it
+    to track you across other apps.</strong> You can export everything, and you can delete
+    everything — both are in Settings, and section 8 explains how.</p>
   </Callout>
 
   <div className="my-8 rounded-2xl bg-surface px-6 py-5">
@@ -47,8 +47,8 @@ export default function Page() {
   addictive habits. This policy explains how the app handles information. It applies to
   the Curb iOS and Android apps and to this website, <strong>joincurb.app</strong>.</p>
   <p>
-    <strong>Data controller:</strong> [LEGAL ENTITY NAME]<br />
-    <strong>Postal address:</strong> [REGISTERED ADDRESS]<br />
+    <strong>Data controller:</strong> Gyanendra Singh<br />
+    <strong>Postal address:</strong> 110/05 Pinto Park, Delhi Cantt, New Delhi 110010, India<br />
     <strong>Email:</strong> <a href="mailto:privacy@joincurb.app">privacy@joincurb.app</a>
   </p>
 
@@ -69,21 +69,18 @@ export default function Page() {
       <tr><td>Preferences</td><td>Reminder times, theme, whether reminders are on</td></tr>
     </tbody>
   </table>
-  <p><strong>Everything you write in free text — journal and check-in notes, the reasons
-  you wrote, slip notes — stays here and is never transmitted to us.</strong> Some of the
-  structured data above (which habits you track, streak lengths) is also sent to us as{' '}
-  <a href="#analytics">usage and progress data</a>; that section says exactly what and
-  why. This is sensitive information about health and behaviour, and we treat it as
-  such.</p>
+  <p>This is sensitive information about health and behaviour, and we treat it that way:
+  access is restricted, it is never sold, and it is never used for advertising. Some of it
+  also reaches our servers — see <a href="#leaves">section 3</a> for exactly what, and{' '}
+  <a href="#rights">section 8</a> for how to get it deleted.</p>
   <Callout tone="warn">
-    <p><strong>We hold no backup of any of this.</strong> If you delete the app, reset
-    your phone, or lose it, your Curb history is permanently gone — the copy on your
-    device is the only one that can be restored from, and we cannot recover it for you.
-    Use <em>Settings → Export everything</em> to keep your own.</p>
+    <p><strong>Keep your own copy.</strong> <em>Settings → Export everything</em> writes a
+    JSON file of your Curb data that you can store wherever you like. Don’t rely on us to
+    restore a lost phone.</p>
   </Callout>
 
   <h2 id="leaves">3. Data that leaves your device</h2>
-  <p>Five things, described in full below. None of them is anything you have written.</p>
+  <p>Described in full below.</p>
 
   <h3 id="account">a. Your account</h3>
   <p>Curb requires an account so that a subscription you buy on one phone works on your
@@ -124,8 +121,6 @@ export default function Page() {
     <li><strong>Technical context</strong> — app version, platform, device model, and a
     pseudonymous identifier.</li>
   </ul>
-  <p><strong>It never receives anything you write.</strong> No journal or check-in notes,
-  no reasons, no slip notes, no free text of any kind.</p>
   <p>Because the habits you track say something about your health, we treat this as
   sensitive personal information. It is used to improve Curb — never sold, never shared
   for advertising, and never used to build a profile of you for anyone else. You can turn
@@ -230,7 +225,7 @@ export default function Page() {
   <p>
     Privacy questions: <a href="mailto:privacy@joincurb.app">privacy@joincurb.app</a><br />
     General support: <a href="mailto:support@joincurb.app">support@joincurb.app</a><br />
-    Postal: [LEGAL ENTITY NAME], [REGISTERED ADDRESS]
+    Postal: Gyanendra Singh, 110/05 Pinto Park, Delhi Cantt, New Delhi 110010, India
   </p>
     </LegalPage>
   );

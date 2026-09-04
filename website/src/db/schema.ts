@@ -7,8 +7,9 @@
  *  - this file — the only tables Curb adds on top.
  *
  * Note what is NOT here: no streaks, slips, moods, journal entries, urge logs or
- * habit names. Recovery data never leaves the device. The server knows a user's
- * email and whether they've paid, and nothing else.
+ * habit names. This schema holds the account and the entitlement only; anything
+ * else we come to store belongs in its own migration and its own section of
+ * the privacy policy.
  */
 import { relations } from 'drizzle-orm';
 import { boolean, index, pgTable, text, timestamp } from 'drizzle-orm/pg-core';

@@ -10,10 +10,9 @@ export default function Page() {
   return (
     <LegalPage title={'Delete my data'} updated={'Two places to delete from: your phone, and our servers.'}>
 <Callout>
-    <p>Everything you <em>write</em> in Curb — journal notes, reasons, slip notes — is
-    stored only on your device, so deleting it on your phone deletes it everywhere. Your
-    account (email address, subscription status) and your usage data live on our servers
-    and are deleted separately. Both routes are below.</p>
+    <p>There are two places to delete from: the copy on your phone, and your account on
+    our servers. Doing both leaves us holding nothing about you. Each is a couple of taps,
+    and both are below.</p>
   </Callout>
 
   <h2>Option 1 — Delete from inside the app</h2>

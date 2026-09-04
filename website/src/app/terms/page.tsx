@@ -27,7 +27,7 @@ export default function Page() {
   </Callout>
 
   <h2 id="agreement">1. Agreement</h2>
-  <p>These Terms of Use (“Terms”) are a legal agreement between you and [LEGAL ENTITY NAME]
+  <p>These Terms of Use (“Terms”) are a legal agreement between you and Gyanendra Singh
   (“we”, “us”) governing your use of the Curb mobile application and joincurb.app (together,
   the “Service”). By downloading, installing or using Curb you agree to these Terms. If you
   do not agree, do not use the Service.</p>
@@ -115,8 +115,8 @@ export default function Page() {
   termination.</p>
 
   <h2 id="law">10. Governing law</h2>
-  <p>These Terms are governed by the laws of [JURISDICTION], without regard to conflict of
-  law rules, and the courts of [JURISDICTION] have exclusive jurisdiction — except that
+  <p>These Terms are governed by the laws of India, without regard to conflict of
+  law rules, and the courts of India have exclusive jurisdiction — except that
   consumers may bring proceedings in their country of residence, and mandatory local
   consumer protections continue to apply.</p>
 
@@ -129,8 +129,8 @@ export default function Page() {
   <h2 id="changes">12. Changes and contact</h2>
   <p>We may update these Terms; the effective date above will change and material changes
   will be notified in the app. Questions:
-  <a href="mailto:support@joincurb.app">support@joincurb.app</a>, [LEGAL ENTITY NAME],
-  [REGISTERED ADDRESS].</p>
+  <a href="mailto:support@joincurb.app">support@joincurb.app</a>, Gyanendra Singh,
+  110/05 Pinto Park, Delhi Cantt, New Delhi 110010, India.</p>
     </LegalPage>
   );
 }

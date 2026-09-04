@@ -284,7 +284,7 @@ export default function SettingsScreen() {
             iconTint={palette.textDim}
             iconWash={palette.surface3}
             label="Privacy policy"
-            sub="What we store, and what stays on this phone."
+            sub="What we collect and how to get it deleted."
             onPress={() => Linking.openURL(PRIVACY_URL)}
             chevron
           />

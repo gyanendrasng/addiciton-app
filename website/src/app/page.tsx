@@ -47,7 +47,7 @@ const features = [
 
 const privacyPoints = [
   ['No account.', 'Nothing to sign up for, no email, no password.'],
-  ['Your words stay yours.', 'Notes, reasons and journal entries never leave your phone. We never see what you write.'],
+  ['Private by design.', 'No feed, no followers, nothing to perform. Just you and the count.'],
   ['No analytics, no ads, no trackers.', 'Not a single third-party tracking SDK.'],
   ['No selling or sharing.', 'Ever — and we have nothing to sell.'],
   ['Export or erase anytime.', 'Take your data as a file, or wipe it from Settings.'],
@@ -115,7 +115,7 @@ export default function Home() {
               Why Curb is different
             </p>
             <h2 className="text-[clamp(26px,3.6vw,36px)] font-extrabold">
-              What you write never leaves your phone.
+              Built to be used at 2am, not shown off.
             </h2>
             <p className="mt-4 max-w-2xl text-dim">
               What you&apos;re quitting, every slip, every mood check-in, every journal note — all
