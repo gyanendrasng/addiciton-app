@@ -52,3 +52,6 @@ yarn-error.*
 # tooling artifacts
 .playwright-mcp/
 .claude/settings.local.json
+
+# Play service account key — a credential, never committed
+secrets/
