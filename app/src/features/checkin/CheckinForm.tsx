@@ -4,6 +4,7 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { Tap } from '@/components/ui/tap';
 import { upsertCheckin, type Checkin } from '@/db/repo/checkins';
 import { Cta, Subtitle, Title } from '@/features/onboarding/components/chrome';
+import { track } from '@/lib/analytics';
 import { hues, palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
@@ -54,6 +55,12 @@ export function CheckinForm({
         onPress={async () => {
           if (!ready) return;
           await upsertCheckin({ date, mood: mood!, difficulty: difficulty!, note: note.trim() || null });
+          track('checkin_saved', {
+            mood: mood!,
+            difficulty: difficulty!,
+            has_note: note.trim().length > 0,
+            is_update: Boolean(existing),
+          });
           onSaved();
         }}
       />

@@ -8,15 +8,32 @@
       "developmentClient": true,
       "distribution": "internal",
       "channel": "development",
-      "ios": { "simulator": true }
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_OyzUoKdTCmBNCUmhPdkFQzgUTvs",
+        "POSTHOG_PROJECT_TOKEN": "phc_C4QtDVAdfQURo67YRWr3R6CgjXLiFk85qBEaJQNHHmbk",
+        "POSTHOG_HOST": "https://us.i.posthog.com"
+      }
     },
     "preview": {
       "distribution": "internal",
-      "channel": "preview"
+      "channel": "preview",
+      "env": {
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_OyzUoKdTCmBNCUmhPdkFQzgUTvs",
+        "POSTHOG_PROJECT_TOKEN": "phc_C4QtDVAdfQURo67YRWr3R6CgjXLiFk85qBEaJQNHHmbk",
+        "POSTHOG_HOST": "https://us.i.posthog.com"
+      }
     },
     "production": {
       "channel": "production",
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_OyzUoKdTCmBNCUmhPdkFQzgUTvs",
+        "POSTHOG_PROJECT_TOKEN": "phc_C4QtDVAdfQURo67YRWr3R6CgjXLiFk85qBEaJQNHHmbk",
+        "POSTHOG_HOST": "https://us.i.posthog.com"
+      }
     }
   },
   "submit": {

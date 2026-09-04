@@ -5,6 +5,7 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { Tap } from '@/components/ui/tap';
 import { insertRelapse } from '@/db/repo/relapses';
 import { rescheduleMilestones } from '@/features/streak/milestone-schedule';
+import { track } from '@/lib/analytics';
 import { useProfile } from '@/db/repo/profile';
 import { habits as ALL_HABITS } from '@/features/onboarding/content';
 import { Cta, Eyebrow, Subtitle, Title } from '@/features/onboarding/components/chrome';
@@ -49,6 +50,12 @@ export function RelapseFlow({ urgeId, presetHabit }: { urgeId: number | null; pr
       note: note.trim() || null,
       nextActions: actions.map((a) => a.trim()).filter(Boolean),
       urgeId,
+    });
+    track('relapse_logged', {
+      habit_count: habitIds.length,
+      habits: habitIds.join(','),
+      has_trigger: Boolean(trigger),
+      came_from_urge: urgeId != null,
     });
     await rescheduleMilestones();
     if (router.canDismiss()) router.dismissAll();

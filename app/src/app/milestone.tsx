@@ -18,6 +18,7 @@ import Svg, { Line } from 'react-native-svg';
 
 import { markCelebrated } from '@/db/repo/milestones';
 import { Cta } from '@/features/onboarding/components/chrome';
+import { track } from '@/lib/analytics';
 import { TIERS } from '@/features/streak/tiers';
 import { curves, springs, stagger } from '@/theme/motion';
 import { palette } from '@/theme/palette';
@@ -46,6 +47,7 @@ function MilestoneScreen() {
   const [count, setCount] = useState(reduced ? days : 0);
 
   useEffect(() => {
+    track('milestone_reached', { days, milestone_name: tier.name });
     if (reduced) return;
     badge.set(withSpring(1, springs.hero));
     squash.set(

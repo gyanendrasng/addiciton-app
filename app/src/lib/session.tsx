@@ -22,6 +22,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { AppState } from 'react-native';
 
 import { configurePurchases, logOutPurchases } from '@/features/premium/purchases';
+import { identify, resetAnalytics } from './analytics';
 import { authClient } from './auth-client';
 
 type SessionData = Awaited<ReturnType<typeof authClient.getSession>>['data'];
@@ -102,6 +103,21 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     if (id) void configurePurchases(id);
     else void logOutPurchases();
   }, [session?.user?.id]);
+
+  /**
+   * Identify the user in analytics using the opaque Better Auth user ID.
+   * No email, no name — just the stable anonymous ID. Resets on sign-out.
+   */
+  useEffect(() => {
+    const id = session?.user?.id;
+    if (id) {
+      identify(id);
+    } else if (session !== null && !loading) {
+      // Signed-out state settled — reset so subsequent events are anonymous.
+      resetAnalytics();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id, loading]);
 
   return (
     <SessionContext.Provider value={{ session, loading, refresh }}>

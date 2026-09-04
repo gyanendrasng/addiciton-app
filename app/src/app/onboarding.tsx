@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -10,6 +10,7 @@ import { buildSteps, quizRangeOf } from '@/features/onboarding/content';
 import { computeScore, mergedSymptoms, selectedHabits } from '@/features/onboarding/lib';
 import { completeOnboarding } from '@/features/onboarding/complete';
 import { OnboardingProvider, useOnboarding } from '@/features/onboarding/state';
+import { track } from '@/lib/analytics';
 import { Chevron, ProgressBar, StepFrame, Subtitle, Title } from '@/features/onboarding/components/chrome';
 import { MultiSelect, SingleSelect } from '@/features/onboarding/components/options';
 import { Analyzing, DateStep, ScoreStep } from '@/features/onboarding/components/hero-steps';
@@ -19,6 +20,11 @@ import { Notifications, Signature } from '@/features/onboarding/components/closi
 function Flow() {
   const { index, direction, answers, dispatch } = useOnboarding();
   const router = useRouter();
+
+  // Track when the user first sees the onboarding flow.
+  useEffect(() => {
+    track('onboarding_started');
+  }, []);
   const picked = selectedHabits(answers);
   const effSteps = useMemo(() => buildSteps(picked), [picked]);
   const step = effSteps[Math.min(index, effSteps.length - 1)];
@@ -32,6 +38,12 @@ function Flow() {
     if (prev >= 0) dispatch({ type: 'goto', index: prev, direction: -1 });
   }, [dispatch, effSteps, index]);
   const done = useCallback(async () => {
+    const picked = selectedHabits(answers);
+    track('onboarding_completed', {
+      habit_count: picked.length,
+      habits: picked.map((h) => h.id).join(','),
+      score: computeScore(answers),
+    });
     await completeOnboarding(answers);
     router.replace('/');
   }, [answers, router]);

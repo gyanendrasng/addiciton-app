@@ -18,6 +18,7 @@ import { durations } from '@/theme/motion';
 import { palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
+import { track } from '@/lib/analytics';
 import { useDismiss } from '@/lib/nav';
 import { withAccess } from '@/features/premium/access';
 import { useProfile } from '@/db/repo/profile';
@@ -34,6 +35,7 @@ function UrgeScreen() {
   const finished = useRef(false);
 
   useEffect(() => {
+    track('urge_started');
     insertUrge().then((id) => {
       urgeId.current = id;
     });
@@ -44,9 +46,14 @@ function UrgeScreen() {
     const sub = navigation.addListener('beforeRemove', () => {
       if (finished.current || urgeId.current == null) return;
       finished.current = true;
+      const durationS = Math.round((now() - state.startedAt) / 1000);
+      track('urge_abandoned', {
+        duration_s: durationS,
+        steps_completed: state.completed.length,
+      });
       finishUrge(urgeId.current, {
         outcome: 'abandoned',
-        durationS: Math.round((now() - state.startedAt) / 1000),
+        durationS,
         stepsCompleted: state.completed,
       });
     });
@@ -57,12 +64,19 @@ function UrgeScreen() {
     if (finished.current) return;
     finished.current = true;
     const id = urgeId.current;
+    const durationS = Math.round((now() - state.startedAt) / 1000);
+    const analyticsEvent = outcome === 'survived' ? 'urge_survived' : 'urge_slipped';
+    track(analyticsEvent, {
+      duration_s: durationS,
+      steps_completed: state.completed.length,
+      intensity: d.intensity ?? undefined,
+    });
     if (id != null) {
       await finishUrge(id, {
         outcome,
         trigger: d.trigger,
         intensity: d.intensity,
-        durationS: Math.round((now() - state.startedAt) / 1000),
+        durationS,
         stepsCompleted: state.completed,
       });
     }

@@ -30,6 +30,8 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
+import { posthog } from './posthog';
+
 /** Interaction events. Keep this list closed — no free-form event names. */
 export type AnalyticsEvent =
   // onboarding funnel
@@ -68,8 +70,33 @@ type Provider = {
   reset: () => void;
 };
 
-let provider: Provider | null = null;
+/**
+ * PostHog rejects `undefined` values (its `JsonType` has no room for them), and
+ * our own prop type allows them so call sites can pass optional fields without
+ * ceremony. Drop the empty ones rather than sending nulls, which would show up
+ * in PostHog as a real recorded value.
+ */
+function defined(props?: AnalyticsProps): Record<string, string | number | boolean> {
+  const out: Record<string, string | number | boolean> = {};
+  for (const [k, v] of Object.entries(props ?? {})) {
+    if (v !== undefined) out[k] = v;
+  }
+  return out;
+}
+
+// Bound once so TypeScript keeps the non-null narrowing inside the closures.
+const client = posthog;
+
+let provider: Provider | null = client
+  ? {
+      capture: (event, props) => client.capture(event, defined(props)),
+      identify: (id, props) => client.identify(id, { $set: defined(props) }),
+      reset: () => client.reset(),
+    }
+  : null;
 let optedOut = true; // privacy-first default: nothing until the user opts in
+// Opt out of PostHog capture on startup until the user explicitly enables analytics.
+if (posthog) void posthog.optOut();
 
 /** Wire a provider in (e.g. PostHog). Called once at startup, if enabled. */
 export function setAnalyticsProvider(p: Provider | null) {
@@ -78,6 +105,13 @@ export function setAnalyticsProvider(p: Provider | null) {
 
 export function setAnalyticsOptOut(value: boolean) {
   optedOut = value;
+  if (posthog) {
+    if (value) {
+      void posthog.optOut();
+    } else {
+      void posthog.optIn();
+    }
+  }
   if (value) provider?.reset();
 }
 

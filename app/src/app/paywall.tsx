@@ -17,6 +17,7 @@ import { AppLogo } from '@/components/ui/app-logo';
 import { Notice } from '@/components/ui/notice';
 import { Tap } from '@/components/ui/tap';
 import { setPremium } from '@/db/repo/profile';
+import { track } from '@/lib/analytics';
 import {
   fetchPrices,
   purchasePlan,
@@ -52,6 +53,11 @@ export default function PaywallScreen() {
    */
   const [prices, setPrices] = useState<Record<string, StorePrice>>({});
 
+  // Track paywall impression once on mount.
+  useEffect(() => {
+    track('paywall_viewed');
+  }, []);
+
   useEffect(() => {
     let alive = true;
     void fetchPrices().then((p) => {
@@ -79,6 +85,7 @@ export default function PaywallScreen() {
     if (busy) return;
     setError(null);
     setBusy('buy');
+    track('purchase_started', { plan_id: plan.id });
 
     if (purchasesAvailable()) {
       const result = await purchasePlan(plan);
@@ -86,6 +93,7 @@ export default function PaywallScreen() {
         // The store confirmed. RevenueCat's webhook writes the server-side
         // entitlement; refresh pulls it, and premium going true dismisses this
         // screen via the effect above.
+        track('purchase_completed', { plan_id: plan.id });
         await refresh();
       } else if (!result.cancelled) {
         setError(result.message);
