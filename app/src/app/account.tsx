@@ -187,7 +187,7 @@ export default function AccountScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={s.rowLabel}>{user?.name?.trim() || 'Add your name'}</Text>
                 <Text style={s.rowSub}>
-                  {user?.name?.trim() ? 'Tap to change it.' : 'Only you ever see it.'}
+                  {user?.name?.trim() ? 'Tap to change it.' : 'Optional — used to greet you.'}
                 </Text>
               </View>
               <Text style={s.chev}>›</Text>

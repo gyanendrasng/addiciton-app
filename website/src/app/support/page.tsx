@@ -18,9 +18,9 @@ export default function Page() {
 
   <h2>Frequently asked</h2>
 
-  <h3>Where is my data stored?</h3>
-  <p>On your phone, in the app’s private storage — never on our servers, because we don’t
-  have any that receive it. See the <Link href="/privacy">privacy policy</Link>.</p>
+  <h3>What does Curb store, and for how long?</h3>
+  <p>That is set out in full in the <Link href="/privacy">privacy policy</Link>, including
+  what is kept, why, and when it is deleted.</p>
 
   <h3>I got a new phone. Can I move my data?</h3>
   <p>Not automatically yet. Before switching, open <em>Settings → Export everything</em> and
