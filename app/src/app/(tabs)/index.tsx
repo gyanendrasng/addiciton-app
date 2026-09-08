@@ -3,6 +3,9 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActionTile, HueIcon } from '@/components/ui/action-tile';
+import { useProfile } from '@/db/repo/profile';
+import { HealthRings } from '@/features/recovery/HealthRings';
+import { healthRings } from '@/features/recovery/timeline';
 import { SavingsCard } from '@/features/savings/savings-card';
 import { Tap } from '@/components/ui/tap';
 import { DayGrid } from '@/components/ui/day-grid';
@@ -23,9 +26,13 @@ export default function HomeScreen() {
   const router = useRouter();
   const today = useDayKey();
   const { state } = useStreak();
+  const { profile } = useProfile();
   const { checkin } = useCheckin(today);
   const { reasons } = useReasons();
   if (!state) return <SafeAreaView style={s.root} />;
+
+  // Three of the four, at a glance. The full set lives on /recovery.
+  const rings = profile ? healthRings(profile.habits[0], state.streak.ms / 3_600_000).slice(0, 3) : [];
 
   return (
     <SafeAreaView style={s.root} edges={['top']}>
@@ -86,6 +93,21 @@ export default function HomeScreen() {
 
         <SavingsCard />
 
+        {rings.length > 0 ? (
+          <Tap
+            haptic="light"
+            onPress={() => router.push('/recovery')}
+            style={s.progressCard}
+            accessibilityRole="button"
+            accessibilityLabel="See your recovery">
+            <View style={s.recoveryTop}>
+              <Text style={s.cardTitle}>Your recovery</Text>
+              <Text style={s.cardChev}>›</Text>
+            </View>
+            <HealthRings rings={rings} size={68} animate={false} />
+          </Tap>
+        ) : null}
+
         <Tap haptic="light" onPress={() => router.push('/milestones')} style={s.progressCard} accessibilityRole="button" accessibilityLabel="See all milestones">
           <View style={s.progressTop}>
             <MilestoneRing progress={state.tierProgress} tier={state.tier} next={state.next} size={96} />
@@ -107,6 +129,12 @@ export default function HomeScreen() {
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: palette.bg },
+  recoveryTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.three,
+  },
   content: { padding: Spacing.four, gap: Spacing.four },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   eyebrow: { color: palette.accent, fontSize: 12, letterSpacing: 1.4, textTransform: 'uppercase', fontFamily: type.bodySemi },

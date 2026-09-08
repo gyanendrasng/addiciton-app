@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Linking,
+  PixelRatio,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -16,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppLogo } from '@/components/ui/app-logo';
 import { Notice } from '@/components/ui/notice';
 import { Tap } from '@/components/ui/tap';
+import { Tick } from '@/components/ui/tick';
 import { setPremium } from '@/db/repo/profile';
 import { track } from '@/lib/analytics';
 import {
@@ -41,6 +44,16 @@ import { type } from '@/theme/type';
  */
 export default function PaywallScreen() {
   const router = useRouter();
+  const { height } = useWindowDimensions();
+  /**
+   * Samsung ships a larger default font *and* a larger display size, and the
+   * plan block is pinned outside the ScrollView with nothing capping it — so on
+   * an S23 it grew until it owned the screen and the benefits above never got a
+   * pixel. Two defences: text here stops scaling at 1.25x, and a short or
+   * scaled-up screen drops the whole wall to a compact variant so the reason to
+   * subscribe stays visible next to the price.
+   */
+  const tight = height < 780 || PixelRatio.getFontScale() > 1.15;
   const { premium, refresh, checking } = usePremium();
 
   const [selected, setSelected] = useState<Plan['id'] | null>(null);
@@ -144,17 +157,20 @@ export default function PaywallScreen() {
         contentContainerStyle={s.content}
         showsVerticalScrollIndicator={false}>
         <Animated.View entering={FadeIn.duration(320)} style={s.head}>
-          <AppLogo size={52} />
-          <Text style={s.h1}>Everything, from{'\n'}day one.</Text>
-          <Text style={s.sub}>
+          <AppLogo size={tight ? 40 : 52} />
+          <Text maxFontSizeMultiplier={1.25} style={[s.h1, tight && s.h1Tight]}>Everything, from{'\n'}day one.</Text>
+          <Text maxFontSizeMultiplier={1.25} style={s.sub}>
             Curb has no free tier and no ads. One subscription, everything unlocked, on
             every device you sign in on.
           </Text>
         </Animated.View>
 
-        <View style={s.benefits}>
+        <View style={[s.benefits, tight && s.benefitsTight]}>
           {BENEFITS.map((b) => (
             <View key={b} style={s.benefitRow}>
+              {/* Android used to get a dot here while iOS got a checkmark, so
+                  the same list read as "benefits" on one platform and a plain
+                  bulleted list on the other. */}
               {Platform.OS === 'ios' ? (
                 <SymbolView
                   name="checkmark"
@@ -164,16 +180,18 @@ export default function PaywallScreen() {
                   style={s.check}
                 />
               ) : (
-                <View style={s.checkDot} />
+                <View style={s.check}>
+                  <Tick size={14} color={palette.accent} weight={2} />
+                </View>
               )}
-              <Text style={s.benefitText}>{b}</Text>
+              <Text maxFontSizeMultiplier={1.25} style={s.benefitText}>{b}</Text>
             </View>
           ))}
         </View>
 
       </ScrollView>
 
-      <View style={s.actions}>
+      <View style={[s.actions, tight && s.actionsTight]}>
         <View style={s.plans}>
           {PLANS.map((p) => {
             const on = p.id === plan.id;
@@ -185,27 +203,27 @@ export default function PaywallScreen() {
                 accessibilityRole="radio"
                 accessibilityState={{ selected: on }}
                 accessibilityLabel={`${p.name}, ${p.price}${p.period}. ${p.sub}`}
-                style={[s.plan, on && s.planOn]}>
+                style={[s.plan, tight && s.planTight, on && s.planOn]}>
                 <View style={[s.radio, on && s.radioOn]}>
                   {on ? <View style={s.radioDot} /> : null}
                 </View>
                 <View style={s.planBody}>
                   <View style={s.planTop}>
-                    <Text style={s.planName}>{p.name}</Text>
+                    <Text maxFontSizeMultiplier={1.25} style={s.planName}>{p.name}</Text>
                     {p.badge ? (
                       <View style={s.badge}>
-                        <Text style={s.badgeText}>{p.badge}</Text>
+                        <Text maxFontSizeMultiplier={1.25} style={s.badgeText}>{p.badge}</Text>
                       </View>
                     ) : null}
                   </View>
-                  <Text style={s.planSub}>{p.sub}</Text>
+                  <Text maxFontSizeMultiplier={1.25} style={s.planSub}>{p.sub}</Text>
                 </View>
-                <Text style={s.planPrice}>
+                <Text maxFontSizeMultiplier={1.25} style={s.planPrice}>
                   {/* Never render the USD placeholder to a non-US store — a
                       price in the wrong currency is worse than none, and the
                       purchase sheet would contradict it a tap later. */}
                   {prices[p.packageId]?.price ?? '—'}
-                  <Text style={s.planPeriod}>{p.period}</Text>
+                  <Text maxFontSizeMultiplier={1.25} style={s.planPeriod}>{p.period}</Text>
                 </Text>
               </Tap>
             );
@@ -218,11 +236,11 @@ export default function PaywallScreen() {
           haptic="light"
           onPress={buy}
           accessibilityRole="button"
-          style={[s.cta, busy !== null && s.dim]}>
+          style={[s.cta, tight && s.ctaTight, busy !== null && s.dim]}>
           {busy === 'buy' ? (
             <ActivityIndicator color={palette.accentInk} />
           ) : (
-            <Text style={s.ctaLabel}>
+            <Text maxFontSizeMultiplier={1.25} style={s.ctaLabel}>
               {prices[plan.packageId]
                 ? `Subscribe — ${prices[plan.packageId].price}${plan.period}`
                 : 'Subscribe'}
@@ -231,31 +249,31 @@ export default function PaywallScreen() {
         </Tap>
 
         {/* Apple 3.1.2: price and billing period, stated plainly. */}
-        <Text style={s.disclosure}>
+        <Text maxFontSizeMultiplier={1.25} style={s.disclosure}>
           {disclosureFor(plan, prices[plan.packageId]?.price)}
         </Text>
 
         <View style={s.legal}>
           <Tap haptic="none" onPress={restore} accessibilityRole="button" style={s.legalTap}>
-            <Text style={s.legalLink}>
+            <Text maxFontSizeMultiplier={1.25} style={s.legalLink}>
               {busy === 'restore' || checking ? 'Restoring…' : 'Restore purchase'}
             </Text>
           </Tap>
-          <Text style={s.legalDot}>·</Text>
+          <Text maxFontSizeMultiplier={1.25} style={s.legalDot}>·</Text>
           <Tap
             haptic="none"
             onPress={() => open(TERMS_URL)}
             accessibilityRole="link"
             style={s.legalTap}>
-            <Text style={s.legalLink}>Terms</Text>
+            <Text maxFontSizeMultiplier={1.25} style={s.legalLink}>Terms</Text>
           </Tap>
-          <Text style={s.legalDot}>·</Text>
+          <Text maxFontSizeMultiplier={1.25} style={s.legalDot}>·</Text>
           <Tap
             haptic="none"
             onPress={() => open(PRIVACY_URL)}
             accessibilityRole="link"
             style={s.legalTap}>
-            <Text style={s.legalLink}>Privacy</Text>
+            <Text maxFontSizeMultiplier={1.25} style={s.legalLink}>Privacy</Text>
           </Tap>
         </View>
       </View>
@@ -276,19 +294,13 @@ const s = StyleSheet.create({
     letterSpacing: -0.7,
     fontFamily: type.display,
   },
+  h1Tight: { fontSize: 26, lineHeight: 31 },
   sub: { color: palette.textDim, fontSize: 15, lineHeight: 22, fontFamily: type.body },
 
   benefits: { marginTop: Spacing.five, gap: 14 },
+  benefitsTight: { marginTop: Spacing.three, gap: 10 },
   benefitRow: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two + 2 },
-  check: { width: 13, height: 13, marginTop: 4 },
-  checkDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    marginTop: 7,
-    marginHorizontal: 3,
-    backgroundColor: palette.accent,
-  },
+  check: { width: 14, height: 14, marginTop: 4 },
   benefitText: { flex: 1, color: palette.textDim, fontSize: 14.5, lineHeight: 21, fontFamily: type.body },
 
   plans: { gap: Spacing.two, marginBottom: Spacing.two },
@@ -304,6 +316,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.two + 2,
   },
+  planTight: { minHeight: 58, paddingVertical: 9, borderRadius: 14 },
   planOn: { borderColor: palette.accent, backgroundColor: palette.surface2 },
   radio: {
     width: 22,
@@ -355,6 +368,7 @@ const s = StyleSheet.create({
     // under the legal links.
     gap: Spacing.two,
   },
+  actionsTight: { paddingTop: Spacing.two, gap: Spacing.one },
   cta: {
     height: 54,
     borderRadius: 16,
@@ -362,6 +376,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  ctaTight: { height: 48 },
   ctaLabel: { color: palette.accentInk, fontSize: 16, fontFamily: type.bodySemi },
   dim: { opacity: 0.4 },
   disclosure: {

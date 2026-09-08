@@ -1,3 +1,4 @@
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { Platform, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
@@ -15,12 +16,27 @@ export const HUE_SYMBOL: Record<Hue, SFSymbol> = {
   premium: 'checkmark.seal.fill',
 };
 
-/** Native symbol on iOS; a hue dot elsewhere. */
+/**
+ * The Material equivalent of each SF Symbol. Android used to get a plain hue
+ * dot here, which made Pledge, Check-in and Reasons render as three identical
+ * blobs -- the tiles were colour-coded and nothing else. Same reasoning as
+ * `symbol-chip.tsx`: an Android user gets Android iconography.
+ */
+const HUE_MATERIAL: Record<Hue, React.ComponentProps<typeof MaterialCommunityIcons>['name']> = {
+  pledge: 'hand-back-right',
+  urge: 'fire',
+  checkin: 'emoticon-happy',
+  reasons: 'heart',
+  progress: 'chart-bar',
+  premium: 'check-decagram',
+};
+
+/** Native symbol on iOS, Material on Android. */
 export function HueIcon({ hue, color, size = 22 }: { hue: Hue; color: string; size?: number }) {
   if (Platform.OS === 'ios') {
     return <SymbolView name={HUE_SYMBOL[hue]} size={size} tintColor={color} resizeMode="scaleAspectFit" style={{ width: size, height: size }} />;
   }
-  return <View style={{ width: size * 0.55, height: size * 0.55, borderRadius: size, backgroundColor: color }} />;
+  return <MaterialCommunityIcons name={HUE_MATERIAL[hue]} size={size} color={color} />;
 }
 
 /** Small color-coded action tile: symbol, label, one-line status. `filled` = done state. */
