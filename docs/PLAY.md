@@ -96,7 +96,23 @@ Play blocks release until all of these are done:
 - **Data safety** — must match the Apple privacy labels exactly: email, name,
   user id, device id, purchases, usage data, health. Collected, linked to the
   user, encrypted in transit, deletable in-app, not sold or shared
-- **Health apps declaration** — Curb is habit/recovery support, not medical
+- **Health apps declaration** — tick exactly one box: *Health and fitness →
+  "Stress management, relaxation, mental acuity"*. Leave **every** box under
+  **Medical** clear, including "Mental and behavioral health".
+
+  ⚠️ This is not cosmetic. Anything ticked under Medical classifies the app as a
+  Medical app, and Medical apps — along with financial, VPN and government apps
+  — may only be published from an **organization** account. Curb Recovery is a
+  personal account, so a single tick there is an automatic rejection under Play
+  Console Requirements. It happened on 8 Sep 2026: "Mental and behavioral
+  health" had been ticked since 4 Sep, the 1.0.1 alpha release on 5 Sep passed
+  anyway, and the next submission was rejected when Google applied the
+  account-type check. Nothing about the app had changed.
+
+  The declaration is honest as it stands: Curb does not diagnose, treat or
+  manage a condition, and both the app and the site say it is a self-tracking
+  tool and not treatment. If Google ever disagrees, the fix is an organization
+  account (legal entity + D-U-N-S number), not a different tick.
 - **Government apps**: no · **Financial features**: none
 
 ## 8 · Store listing
