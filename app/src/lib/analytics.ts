@@ -72,6 +72,7 @@ export type AnalyticsProps = Record<string, string | number | boolean | undefine
 
 type Provider = {
   capture: (event: AnalyticsEvent, props?: AnalyticsProps) => void;
+  screen: (name: string, props?: AnalyticsProps) => void;
   identify: (anonymousId: string, props?: AnalyticsProps) => void;
   reset: () => void;
 };
@@ -96,6 +97,7 @@ const client = posthog;
 let provider: Provider | null = client
   ? {
       capture: (event, props) => client.capture(event, defined(props)),
+      screen: (name, props) => client.screen(name, defined(props)),
       identify: (id, props) => client.identify(id, { $set: defined(props) }),
       reset: () => client.reset(),
     }
@@ -132,6 +134,26 @@ export function track(event: AnalyticsEvent, props?: AnalyticsProps) {
   }
   try {
     provider.capture(event, props);
+  } catch {
+    // analytics must never break the app
+  }
+}
+
+/**
+ * Screen views, routed through the same gate as `track`.
+ *
+ * Calling `posthog.screen()` directly works while opted in and vanishes
+ * silently while opted out — the SDK drops the event with no log, so a screen
+ * that "isn't being captured" is indistinguishable from a broken tracker.
+ * Going through here gives screens the same dev noop log as every event.
+ */
+export function trackScreen(name: string, props?: AnalyticsProps) {
+  if (optedOut || !provider) {
+    if (__DEV__) console.log('[analytics:noop] $screen', name, props ?? '');
+    return;
+  }
+  try {
+    provider.screen(name, props);
   } catch {
     // analytics must never break the app
   }
