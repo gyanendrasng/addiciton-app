@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+export const APP_STORE_URL = 'https://apps.apple.com/app/curb-quit-any-addiction/id6808528188';
+
 const features = [
   {
     icon: '◐',
@@ -58,7 +60,7 @@ export default function Home() {
     <main>
       <section className="mx-auto max-w-5xl px-6 pb-16 pt-20 sm:pt-24">
         <p className="mb-5 text-[13px] font-semibold uppercase tracking-[0.14em] text-accent">
-          Coming soon to iOS &amp; Android
+          Out now on iPhone · Android soon
         </p>
         <h1 className="text-[clamp(44px,8vw,76px)] font-extrabold">
           Curb the urge.
@@ -71,12 +73,14 @@ export default function Home() {
           moment it actually gets hard.
         </p>
         <div className="mt-9 flex flex-wrap items-center gap-4">
-          <Link
-            href="/support"
+          <a
+            href={APP_STORE_URL}
+            rel="noopener noreferrer"
+            target="_blank"
             className="inline-flex items-center rounded-full bg-accent px-6 py-3.5 font-semibold text-accent-ink transition hover:brightness-110"
           >
-            Get notified at launch
-          </Link>
+            Download on the App Store
+          </a>
           <span className="text-sm text-faint">One subscription · Every habit you&apos;re quitting</span>
         </div>
       </section>
