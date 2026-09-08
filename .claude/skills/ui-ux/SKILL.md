@@ -53,7 +53,7 @@ It is a recovery app. Someone opens it at 2am mid-urge.
 - **Calm, not clinical. Direct, not chirpy.** No exclamation marks, no "Oops!", no emoji in UI copy.
 - **Never shame.** A slip is "a lapse", never "failure". Relapse UI uses no red and no danger colouring.
 - **Never overclaim.** Don't promise rewiring, cures or outcomes. Say what the app does.
-- **Privacy is the product.** Where data is involved, say precisely what leaves the device — and never say "nothing leaves your device", because purchases and updates do. The accurate line is "your recovery data never leaves your device".
+- **Make no data-locality claim at all.** Not "never leaves your device", not "no servers", not "what you write stays on your phone". Recovery data is expected to become server-side, and a claim that has to be retracted is worse than one never made. Describe what the app *does*; `website/src/app/privacy/page.tsx` is the single place that discusses data handling.
 - **Green means progress, orange means urge, and nothing else.** The hue set in `palette.hues` is semantic; don't decorate with it.
 
 ## Verifying, not guessing

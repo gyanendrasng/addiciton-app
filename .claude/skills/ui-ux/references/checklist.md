@@ -59,7 +59,7 @@ Run this against a screenshot of the real screen, not against the code. A screen
 - [ ] No exclamation marks, no emoji, no "Oops", no "Awesome".
 - [ ] No overclaiming — no promised outcomes, no cures.
 - [ ] Nothing shaming. A slip is a lapse. No red on the relapse flow.
-- [ ] Any privacy claim is exactly true: "your recovery data never leaves your device", never "nothing leaves your device".
+- [ ] No data-locality claim anywhere in product copy — not "never leaves your device", not "no servers". Only /privacy discusses data handling.
 
 ## Accessibility
 

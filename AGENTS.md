@@ -2,8 +2,8 @@
 
 A multi-addiction recovery app. Three parts:
 
-- `app/` — the Expo app (SDK 57, expo-router, Reanimated 4). Local-first: recovery
-  data lives in on-device SQLite and never leaves the phone.
+- `app/` — the Expo app (SDK 57, expo-router, Reanimated 4). Recovery data is kept
+  in SQLite on the device today, and the app is built so that can move server-side.
 - `website/` — Next.js 16 on Vercel. The marketing site, the legal pages, and the
   auth + entitlement backend (Better Auth on Drizzle/Postgres).
 - `brand/` — the app icon and wordmark. `docs/` — research and submission notes.

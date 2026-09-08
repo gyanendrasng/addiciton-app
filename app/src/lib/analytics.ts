@@ -6,13 +6,13 @@
  * touching every screen.
  *
  * ─────────────────────────────────────────────────────────────────────────────
- * RULES — these are not style preferences, they protect the app's privacy claim
- * and its store filings:
+ * RULES — these are not style preferences, they keep the app in agreement with
+ * its published privacy policy and its store filings:
  *
  * 1. NEVER send anything the user WROTE. No journal text, no reasons, no
  *    relapse or check-in notes, no free-text triggers. Not truncated, not
- *    hashed, not "just the first few words". This is the line the privacy
- *    policy draws and the one the app is sold on.
+ *    hashed, not "just the first few words". This is the line /privacy draws,
+ *    and the Apple and Play data filings are made on the strength of it.
  * 2. Structured progress data IS sent: which habits are tracked, streak
  *    lengths, slip and urge counts, milestones. Disclosed in /privacy §3c as
  *    sensitive personal information, and switchable off in Settings.

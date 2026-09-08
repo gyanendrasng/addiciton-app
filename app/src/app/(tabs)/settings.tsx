@@ -155,7 +155,7 @@ export default function SettingsScreen() {
               iconTint={palette.text}
               iconWash={palette.surface3}
               label="Sign out"
-              sub="Premium goes with your account. Your on-device history stays."
+              sub="Premium goes with your account. Your streak and history stay."
               onPress={confirmSignOut}
             />
           ) : null}

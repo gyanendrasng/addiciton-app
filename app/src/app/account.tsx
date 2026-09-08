@@ -127,7 +127,7 @@ export default function AccountScreen() {
       'Delete your account?',
       'This removes your email and subscription record from our servers. It does not cancel billing — cancel that in your ' +
         (Platform.OS === 'ios' ? 'Apple' : 'Google') +
-        ' account settings. Your on-device data is untouched.',
+        ' account settings. Your streak and history are untouched.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -334,7 +334,7 @@ export default function AccountScreen() {
             <SymbolChip name="arrow.backward.circle" tint={palette.text} wash={palette.surface3} />
             <View style={{ flex: 1 }}>
               <Text style={s.rowLabel}>Sign out</Text>
-              <Text style={s.rowSub}>Your on-device data stays put.</Text>
+              <Text style={s.rowSub}>Your streak and history stay put.</Text>
             </View>
           </View>
         </Tap>
@@ -351,7 +351,7 @@ export default function AccountScreen() {
       </Card>
 
       <Text style={s.foot}>
-        Deleting your account does not cancel billing, and does not erase your on-device history —
+        Deleting your account does not cancel billing, and does not erase your recovery history —
         use Settings → Delete everything for that.
       </Text>
     </Screen>
