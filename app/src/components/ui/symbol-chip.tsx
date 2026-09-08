@@ -40,6 +40,14 @@ const MATERIAL: Record<string, React.ComponentProps<typeof MaterialCommunityIcon
   'rectangle.portrait.and.arrow.right': 'logout',
   'square.and.arrow.up': 'tray-arrow-up',
   'trash.fill': 'trash-can',
+  'exclamationmark.circle.fill': 'alert-circle',
+  'exclamationmark.triangle.fill': 'alert',
+  'eye.fill': 'eye',
+  'info.circle.fill': 'information',
+  'minus.circle.fill': 'minus-circle',
+  'paintpalette.fill': 'palette',
+  'square.grid.2x2.fill': 'view-grid',
+  'textformat.123': 'numeric',
 };
 
 /** iOS-Settings-style icon chip: rounded square wash with a tinted symbol. */

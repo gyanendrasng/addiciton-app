@@ -14,6 +14,7 @@ import Animated, {
 
 import { pledge, usePledged } from '@/db/repo/pledges';
 import { HueIcon, tileStyles } from '@/components/ui/action-tile';
+import { Tick } from '@/components/ui/tick';
 import { curves, springs } from '@/theme/motion';
 import { hues, palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
@@ -85,7 +86,10 @@ export function PledgeButton({ date, compact = false }: { date: string; compact?
           style={[tileStyles.tile, { backgroundColor: h.solid }, scaleStyle]}>
           <View style={s.tileIcon}><HueIcon hue="pledge" color={h.ink} /></View>
           <View style={{ flex: 1 }} />
-          <Text numberOfLines={1} style={[s.tileLabel, { color: h.ink }]}>Pledged ✓</Text>
+          <View style={s.labelRow}>
+            <Text numberOfLines={1} style={[s.tileLabel, { color: h.ink }]}>Pledged</Text>
+            <Tick size={15} color={h.ink} weight={2.2} />
+          </View>
           <Text numberOfLines={1} style={[s.tileStatus, { color: h.ink }]}>for today</Text>
         </Animated.View>
       );
@@ -109,7 +113,10 @@ export function PledgeButton({ date, compact = false }: { date: string; compact?
   if (pledged) {
     return (
       <Animated.View entering={justPledged && !reduced ? FadeIn.duration(200) : undefined} style={[s.btn, s.done, scaleStyle]}>
-        <Text style={s.doneLabel}>Pledged for today ✓</Text>
+        <View style={s.labelRow}>
+          <Text style={s.doneLabel}>Pledged for today</Text>
+          <Tick size={17} color={palette.accent} weight={2.4} />
+        </View>
         <Text style={s.doneSub}>One day at a time.</Text>
       </Animated.View>
     );
@@ -143,6 +150,7 @@ const s = StyleSheet.create({
   sub: { color: palette.textDim, fontSize: 13, fontFamily: type.body, marginTop: 2 },
   done: { backgroundColor: palette.accentWash, borderColor: palette.accent },
   tileIcon: { height: 24, justifyContent: 'center' },
+  labelRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   tileLabel: { fontSize: 16, fontFamily: type.bodySemi },
   tileStatus: { fontSize: 12, fontFamily: type.bodyMed },
   doneLabel: { color: palette.accent, fontSize: 17, fontFamily: type.bodySemi },

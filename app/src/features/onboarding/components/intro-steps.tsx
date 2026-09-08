@@ -38,8 +38,8 @@ export function Framing({ onNext }: { onNext: () => void }) {
           <Eyebrow center>The science</Eyebrow>
           <Title center>Your brain can rewire itself in 90 days.</Title>
           <Subtitle center>
-            First, let’s find out where you’re starting from. Answer honestly — nobody sees this
-            but you.
+            First, let’s find out where you’re starting from. Answer honestly — there are no
+            wrong answers, and you can change them later.
           </Subtitle>
         </Animated.View>
       </View>

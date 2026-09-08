@@ -93,7 +93,8 @@ export default function Page() {
   only Apple’s private relay address, never your real one. We do not store passwords —
   there are none.</p>
   <p>Deleting your account in <em>Settings → Manage account → Delete account</em> removes
-  all of this from our servers. Your on-device data is untouched by that.</p>
+  all of this from our servers. It does not erase your recovery history in the app —
+  use <em>Settings → Delete everything</em> for that.</p>
 
   <h3 id="purchases">b. Subscription purchases</h3>
   <p>Curb offers a paid subscription and a one-time lifetime option. Payment is handled

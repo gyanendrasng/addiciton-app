@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/ui/screen';
+import { Tick } from '@/components/ui/tick';
 import { Eyebrow, Subtitle, Title } from '@/features/onboarding/components/chrome';
 import { TIERS } from '@/features/streak/tiers';
 import { useStreak } from '@/features/streak/use-streak';
@@ -41,7 +42,7 @@ function MilestonesScreen() {
                   </Text>
                 </View>
                 {done ? (
-                  <Text style={s.check}>✓</Text>
+                  <Tick size={18} color={palette.accent} weight={2.2} />
                 ) : isNext ? (
                   <Text style={s.eta}>in {t.days - days}d</Text>
                 ) : null}
@@ -77,7 +78,6 @@ const s = StyleSheet.create({
   bodyNext: { backgroundColor: palette.accentWash },
   name: { color: palette.textDim, fontSize: 16, fontFamily: type.bodySemi },
   meta: { color: palette.textFaint, fontSize: 13, fontFamily: type.body, marginTop: 2 },
-  check: { color: palette.accent, fontSize: 18, fontFamily: type.bodySemi },
   eta: { color: palette.accent, fontSize: 14, fontFamily: type.bodySemi, fontVariant: ['tabular-nums'] },
 });
 

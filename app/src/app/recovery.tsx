@@ -9,7 +9,9 @@ import { useProfile } from '@/db/repo/profile';
 import { Subtitle } from '@/features/onboarding/components/chrome';
 import { habits as ALL_HABITS } from '@/features/onboarding/content';
 import { withAccess } from '@/features/premium/access';
-import { progressThrough } from '@/features/recovery/timeline';
+import { HealthRings } from '@/features/recovery/HealthRings';
+import { QuickWins } from '@/features/recovery/QuickWins';
+import { healthRings, progressThrough, quickWins } from '@/features/recovery/timeline';
 import { useStreak } from '@/features/streak/use-streak';
 import { palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
@@ -40,6 +42,8 @@ function RecoveryScreen() {
 
   const entries = progressThrough(selected, hours);
   const nextIdx = entries.findIndex((e) => !e.reached);
+  const rings = healthRings(selected, hours);
+  const wins = quickWins(selected, hours);
 
   return (
     <Screen title="Your recovery">
@@ -61,6 +65,28 @@ function RecoveryScreen() {
             );
           })}
         </View>
+      ) : null}
+
+      {wins.some((w) => w.reached) ? (
+        <>
+          <Text style={s.section}>Already banked</Text>
+          <Card style={s.ringCard}>
+            <QuickWins wins={wins} />
+          </Card>
+        </>
+      ) : null}
+
+      {rings.length > 0 ? (
+        <>
+          <Text style={s.section}>How far you&apos;ve come</Text>
+          <Card style={s.ringCard}>
+            <HealthRings rings={rings} />
+            <Text style={s.ringNote}>
+              Progress toward the milestones below — how much of the way your streak has come, not a
+              measurement of your own risk.
+            </Text>
+          </Card>
+        </>
       ) : null}
 
       <Card style={s.card}>
@@ -110,6 +136,21 @@ function RecoveryScreen() {
 }
 
 const s = StyleSheet.create({
+  section: {
+    color: palette.text,
+    fontSize: 17,
+    fontFamily: type.displayMed,
+    marginTop: Spacing.five,
+    marginBottom: Spacing.three,
+  },
+  ringCard: { padding: Spacing.four },
+  ringNote: {
+    color: palette.textFaint,
+    fontSize: 12,
+    fontFamily: type.body,
+    lineHeight: 17,
+    marginTop: Spacing.four,
+  },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginTop: Spacing.three },
   chip: {
     paddingHorizontal: 14,

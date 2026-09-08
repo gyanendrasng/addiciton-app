@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+export const APP_STORE_URL = 'https://apps.apple.com/app/curb-quit-any-addiction/id6808528188';
+
 const features = [
   {
     icon: '◐',
@@ -45,12 +47,12 @@ const features = [
   },
 ];
 
-const privacyPoints = [
-  ['No account.', 'Nothing to sign up for, no email, no password.'],
-  ['Private by design.', 'No feed, no followers, nothing to perform. Just you and the count.'],
-  ['No analytics, no ads, no trackers.', 'Not a single third-party tracking SDK.'],
-  ['No selling or sharing.', 'Ever — and we have nothing to sell.'],
-  ['Export or erase anytime.', 'Take your data as a file, or wipe it from Settings.'],
+const differencePoints = [
+  ['Built for the minute, not the scoreboard.', 'Breathing, a delay timer, your reasons and a distraction game — one tap from the home screen.'],
+  ['A slip costs a streak, not your progress.', 'Total clean days never reset, and you can undo a slip for 24 hours.'],
+  ['Every habit, not just the one.', 'Each gets its own counter. Slipping on one leaves the others standing.'],
+  ['No feed, no followers, nothing to perform.', 'Just you and the count.'],
+  ['Export or erase, any time.', 'Take everything as a file, or wipe it, from Settings.'],
 ];
 
 export default function Home() {
@@ -58,7 +60,7 @@ export default function Home() {
     <main>
       <section className="mx-auto max-w-5xl px-6 pb-16 pt-20 sm:pt-24">
         <p className="mb-5 text-[13px] font-semibold uppercase tracking-[0.14em] text-accent">
-          Coming soon to iOS &amp; Android
+          Out now on iPhone · Android soon
         </p>
         <h1 className="text-[clamp(44px,8vw,76px)] font-extrabold">
           Curb the urge.
@@ -71,13 +73,15 @@ export default function Home() {
           moment it actually gets hard.
         </p>
         <div className="mt-9 flex flex-wrap items-center gap-4">
-          <Link
-            href="/support"
+          <a
+            href={APP_STORE_URL}
+            rel="noopener noreferrer"
+            target="_blank"
             className="inline-flex items-center rounded-full bg-accent px-6 py-3.5 font-semibold text-accent-ink transition hover:brightness-110"
           >
-            Get notified at launch
-          </Link>
-          <span className="text-sm text-faint">Private by design · No account required</span>
+            Download on the App Store
+          </a>
+          <span className="text-sm text-faint">One subscription · Every habit you&apos;re quitting</span>
         </div>
       </section>
 
@@ -108,7 +112,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="privacy" className="border-t border-line py-16 sm:py-20">
+      <section id="why" className="border-t border-line py-16 sm:py-20">
         <div className="mx-auto max-w-5xl px-6">
           <div className="rounded-3xl border border-accent-deep bg-accent/[0.08] p-8 sm:p-10">
             <p className="mb-4 text-[13px] font-semibold uppercase tracking-[0.14em] text-accent">
@@ -118,11 +122,11 @@ export default function Home() {
               Built to be used at 2am, not shown off.
             </h2>
             <p className="mt-4 max-w-2xl text-dim">
-              What you&apos;re quitting, every slip, every mood check-in, every journal note — all
-              of it is stored in a database on your device and nowhere else.
+              Most quitting apps count days. Curb is built for the minute the count is about
+              to break — and for the morning after it does.
             </p>
             <ul className="mt-6 space-y-2.5 text-dim">
-              {privacyPoints.map(([bold, rest]) => (
+              {differencePoints.map(([bold, rest]) => (
                 <li key={bold} className="flex gap-2.5">
                   <span aria-hidden className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
                   <span>
@@ -132,8 +136,7 @@ export default function Home() {
               ))}
             </ul>
             <p className="mt-6 text-sm text-faint">
-              Full detail — including the few things that <em>do</em> use the network, like
-              purchases and app updates — is in the{' '}
+              What Curb collects, and how long it is kept, is set out in the{' '}
               <Link href="/privacy" className="text-accent hover:underline">
                 privacy policy
               </Link>

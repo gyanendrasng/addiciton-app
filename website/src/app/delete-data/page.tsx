@@ -52,7 +52,9 @@ export default function Page() {
   <p>Anything not deleted on request is removed automatically 12 months after collection.</p>
 
   <h2>Option 4 — Delete the app</h2>
-  <p>Uninstalling Curb removes its private storage, and with it all of your data.</p>
+  <p>Uninstalling Curb removes the app and the recovery history it keeps on the phone. It
+  does not delete your account, your subscription record or your usage data — use options 1
+  to 3 above for those.</p>
   <ul>
     <li><strong>iOS:</strong> press and hold the Curb icon → Remove App → Delete App.</li>
     <li><strong>Android:</strong> press and hold the Curb icon → App info → Uninstall.</li>
