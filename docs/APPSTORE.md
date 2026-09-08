@@ -3,7 +3,7 @@
 Everything needed to press Submit, in dependency order. `[x]` was verified in
 the console or the code, not assumed.
 
-App: **Curb — Quit Any Addiction** · `app.joincurb.curb` · Apple ID `6808528188`
+App: **Curb: Quit Any Addiction** · `app.joincurb.curb` · Apple ID `6808528188`
 
 ---
 

@@ -12,7 +12,7 @@ Play Console → **Create app**.
 
 | Field | Value |
 |---|---|
-| App name | Curb — Quit Any Addiction |
+| App name | Curb: Quit Any Addiction |
 | Default language | English (US) |
 | App or game | App |
 | Free or paid | **Free** (subscriptions are separate, as on Apple) |

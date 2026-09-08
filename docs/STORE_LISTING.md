@@ -13,7 +13,7 @@ reviewer asking "can you prove that?"
 ## App name — 30 chars
 
 ```
-Curb — Quit Any Addiction
+Curb: Quit Any Addiction
 ```
 25 chars. "Curb" alone was taken. The extra words aren't padding: **Apple
 indexes the full name field for search**, so this buys "quit" and "addiction"
