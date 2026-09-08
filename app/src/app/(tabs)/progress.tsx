@@ -8,6 +8,7 @@ import { useProfile } from '@/db/repo/profile';
 import { Eyebrow, Title } from '@/features/onboarding/components/chrome';
 import { Calendar } from '@/features/progress/Calendar';
 import { MoodTrend } from '@/features/progress/MoodTrend';
+import { UrgeClock } from '@/features/progress/UrgeClock';
 import { useProgressData } from '@/features/progress/use-progress';
 import { useStreak } from '@/features/streak/use-streak';
 import { dayKey, diffDays, useDayKey } from '@/lib/clock';
@@ -70,6 +71,11 @@ export default function ProgressScreen() {
         </Card>
 
         <RecoveryLink />
+
+        <Card style={{ gap: Spacing.two }}>
+          <Text style={s.cardTitle}>When urges hit</Text>
+          <UrgeClock urges={data.urges} />
+        </Card>
 
         <Card style={{ gap: Spacing.two }}>
           <Text style={s.cardTitle}>Mood, last 30 check-ins</Text>
