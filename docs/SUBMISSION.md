@@ -156,6 +156,13 @@ What's missing is the account plumbing.
 - [ ] Production builds for both platforms.
 - [x] OTA: `expo-updates` ~57.0.21 installed and `src/lib/ota.ts` activated;
       `checkOnLaunch()` runs at launch and on foreground.
+- [ ] ⚠️ **Session replay needs a new native build.** `@posthog/react-native-plugin`
+      landed in `ee61911` (9 Sep); the newest build, 9dc98a22 / 1.1.0 (4), is from
+      `41ed0b8` the day before, and the local `ios/Podfile.lock` has no PostHog pod.
+      A native module cannot arrive over the air, so until a build ≥ `ee61911`
+      exists the SDK logs "Session replay is not enabled" and records nothing —
+      nothing in JS, PostHog's project toggle or the consent switch changes that.
+      `npm run build:dev` to verify a recording appears, then a production build.
 - [ ] `eas login && eas init`, then **`eas update:configure`** — writes the
       updates URL and `runtimeVersion` into `app.json`. Until this runs,
       `Updates.isEnabled` is false and OTA stays inert.
@@ -186,6 +193,11 @@ What's missing is the account plumbing.
       The moment habits or streaks are transmitted, that label is false, and a
       shipped app collecting more than it declares is the top takedown risk for
       this category. `app/src/lib/analytics.ts` says the same in its header.
+- [ ] ⚠️ **Re-answer App Privacy before the build that carries session replay.**
+      Recordings are new data — Product Interaction under Usage Data, purpose
+      Analytics, linked to the user (the id is the account id). `/privacy` §3c
+      already discloses them; the store label is the other half, and a shipped
+      recorder with no matching label is exactly the mismatch above.
 - [ ] **Play Data safety form** — same answers, plus: encrypted in transit,
       deletable in-app, and the analytics opt-out in Settings.
 - [ ] Confirm the shipped app matches both filings. A mismatch between the
