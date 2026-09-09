@@ -20,6 +20,7 @@ import { PostHogProvider } from 'posthog-react-native';
 import { DbProvider } from '@/db/provider';
 import { loadAnalyticsPref } from '@/features/settings/analytics';
 import { loadDevOffset } from '@/features/settings/dev';
+import { trackScreen } from '@/lib/analytics';
 import { checkOnLaunch } from '@/lib/ota';
 import { posthog } from '@/lib/posthog';
 import { SessionProvider } from '@/lib/session';
@@ -135,10 +136,10 @@ export default function RootLayout() {
 /**
  * Manual screen tracking for Expo Router.
  *
- * PostHog screen events are sent here using the posthog singleton (not
- * usePostHog()) so this component can live outside the provider tree if needed.
- * Screen tracking respects the analytics opt-out: if the posthog instance has
- * opted out, screen() calls are discarded internally.
+ * Goes through the analytics seam rather than the posthog singleton so screens
+ * obey the same opt-out and get the same dev noop log as every other event —
+ * the SDK drops opted-out events without a word, which made "screens aren't
+ * captured" look like a bug when it was the default-off preference.
  */
 function ScreenTracker() {
   const pathname = usePathname();
@@ -146,9 +147,8 @@ function ScreenTracker() {
   const previousPathname = useRef<string | undefined>(undefined);
 
   useEffect(() => {
-    if (!posthog) return;
     if (previousPathname.current === pathname) return;
-    void posthog.screen(pathname, { previous_screen: previousPathname.current ?? null });
+    trackScreen(pathname, { previous_screen: previousPathname.current });
     previousPathname.current = pathname;
   }, [pathname, params]);
 
