@@ -38,6 +38,7 @@ const MATERIAL: Record<string, React.ComponentProps<typeof MaterialCommunityIcon
   'person.crop.circle.fill': 'account-circle',
   'person.text.rectangle': 'card-account-details-outline',
   'rectangle.portrait.and.arrow.right': 'logout',
+  'shield.fill': 'shield',
   'square.and.arrow.up': 'tray-arrow-up',
   'trash.fill': 'trash-can',
   'exclamationmark.circle.fill': 'alert-circle',

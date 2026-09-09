@@ -239,6 +239,20 @@ export default function SettingsScreen() {
           <Row icon="heart.fill" iconTint={hues.reasons.solid} iconWash={hues.reasons.wash} label="Your reasons" sub="Shown when an urge hits." onPress={() => router.push('/reasons')} chevron />
         </Section>
 
+        {Platform.OS === 'ios' ? (
+          <Section label="Shield">
+            <Row
+              icon="shield.fill"
+              iconTint={hues.urge.solid}
+              iconWash={hues.urge.wash}
+              label="Shield apps and sites"
+              sub="Out of reach in your hard hours, and while you wait out an urge."
+              onPress={() => router.push('/shield')}
+              chevron
+            />
+          </Section>
+        ) : null}
+
         <Section label="Support">
           <Row
             icon="lifepreserver"

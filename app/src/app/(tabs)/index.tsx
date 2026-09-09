@@ -14,6 +14,7 @@ import { useReasons } from '@/db/repo/reasons';
 import { MOODS } from '@/features/checkin/CheckinForm';
 import { PledgeButton } from '@/features/pledge/PledgeButton';
 import { UndoBanner } from '@/features/relapse/UndoBanner';
+import { ShieldStatus } from '@/features/shield/ShieldStatus';
 import { MilestoneRing } from '@/features/streak/MilestoneRing';
 import { StreakHero } from '@/features/streak/StreakHero';
 import { useStreak } from '@/features/streak/use-streak';
@@ -73,6 +74,7 @@ export default function HomeScreen() {
           </View>
           <Text style={s.urgeChev}>›</Text>
         </Tap>
+        <ShieldStatus />
 
         <View style={s.row}>
           <PledgeButton date={today} compact />

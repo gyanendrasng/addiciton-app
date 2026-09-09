@@ -4,6 +4,7 @@ import Animated, { useAnimatedProps, useReducedMotion, useSharedValue, withTimin
 import Svg, { Circle } from 'react-native-svg';
 
 import { Tap } from '@/components/ui/tap';
+import { LockChips } from '@/features/shield/LockChips';
 import { curves } from '@/theme/motion';
 import { palette } from '@/theme/palette';
 import { type } from '@/theme/type';
@@ -69,6 +70,7 @@ export function Delay({ onDone, onSkip, onBreatheAgain }: { onDone: () => void; 
           </View>
         </View>
         <Text style={s.copy}>Two minutes is usually all it takes for the wave to break.</Text>
+        <LockChips />
         <Tap haptic="none" onPress={onBreatheAgain} style={s.again}>
           <Text style={s.againLabel}>Breathe again</Text>
         </Tap>
