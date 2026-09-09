@@ -9,6 +9,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { PostHogMaskView } from 'posthog-react-native';
 
 import { Card } from '@/components/ui/card';
 import { Screen } from '@/components/ui/screen';
@@ -185,7 +186,10 @@ export default function AccountScreen() {
                 wash={hues.checkin.wash}
               />
               <View style={{ flex: 1 }}>
-                <Text style={s.rowLabel}>{user?.name?.trim() || 'Add your name'}</Text>
+                {/* Their own name — masked out of session replay. */}
+                <PostHogMaskView>
+                  <Text style={s.rowLabel}>{user?.name?.trim() || 'Add your name'}</Text>
+                </PostHogMaskView>
                 <Text style={s.rowSub}>
                   {user?.name?.trim() ? 'Tap to change it.' : 'Optional — used to greet you.'}
                 </Text>

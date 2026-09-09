@@ -121,6 +121,10 @@ export default function Page() {
     streaks run, how many slips and urges you have logged, which milestones you reach.</li>
     <li><strong>Technical context</strong> — app version, platform, device model, and a
     pseudonymous identifier.</li>
+    <li><strong>Session recordings</strong> — a replay of how you moved through the
+    screens, so we can see where the app gets in your way. Anything you have written is
+    masked before the recording leaves your device: notes, reasons and check-ins are
+    covered over, not captured.</li>
   </ul>
   <p>Because the habits you track say something about your health, we treat this as
   sensitive personal information. It is used to improve Curb — never sold, never shared

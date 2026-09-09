@@ -16,7 +16,9 @@
  * 2. Structured progress data IS sent: which habits are tracked, streak
  *    lengths, slip and urge counts, milestones. Disclosed in /privacy §3c as
  *    sensitive personal information, and switchable off in Settings.
- * 3. No session recording, no autocapture, no heatmaps.
+ * 3. No autocapture, no heatmaps. Session replay IS on, and it records
+ *    screenshots — so every view that draws user-written text must be wrapped
+ *    in `PostHogMaskView`. `TextInput` is masked by config. See `posthog.ts`.
  * 4. Identity is the opaque Better Auth user id — account-scoped, not
  *    device-scoped, so progress follows the person across devices. Never the
  *    email, never the name. `session.tsx` calls `identify()` with it and
