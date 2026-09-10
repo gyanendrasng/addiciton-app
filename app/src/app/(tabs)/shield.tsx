@@ -72,6 +72,8 @@ export default function ShieldTab() {
   const [denied, setDenied] = useState(false);
   const [justPicked, setJustPicked] = useState<ShieldSetup | null>(null);
   const [chosenMode, setChosenMode] = useState<ShieldMode | null>(null);
+  // How many setup steps the person has stepped back from where the data says they are.
+  const [back, setBack] = useState(0);
   const [duration, setDuration] = useState<(typeof LOCK_CHOICES_MIN)[number]>(30);
   const [managing, setManaging] = useState(false);
   const [refusedSchedule, setRefusedSchedule] = useState(false);
@@ -102,6 +104,11 @@ export default function ShieldTab() {
       previewUp = params.preview === 'up';
     }
   }
+  const SETUP: Stage[] = ['allow', 'pick', 'when'];
+  const natural = SETUP.indexOf(stage);
+  if (natural > 0 && back > 0) stage = SETUP[Math.max(0, natural - back)];
+  const forward = () => setBack((b) => Math.max(0, b - 1));
+  const backward = () => setBack((b) => b + 1);
 
   const ask = async () => {
     if (asking) return;
@@ -118,6 +125,7 @@ export default function ShieldTab() {
     await completeSetup(p.token, counts);
     if (isPorn && !shield.filter) await setFilter(true);
     setChosenMode(isPorn ? 'always' : 'window');
+    setBack(0);
     setJustPicked({ ...counts, at: Date.now() });
   };
 
@@ -142,7 +150,13 @@ export default function ShieldTab() {
         eyebrow="Shield · Step 1 of 3"
         title="Put a shield between you and it."
         subtitle="Choose the apps and sites that pull you in. Curb keeps them out of reach, and shows you one of your own reasons when you try."
-        footer={<Cta label={asking ? 'Asking…' : 'Allow Screen Time'} onPress={ask} disabled={asking} />}>
+        footer={
+          shield.auth === 'approved' ? (
+            <Cta label="Continue" onPress={forward} />
+          ) : (
+            <Cta label={asking ? 'Asking…' : 'Allow Screen Time'} onPress={ask} disabled={asking} />
+          )
+        }>
         <Card style={s.card}>
           <InfoRow icon="checklist" hue="progress" label="You choose, in Apple’s list" sub="Apps, whole categories, or websites. Curb only ever sees how many." />
           <Sep />
@@ -150,7 +164,7 @@ export default function ShieldTab() {
           <Sep />
           <InfoRow icon="heart.fill" hue="reasons" label="Your reason on the wall" sub="The shield screen shows something you wrote, and a way back into Curb." />
         </Card>
-        <Text style={s.fine}>Apple asks once, with your device passcode.</Text>
+        <Text style={s.fine}>{shield.auth === 'approved' ? 'Screen Time access is already allowed.' : 'Apple asks once, with your device passcode.'}</Text>
         {denied || shield.auth === 'denied' ? (
           <Notice tone="warn">Screen Time access is off for Curb. Turn it on in Settings › Screen Time › Apps with Screen Time access, then come back.</Notice>
         ) : null}
@@ -165,7 +179,12 @@ export default function ShieldTab() {
         eyebrow="Shield · Step 2 of 3"
         title="Choose what to shield."
         subtitle="Apple’s list opens next. Curb never sees the names — only how many you picked."
-        footer={<Cta label="Open Apple’s list" onPress={() => setPicking(true)} />}>
+        footer={
+          <View style={s.footerStack}>
+            <Cta label="Open Apple’s list" onPress={() => setPicking(true)} />
+            {natural === 2 ? <Cta label="Keep what I picked" variant="ghost" onPress={forward} /> : <Cta label="Back" variant="ghost" onPress={backward} />}
+          </View>
+        }>
         <ShieldPicker visible={picking} current={current} onPicked={picked} onCancel={() => setPicking(false)} />
         <Card style={s.card}>
           {isPorn ? (
@@ -194,7 +213,12 @@ export default function ShieldTab() {
         eyebrow="Shield · Step 3 of 3"
         title="When should it be up?"
         subtitle="You can change this any time from the Shield tab."
-        footer={<Cta label="Finish setup" onPress={() => void finishSetup()} />}>
+        footer={
+          <View style={s.footerStack}>
+            <Cta label="Finish setup" onPress={() => void finishSetup()} />
+            <Cta label="Change selection" variant="ghost" onPress={backward} />
+          </View>
+        }>
         <View style={s.pickedRow}>
           <SymbolChip name="checkmark" tint={hues.pledge.solid} wash={hues.pledge.wash} />
           <Text style={s.pickedText}>
@@ -450,7 +474,7 @@ function Frame({
         <Subtitle>{subtitle}</Subtitle>
         <View style={{ height: Spacing.two }} />
         {children}
-        <View style={{ height: 160 }} />
+        <View style={{ height: 220 }} />
       </ScrollView>
       {footer ? <View style={s.footer}>{footer}</View> : null}
     </SafeAreaView>
@@ -541,6 +565,7 @@ const s = StyleSheet.create({
   fine: { color: palette.textFaint, fontSize: 12, lineHeight: 17, fontFamily: type.body, marginTop: Spacing.two },
   fineIn: { color: palette.textFaint, fontSize: 12, lineHeight: 17, fontFamily: type.body, paddingHorizontal: Spacing.three, paddingBottom: Spacing.three },
   footer: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: Spacing.four, paddingBottom: 100, backgroundColor: palette.bg },
+  footerStack: { gap: Spacing.one },
   footerSheet: { paddingBottom: Spacing.four },
   miniBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 12, backgroundColor: palette.surface3 },
   miniLabel: { color: palette.text, fontSize: 20, fontFamily: type.bodyMed },
