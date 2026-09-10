@@ -11,6 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { PostHogMaskView } from 'posthog-react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -214,6 +215,8 @@ export default function SignInScreen() {
 
           {pane === 'email' ? (
             <View style={s.form}>
+              {/* Personal data — kept out of session recordings. */}
+              <PostHogMaskView>
               <TextInput
                 style={s.input}
                 value={email}
@@ -229,9 +232,11 @@ export default function SignInScreen() {
                 returnKeyType="go"
                 onSubmitEditing={requestCode}
               />
+              </PostHogMaskView>
             </View>
           ) : pane === 'code' ? (
             <View style={s.form}>
+              <PostHogMaskView>
               <TextInput
                 style={[s.input, s.codeInput]}
                 value={code}
@@ -246,6 +251,7 @@ export default function SignInScreen() {
                 returnKeyType="go"
                 onSubmitEditing={submitCode}
               />
+              </PostHogMaskView>
             </View>
           ) : null}
 

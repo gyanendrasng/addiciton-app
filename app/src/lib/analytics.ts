@@ -17,8 +17,10 @@
  *    lengths, slip and urge counts, milestones. Disclosed in /privacy §3c as
  *    sensitive personal information, and switchable off in Settings.
  * 3. No autocapture, no heatmaps. Session replay IS on, and it records
- *    screenshots — so every view that draws user-written text must be wrapped
- *    in `PostHogMaskView`. `TextInput` is masked by config. See `posthog.ts`.
+ *    screenshots — so every `TextInput` that takes prose or personal data, and
+ *    every `Text` that draws user-written text, must be wrapped in
+ *    `PostHogMaskView`. Nothing is masked by config: `maskAllTextInputs`
+ *    blacks out every RN <Text>. See `posthog.ts`.
  * 4. Identity is the opaque Better Auth user id — account-scoped, not
  *    device-scoped, so progress follows the person across devices. Never the
  *    email, never the name. `session.tsx` calls `identify()` with it and
@@ -118,6 +120,14 @@ export function setAnalyticsProvider(p: Provider | null) {
   provider = p;
 }
 
+/**
+ * The identity we were handed while opted out, replayed the moment the user
+ * opts in. Sign-in resolves on launch, long before the consent screen or the
+ * Settings switch; without this the identify() call was dropped and every
+ * consenting user stayed anonymous until their next cold start.
+ */
+let pendingIdentity: { id: string; props?: AnalyticsProps } | null = null;
+
 export function setAnalyticsOptOut(value: boolean) {
   optedOut = value;
   if (posthog) {
@@ -127,7 +137,13 @@ export function setAnalyticsOptOut(value: boolean) {
       void posthog.optIn();
     }
   }
-  if (value) provider?.reset();
+  if (value) {
+    provider?.reset();
+  } else if (pendingIdentity && provider) {
+    try {
+      provider.identify(pendingIdentity.id, pendingIdentity.props);
+    } catch {}
+  }
 }
 
 export function isAnalyticsEnabled() {
@@ -167,6 +183,7 @@ export function trackScreen(name: string, props?: AnalyticsProps) {
 }
 
 export function identify(anonymousId: string, props?: AnalyticsProps) {
+  pendingIdentity = { id: anonymousId, props };
   if (optedOut || !provider) return;
   try {
     provider.identify(anonymousId, props);
@@ -174,6 +191,7 @@ export function identify(anonymousId: string, props?: AnalyticsProps) {
 }
 
 export function resetAnalytics() {
+  pendingIdentity = null;
   try {
     provider?.reset();
   } catch {}

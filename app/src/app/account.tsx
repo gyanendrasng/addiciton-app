@@ -199,6 +199,7 @@ export default function AccountScreen() {
           </Tap>
         ) : (
           <View style={s.editRow}>
+            <PostHogMaskView>
             <TextInput
               style={s.input}
               value={nameDraft}
@@ -213,6 +214,7 @@ export default function AccountScreen() {
               returnKeyType="done"
               onSubmitEditing={saveName}
             />
+            </PostHogMaskView>
             {nameError ? <Notice>{nameError}</Notice> : null}
             <View style={s.editActions}>
               <Tap

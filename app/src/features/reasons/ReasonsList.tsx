@@ -31,6 +31,7 @@ export function ReasonsList({ compact = false }: { compact?: boolean }) {
       {reasons.map((r, i) => (
         <Animated.View key={r.id} layout={layout} style={s.row}>
           {editing === r.id ? (
+            <PostHogMaskView style={{ flex: 1 }}>
             <TextInput
               value={editText}
               onChangeText={setEditText}
@@ -47,6 +48,7 @@ export function ReasonsList({ compact = false }: { compact?: boolean }) {
                 setEditing(null);
               }}
             />
+            </PostHogMaskView>
           ) : (
             <Tap
               haptic="none"
@@ -80,6 +82,7 @@ export function ReasonsList({ compact = false }: { compact?: boolean }) {
       ))}
       {!compact && (
         <Animated.View layout={layout} style={s.addRow}>
+          <PostHogMaskView style={{ flex: 1 }}>
           <TextInput
             value={draft}
             onChangeText={setDraft}
@@ -94,6 +97,7 @@ export function ReasonsList({ compact = false }: { compact?: boolean }) {
               setDraft('');
             }}
           />
+          </PostHogMaskView>
           <Tap
             haptic="light"
             onPress={async () => {

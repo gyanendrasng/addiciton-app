@@ -39,11 +39,16 @@ if (__DEV__ && !isConfigured) {
  * React Native does not — so anything drawn on screen is in the recording
  * unless something masks it.
  *
- * `maskAllTextInputs` covers every `TextInput`, which is where the check-in
- * note, the relapse note and the reason editor live. Rendered `Text` is *not*
- * covered, so any view that draws something the user wrote must be wrapped in
- * `PostHogMaskView`. Today that is `ReasonsList` (used by both the Reasons
- * screen and step 3 of the urge flow) and the account name.
+ * `maskAllTextInputs` is OFF, and that is deliberate. Despite the name, the
+ * iOS SDK applies it to every React Native `<Text>` — `RCTTextView` and
+ * `RCTParagraphComponentView` are treated as text inputs
+ * (PostHogReplayIntegration.swift, `maskAllTextInputs == true` branches) — so
+ * with it on, every recording was a screen of black boxes and useless. Masking
+ * is done by hand instead: every `TextInput` that takes prose or personal
+ * data, and every `Text` that renders something the user wrote, is wrapped in
+ * `PostHogMaskView`. Today: the check-in note, the relapse note and trigger,
+ * the reason editor and list (Reasons screen and step 3 of the urge flow), the
+ * account display name, and the sign-in email and code.
  *
  * Rule 1 of `analytics.ts` depends on this, and so does the sentence the
  * onboarding consent screen puts in front of people: "Never what you write".
@@ -66,9 +71,11 @@ export const posthog = isConfigured
       defaultOptIn: false,
       enableSessionReplay: true,
       sessionReplayConfig: {
-        // Both default to true; stated explicitly because the privacy contract
-        // rests on them and a silent upstream default change would break it.
-        maskAllTextInputs: true,
+        // OFF — on React Native this masks every <Text>, not just inputs; see
+        // the header. User-written text is masked per view with PostHogMaskView.
+        maskAllTextInputs: false,
+        // Default true, stated explicitly because the privacy contract rests on
+        // it and a silent upstream default change would break it.
         maskAllImages: true,
         // Android only. Logs are a side channel nobody audits for user content,
         // so they stay out of the recording.
