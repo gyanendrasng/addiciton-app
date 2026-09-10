@@ -24,6 +24,14 @@ export function MilestoneRing({
 }) {
   const reduced = useReducedMotion();
   const r = size / 2 - 8;
+  // The label sits inside the stroke. At the Home size (96) the inner circle is
+  // ~80pt across and "to Momentum" at 12pt is wider than that — it overflowed
+  // the ring. Type scales with the ring and the label is boxed to the chord
+  // width just above centre, shrinking rather than spilling.
+  const inner = (r - 4) * 2;
+  const labelWidth = Math.round(inner * 0.9);
+  const pctSize = Math.round(size * 0.18);
+  const labelSize = Math.max(10, Math.round(size * 0.115));
   const circ = 2 * Math.PI * r;
   const p = useSharedValue(reduced ? progress : 0);
   useEffect(() => {
@@ -49,8 +57,14 @@ export function MilestoneRing({
         />
       </Svg>
       <View style={s.center}>
-        <Text style={s.tier}>{Math.round(progress * 100)}%</Text>
-        <Text style={s.next}>{next ? `to ${next.name}` : tier ? tier.name : ''}</Text>
+        <Text style={[s.tier, { fontSize: pctSize }]}>{Math.round(progress * 100)}%</Text>
+        <Text
+          style={[s.next, { fontSize: labelSize, maxWidth: labelWidth }]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.75}>
+          {next ? `to ${next.name}` : tier ? tier.name : ''}
+        </Text>
       </View>
     </View>
   );
@@ -58,6 +72,6 @@ export function MilestoneRing({
 
 const s = StyleSheet.create({
   center: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
-  tier: { color: palette.text, fontSize: 17, fontFamily: type.displayMed },
-  next: { color: palette.textFaint, fontSize: 12, fontFamily: type.bodyMed, marginTop: 2 },
+  tier: { color: palette.text, fontFamily: type.displayMed, fontVariant: ['tabular-nums'] },
+  next: { color: palette.textFaint, fontFamily: type.bodyMed, marginTop: 2, textAlign: 'center' },
 });

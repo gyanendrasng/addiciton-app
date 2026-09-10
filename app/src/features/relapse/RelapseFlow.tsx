@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { PostHogMaskView } from 'posthog-react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 import { Tap } from '@/components/ui/tap';
@@ -99,15 +100,18 @@ export function RelapseFlow({ urgeId, presetHabit }: { urgeId: number | null; pr
               </Tap>
             ))}
           </View>
-          <TextInput
-            value={note}
-            onChangeText={setNote}
-            placeholder="Anything else worth writing down… (optional)"
-            placeholderTextColor={palette.textFaint}
-            style={s.input}
-            multiline
-            maxLength={400}
-          />
+          {/* What they write is never in a recording — see lib/posthog.ts. */}
+          <PostHogMaskView>
+            <TextInput
+              value={note}
+              onChangeText={setNote}
+              placeholder="Anything else worth writing down… (optional)"
+              placeholderTextColor={palette.textFaint}
+              style={s.input}
+              multiline
+              maxLength={400}
+            />
+          </PostHogMaskView>
           <View style={{ flex: 1 }} />
           <Cta label="Continue" onPress={() => setPane('next')} />
         </>
@@ -119,14 +123,15 @@ export function RelapseFlow({ urgeId, presetHabit }: { urgeId: number | null; pr
           <Subtitle>Edit these or keep them. Small and concrete beats big and vague.</Subtitle>
           <View style={{ gap: Spacing.two }}>
             {actions.map((a, i) => (
-              <TextInput
-                key={i}
-                value={a}
-                onChangeText={(v) => setActions((p) => p.map((x, j) => (j === i ? v : x)))}
-                style={s.action}
-                placeholder={`Action ${i + 1}`}
-                placeholderTextColor={palette.textFaint}
-              />
+              <PostHogMaskView key={i}>
+                <TextInput
+                  value={a}
+                  onChangeText={(v) => setActions((p) => p.map((x, j) => (j === i ? v : x)))}
+                  style={s.action}
+                  placeholder={`Action ${i + 1}`}
+                  placeholderTextColor={palette.textFaint}
+                />
+              </PostHogMaskView>
             ))}
           </View>
           <View style={{ flex: 1 }} />

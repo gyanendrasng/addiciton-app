@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { PostHogMaskView } from 'posthog-react-native';
 
 import { Tap } from '@/components/ui/tap';
 import { upsertCheckin, type Checkin } from '@/db/repo/checkins';
@@ -38,15 +39,18 @@ export function CheckinForm({
       <Chips options={DIFFICULTY} value={difficulty} onChange={setDifficulty} />
 
       <Text style={s.section}>Anything worth remembering? (optional)</Text>
-      <TextInput
-        value={note}
-        onChangeText={setNote}
-        placeholder="A trigger, a win, a thought…"
-        placeholderTextColor={palette.textFaint}
-        style={s.input}
-        multiline
-        maxLength={280}
-      />
+      {/* What they write is never in a recording — see lib/posthog.ts. */}
+      <PostHogMaskView>
+        <TextInput
+          value={note}
+          onChangeText={setNote}
+          placeholder="A trigger, a win, a thought…"
+          placeholderTextColor={palette.textFaint}
+          style={s.input}
+          multiline
+          maxLength={280}
+        />
+      </PostHogMaskView>
 
       <View style={{ flex: 1 }} />
       <Cta
