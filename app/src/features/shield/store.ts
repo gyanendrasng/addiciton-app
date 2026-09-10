@@ -16,9 +16,11 @@ import { listReasons } from '@/db/repo/reasons';
 import { getSetting, setSetting, useSetting } from '@/db/repo/settings';
 import { triggerFrom } from '@/features/notifications/trigger-window';
 import { track } from '@/lib/analytics';
-import { now } from '@/lib/clock';
+import { now, nowDate } from '@/lib/clock';
+import { fmtHour, fmtTime } from './format';
 import {
   authorizationStatus,
+  blockNow,
   clearWindow,
   configureAppearance,
   endLock,
@@ -36,6 +38,15 @@ export const SHIELD_WINDOW_KEY = 'shield.window';
 export const SHIELD_LOCK_KEY = 'shield.lock';
 export const SHIELD_DELAY_KEY = 'shield.unlockDelayMin';
 export const SHIELD_FILTER_KEY = 'shield.adultFilter';
+export const SHIELD_ALWAYS_KEY = 'shield.always';
+
+/**
+ * How the shield decides when to be up.
+ *   always — blocked around the clock; the browser wall for the porn habit
+ *   window — the daily hard hours
+ *   ask    — only the 15/30/60 locks
+ */
+export type ShieldMode = 'always' | 'window' | 'ask';
 
 /** How many things were picked. Never which. */
 export type ShieldSetup = { apps: number; categories: number; sites: number; at: number };
@@ -117,6 +128,36 @@ export async function setWindow(next: ShieldWindow) {
   }
 }
 
+/**
+ * Always-on is a block with no schedule: ManagedSettings keeps it up until
+ * something clears it. Switching it OFF honours the unlock delay exactly like
+ * ending a lock — the delay is the whole point of having one.
+ */
+export async function setMode(mode: ShieldMode, window: ShieldWindow) {
+  if (mode === 'always') {
+    clearWindow();
+    await setSetting(SHIELD_WINDOW_KEY, { ...window, on: false });
+    await refreshAppearance();
+    blockNow();
+    await setSetting(SHIELD_LOCK_KEY, null);
+    await setSetting(SHIELD_ALWAYS_KEY, true);
+    track('shield_window_enabled', { start_hour: -1, hours: 24 });
+    return;
+  }
+  const wasAlways = (await getSetting<boolean>(SHIELD_ALWAYS_KEY)) === true;
+  await setSetting(SHIELD_ALWAYS_KEY, false);
+  if (wasAlways) {
+    const delay = (await getSetting<number>(SHIELD_DELAY_KEY)) ?? DEFAULT_UNLOCK_DELAY_MIN;
+    if (delay > 0) {
+      await lockFor(delay);
+      await setSetting(SHIELD_LOCK_KEY, { until: now() + delay * 60_000 } satisfies ShieldLock);
+    } else {
+      endLock();
+    }
+  }
+  await setWindow({ ...window, on: mode === 'window' });
+}
+
 export async function setUnlockDelay(minutes: number) {
   await setSetting(SHIELD_DELAY_KEY, Math.max(0, Math.min(30, minutes)));
 }
@@ -133,6 +174,31 @@ export async function removeShield() {
   await setSetting(SHIELD_LOCK_KEY, null);
   await setSetting(SHIELD_WINDOW_KEY, null);
   await setSetting(SHIELD_FILTER_KEY, false);
+  await setSetting(SHIELD_ALWAYS_KEY, false);
+}
+
+export type ShieldNow =
+  | { up: true; reason: 'lock' | 'always' | 'window'; until: string | null }
+  | { up: false; next: string | null };
+
+/**
+ * Is the shield up right now, and why. One answer for Home, the tab and the
+ * urge flow, so they can never disagree.
+ */
+export function shieldNow(s: {
+  lock: ShieldLock | null;
+  always: boolean;
+  window: ShieldWindow | null;
+}): ShieldNow {
+  if (s.lock) return { up: true, reason: 'lock', until: fmtTime(s.lock.until) };
+  if (s.always) return { up: true, reason: 'always', until: null };
+  if (s.window?.on) {
+    const h = nowDate().getHours();
+    const end = Math.min(24, s.window.startHour + s.window.hours);
+    if (h >= s.window.startHour && h < end) return { up: true, reason: 'window', until: fmtHour(end) };
+    return { up: false, next: `${fmtHour(s.window.startHour)} ${h < s.window.startHour ? 'today' : 'tomorrow'}` };
+  }
+  return { up: false, next: null };
 }
 
 /**
@@ -159,7 +225,9 @@ export function useShield() {
   const window = useSetting<ShieldWindow | null>(SHIELD_WINDOW_KEY, null);
   const delay = useSetting<number>(SHIELD_DELAY_KEY, DEFAULT_UNLOCK_DELAY_MIN);
   const filter = useSetting<boolean>(SHIELD_FILTER_KEY, false);
+  const always = useSetting<boolean>(SHIELD_ALWAYS_KEY, false);
   const active = !!lock.value && lock.value.until > now();
+  const mode: ShieldMode = always.value ? 'always' : window.value?.on ? 'window' : 'ask';
   return {
     available: shieldAvailable(),
     auth,
@@ -170,6 +238,8 @@ export function useShield() {
     window: window.value,
     unlockDelayMin: delay.value,
     filter: filter.value,
+    always: always.value,
+    mode,
     loading: setup.loading || lock.loading || window.loading,
     refreshAuth,
   };

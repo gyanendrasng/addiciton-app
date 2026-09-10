@@ -1,4 +1,5 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { Platform } from 'react-native';
 
 import { palette } from '@/theme/palette';
 
@@ -41,6 +42,12 @@ export default function AppTabs() {
           src={require('@/assets/images/tabIcons/progress.png')}
           renderingMode="template"
         />
+      </NativeTabs.Trigger>
+      {/* Screen Time is iOS-only, so the tab is too; hidden tabs can't be
+          navigated to, which is what we want on Android. */}
+      <NativeTabs.Trigger name="shield" hidden={Platform.OS !== 'ios'}>
+        <NativeTabs.Trigger.Label>Shield</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf={{ default: 'shield', selected: 'shield.fill' }} />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="games">
         <NativeTabs.Trigger.Label>Games</NativeTabs.Trigger.Label>

@@ -3,12 +3,11 @@ import { StyleSheet, Text } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 import { Tap } from '@/components/ui/tap';
-import { nowDate, useMinuteTick } from '@/lib/clock';
+import { useMinuteTick } from '@/lib/clock';
 import { durations } from '@/theme/motion';
 import { hues, palette } from '@/theme/palette';
 import { type } from '@/theme/type';
-import { fmtHour, fmtTime } from './format';
-import { useShield } from './store';
+import { shieldNow, useShield } from './store';
 
 /**
  * One line on Home while the shield is up, so it's never a surprise.
@@ -36,15 +35,9 @@ export function ShieldStatus() {
   }
   if (!shield.ready) return null;
 
-  let line: string | null = null;
-  if (shield.lock) {
-    line = `Shield is up until ${fmtTime(shield.lock.until)}`;
-  } else if (shield.window?.on) {
-    const h = nowDate().getHours();
-    const end = Math.min(24, shield.window.startHour + shield.window.hours);
-    if (h >= shield.window.startHour && h < end) line = `Shield is up until ${fmtHour(end)}`;
-  }
-  if (!line) return null;
+  const state = shieldNow(shield);
+  if (!state.up) return null;
+  const line = state.until ? `Shield is up until ${state.until}` : 'Shield is up';
 
   return (
     <Animated.View entering={FadeIn.duration(durations.base)} exiting={FadeOut.duration(durations.fast)}>
