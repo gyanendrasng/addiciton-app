@@ -51,7 +51,8 @@ export type ShieldMode = 'always' | 'window' | 'ask';
 /** How many things were picked. Never which. */
 export type ShieldSetup = { apps: number; categories: number; sites: number; at: number };
 export type ShieldWindow = { on: boolean; startHour: number; hours: number };
-export type ShieldLock = { until: number };
+/** `minutes` is what was asked for, so the status ring can show how much is left. */
+export type ShieldLock = { until: number; minutes: number };
 
 export const DEFAULT_WINDOW_HOURS = 3;
 export const DEFAULT_UNLOCK_DELAY_MIN = 5;
@@ -85,7 +86,7 @@ export async function completeSetup(token: string, counts: Omit<ShieldSetup, 'at
 export async function startLock(minutes: number): Promise<boolean> {
   await refreshAppearance();
   const scheduled = await lockFor(minutes);
-  await setSetting(SHIELD_LOCK_KEY, { until: now() + minutes * 60_000 } satisfies ShieldLock);
+  await setSetting(SHIELD_LOCK_KEY, { until: now() + minutes * 60_000, minutes } satisfies ShieldLock);
   track('shield_lock_started', { minutes, scheduled });
   return scheduled;
 }
@@ -102,7 +103,7 @@ export async function endLockAfterDelay() {
     await setSetting(SHIELD_LOCK_KEY, null);
   } else {
     await lockFor(delay);
-    await setSetting(SHIELD_LOCK_KEY, { until: now() + delay * 60_000 } satisfies ShieldLock);
+    await setSetting(SHIELD_LOCK_KEY, { until: now() + delay * 60_000, minutes: delay } satisfies ShieldLock);
   }
   track('shield_lock_ended_early', { delay_min: delay });
 }
@@ -150,7 +151,7 @@ export async function setMode(mode: ShieldMode, window: ShieldWindow) {
     const delay = (await getSetting<number>(SHIELD_DELAY_KEY)) ?? DEFAULT_UNLOCK_DELAY_MIN;
     if (delay > 0) {
       await lockFor(delay);
-      await setSetting(SHIELD_LOCK_KEY, { until: now() + delay * 60_000 } satisfies ShieldLock);
+      await setSetting(SHIELD_LOCK_KEY, { until: now() + delay * 60_000, minutes: delay } satisfies ShieldLock);
     } else {
       endLock();
     }

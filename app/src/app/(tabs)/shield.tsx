@@ -1,19 +1,19 @@
-import { SymbolView } from 'expo-symbols';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Modal, Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import type { SFSymbol } from 'expo-symbols';
 
 import { Card } from '@/components/ui/card';
 import { Notice } from '@/components/ui/notice';
-import { Screen } from '@/components/ui/screen';
 import { SymbolChip } from '@/components/ui/symbol-chip';
 import { Tap } from '@/components/ui/tap';
 import { useProfile } from '@/db/repo/profile';
 import { Cta, Eyebrow, Subtitle, Title } from '@/features/onboarding/components/chrome';
 import { fmtHour } from '@/features/shield/format';
 import { sdk, SELECTION_ID, requestAuthorization } from '@/features/shield/module';
+import { ShieldMark } from '@/features/shield/ShieldMark';
 import { ShieldPicker } from '@/features/shield/ShieldPicker';
 import {
   completeSetup,
@@ -30,28 +30,37 @@ import {
   useShield,
   type ShieldMode,
   type ShieldSetup,
+  type ShieldWindow,
 } from '@/features/shield/store';
-import { useMinuteTick } from '@/lib/clock';
+import { now, useMinuteTick } from '@/lib/clock';
 import { durations } from '@/theme/motion';
 import { hues, palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
 
 /**
- * Shield — its own tab, because it is a *state* the person should be able to
- * feel, not a settings page: one big mark that is either up or down.
+ * Shield — its own tab, because a blocker is a state the person should be able
+ * to feel, not a settings page.
  *
- *   allow   → what it is, the three steps ahead, Apple's permission
- *   pick    → one button, Apple's picker, the advice that matters
- *   confirm → what got picked, and one decision: always on, hard hours, or
- *             only when asked
- *   status  → up or down, why, and the one thing to do about it; everything
- *             else behind Manage
+ * First run is a three-step setup in the tab's own skeleton (eyebrow, heading,
+ * one sentence, content, action in the thumb zone), the same skeleton every
+ * other tab uses:
  *
- * The words are "Shield is up", never "Protected": it is chosen apps plus a
- * Safari-only filter, and saying more than that is how trust is lost.
+ *   1  allow    what it does, then Apple's permission
+ *   2  pick     one button into Apple's picker, and the advice that matters
+ *   3  when     what got picked, and one decision: always / hard hours / ask
+ *
+ * After that the tab is a status screen: the mark, up or down and why, what is
+ * shielded, when it is up, and the one thing to do about it. The words are
+ * "up" and "down", never "protected".
  */
-type Stage = 'unavailable' | 'allow' | 'pick' | 'confirm' | 'status';
+type Stage = 'unavailable' | 'allow' | 'pick' | 'when' | 'status';
+
+const MODES: { id: ShieldMode; icon: SFSymbol; label: string; sub: (w: ShieldWindow) => string }[] = [
+  { id: 'always', icon: 'lock.fill', label: 'Always', sub: () => 'Up around the clock. Turning it off waits your delay.' },
+  { id: 'window', icon: 'clock.fill', label: 'Hard hours', sub: (w) => `Every day, ${fmtHour(w.startHour)} to ${fmtHour(Math.min(24, w.startHour + w.hours))}.` },
+  { id: 'ask', icon: 'hand.raised.fill', label: 'When I ask', sub: () => 'Only the 15 to 60 minute locks from the urge toolkit.' },
+];
 
 export default function ShieldTab() {
   const router = useRouter();
@@ -62,6 +71,8 @@ export default function ShieldTab() {
   const [asking, setAsking] = useState(false);
   const [denied, setDenied] = useState(false);
   const [justPicked, setJustPicked] = useState<ShieldSetup | null>(null);
+  const [chosenMode, setChosenMode] = useState<ShieldMode | null>(null);
+  const [duration, setDuration] = useState<(typeof LOCK_CHOICES_MIN)[number]>(30);
   const [managing, setManaging] = useState(false);
   const [refusedSchedule, setRefusedSchedule] = useState(false);
   useMinuteTick();
@@ -71,29 +82,24 @@ export default function ShieldTab() {
   }, []);
 
   const isPorn = !!profile?.habits.includes('porn');
-  const proposal = profile ? defaultWindow(profile.answers) : null;
-  const window = shield.window ?? proposal;
+  const window: ShieldWindow | null = shield.window ?? (profile ? defaultWindow(profile.answers) : null);
 
   let stage: Stage = !shield.available
     ? 'unavailable'
     : shield.auth !== 'approved'
       ? 'allow'
       : justPicked
-        ? 'confirm'
+        ? 'when'
         : shield.setup
           ? 'status'
           : 'pick';
   // Screen Time never runs in the Simulator; dev-only door to the later stages.
   let previewUp: boolean | null = null;
   if (__DEV__ && params.preview) {
-    if (['allow', 'pick', 'confirm', 'status'].includes(params.preview)) stage = params.preview as Stage;
-    if (params.preview === 'up') {
+    if (['allow', 'pick', 'when', 'status'].includes(params.preview)) stage = params.preview as Stage;
+    if (params.preview === 'up' || params.preview === 'down') {
       stage = 'status';
-      previewUp = true;
-    }
-    if (params.preview === 'down') {
-      stage = 'status';
-      previewUp = false;
+      previewUp = params.preview === 'up';
     }
   }
 
@@ -111,139 +117,105 @@ export default function ShieldTab() {
     const counts = { apps: p.apps, categories: p.categories, sites: p.sites };
     await completeSetup(p.token, counts);
     if (isPorn && !shield.filter) await setFilter(true);
+    setChosenMode(isPorn ? 'always' : 'window');
     setJustPicked({ ...counts, at: Date.now() });
   };
 
-  const choose = async (mode: ShieldMode) => {
-    if (window) await setMode(mode, window);
+  const finishSetup = async () => {
+    if (window && chosenMode) await setMode(chosenMode, window);
     setJustPicked(null);
   };
 
-  /* ---------------------------------------------------------------- */
+  /* ------------------------------ setup ------------------------------ */
 
   if (stage === 'unavailable') {
     return (
-      <Screen title="Shield" back={false}>
-        <Text style={s.h1}>Shield is an iPhone feature.</Text>
-        <Text style={s.body}>
-          It uses Apple’s Screen Time to keep chosen apps and sites out of reach — always, in your
-          hard hours, or while you wait out an urge.
-          {Platform.OS === 'ios' && __DEV__ ? ' It needs a development build — it can’t run in Expo Go.' : ''}
-        </Text>
-      </Screen>
+      <Frame eyebrow="Shield" title="Shield is an iPhone feature." subtitle="It uses Apple’s Screen Time to keep chosen apps and sites out of reach — always, in your hard hours, or while you wait out an urge.">
+        {Platform.OS === 'ios' && __DEV__ ? <Subtitle>It needs a development build — it can’t run in Expo Go.</Subtitle> : null}
+      </Frame>
     );
   }
 
   if (stage === 'allow') {
     return (
-      <Screen
-        title="Shield"
-        back={false}
+      <Frame
+        eyebrow="Shield · Step 1 of 3"
+        title="Put a shield between you and it."
+        subtitle="Choose the apps and sites that pull you in. Curb keeps them out of reach, and shows you one of your own reasons when you try."
         footer={<Cta label={asking ? 'Asking…' : 'Allow Screen Time'} onPress={ask} disabled={asking} />}>
-        <Text style={s.h1}>Put a shield between you and it.</Text>
-        <Text style={s.body}>
-          Choose the apps and sites that pull you in. Curb keeps them out of reach — always, in your
-          hard hours, or for a while when you ask mid-urge. When you hit the shield, you see one of
-          your own reasons instead.
-        </Text>
-        <Steps
-          items={[
-            'Allow Screen Time — Apple’s sheet, then your passcode',
-            'Pick the apps and sites in Apple’s list',
-            'Decide when it’s up: always, your hard hours, or when you ask',
-          ]}
-        />
-        <Text style={s.body}>Apple asks once. Curb never learns which apps you chose — only how many.</Text>
+        <Card style={s.card}>
+          <InfoRow icon="checklist" hue="progress" label="You choose, in Apple’s list" sub="Apps, whole categories, or websites. Curb only ever sees how many." />
+          <Sep />
+          <InfoRow icon="clock.fill" hue="checkin" label="Up when it matters" sub="Always, in your hard hours, or only when you ask mid-urge." />
+          <Sep />
+          <InfoRow icon="heart.fill" hue="reasons" label="Your reason on the wall" sub="The shield screen shows something you wrote, and a way back into Curb." />
+        </Card>
+        <Text style={s.fine}>Apple asks once, with your device passcode.</Text>
         {denied || shield.auth === 'denied' ? (
-          <Notice tone="warn">
-            Screen Time access is off for Curb. Turn it on in Settings › Screen Time › Apps with Screen
-            Time access, then come back.
-          </Notice>
+          <Notice tone="warn">Screen Time access is off for Curb. Turn it on in Settings › Screen Time › Apps with Screen Time access, then come back.</Notice>
         ) : null}
-      </Screen>
+      </Frame>
     );
   }
 
   if (stage === 'pick') {
     const current = sdk()?.getFamilyActivitySelectionId(SELECTION_ID) ?? null;
     return (
-      <Screen title="Shield" back={false} footer={<Cta label="Choose apps and sites" onPress={() => setPicking(true)} />}>
+      <Frame
+        eyebrow="Shield · Step 2 of 3"
+        title="Choose what to shield."
+        subtitle="Apple’s list opens next. Curb never sees the names — only how many you picked."
+        footer={<Cta label="Open Apple’s list" onPress={() => setPicking(true)} />}>
         <ShieldPicker visible={picking} current={current} onPicked={picked} onCancel={() => setPicking(false)} />
-        <Text style={s.h1}>Choose what to shield.</Text>
-        {isPorn ? (
-          <>
-            <Text style={s.body}>
-              <Text style={s.strong}>Pick Chrome and every other browser you use</Text>, plus any app
-              that tends to lead you there. Safari is handled separately: Apple’s adult-content filter
-              switches on for it at the same time.
-            </Text>
-            <Text style={s.body}>
-              With the browsers shielded and Safari filtered, there is no quiet way round it on this
-              phone. That is the point.
-            </Text>
-          </>
-        ) : (
-          <Text style={s.body}>
-            Apple’s list opens next. Pick whole categories where you can — Social, Entertainment, Games
-            — so an app you install next month is covered too. Single apps and websites work as well.
-          </Text>
-        )}
-        <Text style={s.body}>Curb never sees the names — only how many you picked.</Text>
-      </Screen>
+        <Card style={s.card}>
+          {isPorn ? (
+            <>
+              <InfoRow icon="safari.fill" hue="urge" label="Every browser you use" sub="Chrome, Firefox, Brave — shielded outright. Safari gets Apple’s adult-content filter instead, switched on for you." />
+              <Sep />
+              <InfoRow icon="square.grid.2x2.fill" hue="progress" label="Anything that leads you there" sub="Pick the apps that tend to come first. Whole categories cover apps you haven’t installed yet." />
+            </>
+          ) : (
+            <>
+              <InfoRow icon="square.grid.2x2.fill" hue="progress" label="Whole categories where you can" sub="Social, Entertainment, Games — an app you install next month is covered too." />
+              <Sep />
+              <InfoRow icon="app.badge.fill" hue="checkin" label="Single apps and sites work as well" sub="Add the specific ones that get you." />
+            </>
+          )}
+        </Card>
+      </Frame>
     );
   }
 
-  if (stage === 'confirm' && window) {
+  if (stage === 'when' && window) {
     const setup = justPicked ?? shield.setup ?? { apps: 2, categories: 1, sites: 0, at: 0 };
-    const end = Math.min(24, window.startHour + window.hours);
-    // For porn the browsers need to be gone all day; for everything else the
-    // hard hours are the honest default. Primary button follows.
+    const selected = chosenMode ?? (isPorn ? 'always' : 'window');
     return (
-      <Screen
-        title="Shield"
-        back={false}
-        footer={
-          <View style={{ gap: Spacing.two }}>
-            {isPorn ? (
-              <>
-                <Cta label="Keep it up always" onPress={() => void choose('always')} />
-                <Cta label="Only in my hard hours" variant="ghost" onPress={() => void choose('window')} />
-              </>
-            ) : (
-              <>
-                <Cta label="Shield my hard hours every day" onPress={() => void choose('window')} />
-                <Cta label="Keep it up always" variant="ghost" onPress={() => void choose('always')} />
-              </>
-            )}
-            <Cta label="Only when I ask" variant="ghost" onPress={() => void choose('ask')} />
-          </View>
-        }>
-        <Animated.View entering={FadeIn.duration(durations.base)} style={{ gap: Spacing.three }}>
-          <View style={s.doneRow}>
-            <SymbolChip name="shield.fill" tint={hues.urge.solid} wash={hues.urge.wash} />
-            <View style={{ flex: 1 }}>
-              <Text style={s.doneTitle}>Shielded</Text>
-              <Text style={s.doneSub}>
-                {summarise(setup) ?? 'your selection'}
-                {isPorn ? ' · Safari filter on' : ''}
-              </Text>
-            </View>
-          </View>
-          <Text style={s.h1}>When should it be up?</Text>
-          <Text style={s.body}>
-            <Text style={s.strong}>Always</Text> keeps it up around the clock — the wall for a browser
-            you’d otherwise open at 3 pm. <Text style={s.strong}>Hard hours</Text> puts it up from{' '}
-            {fmtHour(window.startHour)} to {fmtHour(end)} every day, from what you told us.{' '}
-            <Text style={s.strong}>When I ask</Text> is the 15-minute lock in the urge toolkit, and
-            nothing more.
+      <Frame
+        eyebrow="Shield · Step 3 of 3"
+        title="When should it be up?"
+        subtitle="You can change this any time from the Shield tab."
+        footer={<Cta label="Finish setup" onPress={() => void finishSetup()} />}>
+        <View style={s.pickedRow}>
+          <SymbolChip name="checkmark" tint={hues.pledge.solid} wash={hues.pledge.wash} />
+          <Text style={s.pickedText}>
+            {summarise(setup) ?? 'Your selection'}
+            {isPorn ? ' · Safari filter on' : ''}
           </Text>
-          <Text style={s.body}>You can change your mind any time. Turning it off waits the delay you set.</Text>
-        </Animated.View>
-      </Screen>
+        </View>
+        <Card style={s.card}>
+          {MODES.map((m, i) => (
+            <View key={m.id}>
+              {i === 0 ? null : <Sep />}
+              <OptionRow icon={m.icon} label={m.label} sub={m.sub(window)} selected={selected === m.id} onPress={() => setChosenMode(m.id)} />
+            </View>
+          ))}
+        </Card>
+        {isPorn ? <Text style={s.fine}>Always is the honest choice for a browser: a shield that comes down at breakfast isn’t one.</Text> : null}
+      </Frame>
     );
   }
 
-  /* ---------------------------- status ---------------------------- */
+  /* ------------------------------ status ------------------------------ */
 
   const state =
     previewUp === null
@@ -253,19 +225,36 @@ export default function ShieldTab() {
         : { up: false as const, next: '9 pm today' };
   const summary = summarise(shield.setup) ?? (previewUp !== null ? '1 category, 3 apps' : null);
   const current = sdk()?.getFamilyActivitySelectionId(SELECTION_ID) ?? null;
+  const mode: ShieldMode = previewUp === null ? shield.mode : previewUp ? 'window' : 'ask';
 
+  // Ring: how much of the current lock or window is left.
+  let remaining: number | undefined;
+  if (state.up && state.reason === 'lock' && shield.lock) {
+    const total = Math.max(1, shield.lock.minutes ?? 30) * 60_000;
+    remaining = Math.max(0, Math.min(1, (shield.lock.until - now()) / total));
+  } else if (state.up && state.reason === 'window' && window) {
+    const start = window.startHour * 60;
+    const end = Math.min(24 * 60, (window.startHour + window.hours) * 60);
+    const d = new Date(now());
+    const cur = d.getHours() * 60 + d.getMinutes();
+    remaining = previewUp !== null ? 0.62 : Math.max(0, Math.min(1, (end - cur) / (end - start)));
+  } else if (state.up && state.reason === 'always') {
+    remaining = 1;
+  }
+
+  const headline = state.up ? 'Shield is up.' : 'Shield is down.';
   const detail = state.up
     ? state.reason === 'lock'
       ? `Until ${state.until}, because you asked.`
       : state.reason === 'always'
         ? 'Always on. Turning it off waits your delay.'
-        : `Until ${state.until} · your hard hours`
-    : shield.mode === 'window' && state.next
+        : `Until ${state.until}, your hard hours.`
+    : mode === 'window' && state.next
       ? `Back up at ${state.next}.`
       : 'Up only when you ask.';
 
-  const lock = async (minutes: number) => {
-    const scheduled = await startLock(minutes);
+  const lock = async () => {
+    const scheduled = await startLock(duration);
     setRefusedSchedule(!scheduled);
   };
 
@@ -281,20 +270,16 @@ export default function ShieldTab() {
     );
   };
 
-  const switchMode = (mode: ShieldMode) => {
-    if (!window || mode === shield.mode) return;
-    if (shield.mode === 'always' && shield.unlockDelayMin > 0) {
-      Alert.alert(
-        `Turn Always off in ${shield.unlockDelayMin} min?`,
-        'You set this delay when you were clear-headed. It still applies.',
-        [
-          { text: 'Keep it', style: 'cancel' },
-          { text: `Turn off in ${shield.unlockDelayMin} min`, onPress: () => void setMode(mode, window) },
-        ],
-      );
+  const switchMode = (next: ShieldMode) => {
+    if (!window || next === mode) return;
+    if (mode === 'always' && shield.unlockDelayMin > 0) {
+      Alert.alert(`Turn Always off in ${shield.unlockDelayMin} min?`, 'You set this delay when you were clear-headed. It still applies.', [
+        { text: 'Keep it', style: 'cancel' },
+        { text: `Turn off in ${shield.unlockDelayMin} min`, onPress: () => void setMode(next, window) },
+      ]);
       return;
     }
-    void setMode(mode, window);
+    void setMode(next, window);
   };
 
   return (
@@ -310,146 +295,130 @@ export default function ShieldTab() {
       />
       <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         <Eyebrow>Shield</Eyebrow>
-        <Title>{state.up ? 'Shield is up.' : 'Shield is down.'}</Title>
+        <Title>{headline}</Title>
         <Subtitle>{detail}</Subtitle>
 
-        <View style={s.markWrap} accessibilityLabel={state.up ? 'Shield is up' : 'Shield is down'}>
-          <View style={[s.disc, { backgroundColor: state.up ? hues.urge.wash : palette.surface2 }]}>
-            <SymbolView
-              name={state.up ? 'shield.fill' : 'shield'}
-              size={112}
-              tintColor={state.up ? hues.urge.solid : palette.textFaint}
-              style={s.mark}
-            />
-          </View>
-        </View>
+        <Animated.View layout={LinearTransition.duration(durations.base)}>
+          <Card style={s.hero}>
+            <ShieldMark up={state.up} remaining={remaining} size={120} />
+            <View style={{ flex: 1, gap: Spacing.one }}>
+              <Text style={s.heroLabel}>{state.up ? 'Up' : 'Down'}</Text>
+              <Text style={s.heroValue}>
+                {state.up ? (state.reason === 'always' ? 'Always' : `until ${state.until}`) : mode === 'window' && state.next ? `until ${state.next}` : 'until you ask'}
+              </Text>
+              {state.up && state.reason === 'lock' ? (
+                <Tap haptic="light" onPress={endEarly} accessibilityRole="button" style={s.heroLink}>
+                  <Text style={s.link}>End early</Text>
+                </Tap>
+              ) : state.up ? (
+                <Tap haptic="light" onPress={() => router.push('/urge')} accessibilityRole="button" style={s.heroLink}>
+                  <Text style={s.link}>Having an urge anyway?</Text>
+                </Tap>
+              ) : null}
+            </View>
+          </Card>
+        </Animated.View>
 
-        <Tap haptic="light" onPress={() => setPicking(true)} style={s.summary} accessibilityRole="button">
-          <Text style={s.summaryText}>
-            {summary ?? 'Nothing chosen'}
-            {isPorn && shield.filter ? ' · Safari filter on' : ''}
-          </Text>
-          <Text style={s.summaryLink}>Change</Text>
-        </Tap>
+        <Text style={s.section}>What’s shielded</Text>
+        <Card style={s.card}>
+          <Tap haptic="light" onPress={() => setPicking(true)} accessibilityRole="button">
+            <View style={s.row}>
+              <SymbolChip name="square.grid.2x2.fill" tint={hues.progress.solid} wash={hues.progress.wash} />
+              <View style={{ flex: 1 }}>
+                <Text style={s.rowLabel}>{summary ?? 'Nothing chosen yet'}</Text>
+                <Text style={s.rowSub}>Picked in Apple’s list. Tap to change.</Text>
+              </View>
+              <Text style={s.chev}>›</Text>
+            </View>
+          </Tap>
+          {isPorn ? (
+            <>
+              <Sep />
+              <View style={s.row}>
+                <SymbolChip name="safari.fill" tint={hues.urge.solid} wash={hues.urge.wash} />
+                <View style={{ flex: 1 }}>
+                  <Text style={s.rowLabel}>Safari adult-content filter</Text>
+                  <Text style={s.rowSub}>Apple’s filter, Safari only.</Text>
+                </View>
+                <Switch value={shield.filter} onValueChange={(v) => void setFilter(v)} trackColor={{ true: palette.accentDeep, false: palette.surface3 }} thumbColor={palette.text} />
+              </View>
+            </>
+          ) : null}
+        </Card>
 
         <Text style={s.section}>When it’s up</Text>
-        <View style={s.segment}>
-          {(
-            [
-              ['always', 'Always'],
-              ['window', 'Hard hours'],
-              ['ask', 'When I ask'],
-            ] as const
-          ).map(([m, label]) => {
-            const on = shield.mode === m;
-            return (
-              <Tap
-                key={m}
-                haptic="selection"
-                onPress={() => switchMode(m)}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: on }}
-                style={[s.segBtn, on && s.segBtnOn]}>
-                <Text style={[s.segLabel, on && s.segLabelOn]}>{label}</Text>
-              </Tap>
-            );
-          })}
-        </View>
-        {window ? (
-          <Text style={s.fine}>
-            Hard hours are {fmtHour(window.startHour)} to {fmtHour(Math.min(24, window.startHour + window.hours))}.{' '}
-            <Text style={s.link} onPress={() => setManaging(true)}>
-              Manage
-            </Text>
-          </Text>
-        ) : null}
+        <Card style={s.card}>
+          {window
+            ? MODES.map((m, i) => (
+                <View key={m.id}>
+                  {i === 0 ? null : <Sep />}
+                  <OptionRow icon={m.icon} label={m.label} sub={m.sub(window)} selected={mode === m.id} onPress={() => switchMode(m.id)} />
+                </View>
+              ))
+            : null}
+          <Sep />
+          <Tap haptic="light" onPress={() => setManaging(true)} accessibilityRole="button">
+            <View style={s.row}>
+              <SymbolChip name="slider.horizontal.3" tint={palette.textDim} wash={palette.surface3} />
+              <View style={{ flex: 1 }}>
+                <Text style={s.rowLabel}>Hours and delay</Text>
+                <Text style={s.rowSub}>
+                  {window ? `${fmtHour(window.startHour)} to ${fmtHour(Math.min(24, window.startHour + window.hours))}` : ''} · {shield.unlockDelayMin === 0 ? 'no delay' : `${shield.unlockDelayMin} min to lift`}
+                </Text>
+              </View>
+              <Text style={s.chev}>›</Text>
+            </View>
+          </Tap>
+        </Card>
 
         {refusedSchedule ? (
-          <Notice tone="info">The shield is up, but iOS didn’t take the timer. Curb lifts it the next time you open the app after it ends.</Notice>
+          <Animated.View entering={FadeIn.duration(durations.fast)} exiting={FadeOut.duration(durations.fast)}>
+            <Notice tone="info">The shield is up, but iOS didn’t take the timer. Curb lifts it the next time you open the app after it ends.</Notice>
+          </Animated.View>
         ) : null}
-        <View style={{ height: 120 }} />
+        <View style={{ height: state.up ? 96 : 220 }} />
       </ScrollView>
 
-      <View style={s.footer}>
-        {state.up ? (
-          state.reason === 'lock' ? (
-            <Cta label="End early" variant="ghost" onPress={endEarly} />
-          ) : (
-            <Tap haptic="light" onPress={() => router.push('/urge')} style={s.quiet} accessibilityRole="button">
-              <Text style={s.quietLabel}>Having an urge anyway? Open the toolkit</Text>
-            </Tap>
-          )
-        ) : (
-          <View style={s.chips}>
-            {LOCK_CHOICES_MIN.map((m) => (
-              <Tap
-                key={m}
-                haptic="medium"
-                disabled={!shield.setup && previewUp === null}
-                onPress={() => void lock(m)}
-                style={s.chip}
-                accessibilityRole="button"
-                accessibilityLabel={`Shield for ${m} minutes`}>
-                <Text style={s.chipLabel}>{m === 60 ? 'Shield 1 hour' : `Shield ${m} min`}</Text>
-              </Tap>
-            ))}
+      {!state.up ? (
+        <View style={s.footer}>
+          <View style={s.durations} accessibilityRole="radiogroup">
+            {LOCK_CHOICES_MIN.map((m) => {
+              const on = duration === m;
+              return (
+                <Tap key={m} haptic="selection" onPress={() => setDuration(m)} accessibilityRole="radio" accessibilityState={{ selected: on }} style={[s.durBtn, on && s.durBtnOn]}>
+                  <Text style={[s.durLabel, on && s.durLabelOn]}>{m === 60 ? '1 hour' : `${m} min`}</Text>
+                </Tap>
+              );
+            })}
           </View>
-        )}
-      </View>
+          <Cta label={`Shield for ${duration === 60 ? '1 hour' : `${duration} min`}`} onPress={() => void lock()} disabled={!shield.setup && previewUp === null} />
+        </View>
+      ) : null}
 
       <Modal visible={managing} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setManaging(false)}>
         <SafeAreaView style={s.root} edges={['bottom']}>
           <ScrollView contentContainerStyle={s.content}>
-            <Text style={s.h1}>Manage Shield</Text>
-
+            <Eyebrow>Shield</Eyebrow>
+            <Title>Hours and delay.</Title>
             {window ? (
               <>
                 <Text style={s.section}>Hard hours</Text>
                 <Card style={s.card}>
                   <Stepper label="Start" value={fmtHour(window.startHour)} onChange={(d) => void setWindow({ ...window, startHour: (window.startHour + d + 24) % 24 })} />
-                  <View style={s.sep} />
+                  <Sep />
                   <Stepper label="For" value={`${window.hours} h`} onChange={(d) => void setWindow({ ...window, hours: Math.max(1, Math.min(6, window.hours + d)) })} />
                 </Card>
               </>
             ) : null}
-
             <Text style={s.section}>Ending early</Text>
             <Card style={s.card}>
-              <Stepper
-                label="Wait before it lifts"
-                value={shield.unlockDelayMin === 0 ? 'none' : `${shield.unlockDelayMin} min`}
-                onChange={(d) => void setUnlockDelay(shield.unlockDelayMin + d * 5)}
-              />
+              <Stepper label="Wait before it lifts" value={shield.unlockDelayMin === 0 ? 'none' : `${shield.unlockDelayMin} min`} onChange={(d) => void setUnlockDelay(shield.unlockDelayMin + d * 5)} />
               <Text style={s.fineIn}>Decided now, while you’re clear. A shield you can drop in one tap is a shield you will drop.</Text>
             </Card>
-
-            {isPorn ? (
-              <>
-                <Text style={s.section}>Safari</Text>
-                <Card style={s.card}>
-                  <View style={s.row}>
-                    <View style={{ flex: 1, gap: 2 }}>
-                      <Text style={s.rowLabel}>Adult content filter</Text>
-                      <Text style={s.rowSub}>Apple’s filter, Safari only. Other browsers are shielded outright if you picked them.</Text>
-                    </View>
-                    <Switch
-                      value={shield.filter}
-                      onValueChange={(v) => void setFilter(v)}
-                      trackColor={{ true: palette.accentDeep, false: palette.surface3 }}
-                      thumbColor={palette.text}
-                    />
-                  </View>
-                </Card>
-              </>
-            ) : null}
-
-            <Text style={s.fine}>
-              Want it locked for real? In iOS Settings › Screen Time › Lock Screen Time Settings, a passcode
-              stops Curb’s access being switched off — and the app being deleted — without it. Ask someone you
-              trust to set the code.
-            </Text>
+            <Text style={s.fine}>Want it locked for real? In iOS Settings › Screen Time › Lock Screen Time Settings, a passcode stops Curb’s access being switched off — and the app being deleted — without it. Ask someone you trust to set the code.</Text>
+            <View style={{ height: 120 }} />
           </ScrollView>
-          <View style={s.footer}>
+          <View style={[s.footer, s.footerSheet]}>
             <Cta label="Done" onPress={() => setManaging(false)} />
           </View>
         </SafeAreaView>
@@ -458,28 +427,64 @@ export default function ShieldTab() {
   );
 }
 
-function summarise(setup: ShieldSetup | null | undefined): string | null {
-  if (!setup) return null;
-  const parts = [
-    setup.categories ? `${setup.categories} ${setup.categories === 1 ? 'category' : 'categories'}` : null,
-    setup.apps ? `${setup.apps} ${setup.apps === 1 ? 'app' : 'apps'}` : null,
-    setup.sites ? `${setup.sites} ${setup.sites === 1 ? 'site' : 'sites'}` : null,
-  ].filter(Boolean);
-  return parts.length ? parts.join(', ') : null;
+/* ---------------------------- pieces ---------------------------- */
+
+function Frame({
+  eyebrow,
+  title,
+  subtitle,
+  footer,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  footer?: React.ReactNode;
+  children?: React.ReactNode;
+}) {
+  return (
+    <SafeAreaView style={s.root} edges={['top']}>
+      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+        <Eyebrow>{eyebrow}</Eyebrow>
+        <Title>{title}</Title>
+        <Subtitle>{subtitle}</Subtitle>
+        <View style={{ height: Spacing.two }} />
+        {children}
+        <View style={{ height: 160 }} />
+      </ScrollView>
+      {footer ? <View style={s.footer}>{footer}</View> : null}
+    </SafeAreaView>
+  );
 }
 
-function Steps({ items }: { items: string[] }) {
+function Sep() {
+  return <View style={s.sep} />;
+}
+
+function InfoRow({ icon, hue, label, sub }: { icon: SFSymbol; hue: keyof typeof hues; label: string; sub: string }) {
   return (
-    <View style={s.steps}>
-      {items.map((t, i) => (
-        <View key={t} style={s.step}>
-          <View style={s.stepNum}>
-            <Text style={s.stepNumText}>{i + 1}</Text>
-          </View>
-          <Text style={s.stepText}>{t}</Text>
-        </View>
-      ))}
+    <View style={s.row}>
+      <SymbolChip name={icon} tint={hues[hue].solid} wash={hues[hue].wash} />
+      <View style={{ flex: 1 }}>
+        <Text style={s.rowLabel}>{label}</Text>
+        <Text style={s.rowSub}>{sub}</Text>
+      </View>
     </View>
+  );
+}
+
+function OptionRow({ icon, label, sub, selected, onPress }: { icon: SFSymbol; label: string; sub: string; selected: boolean; onPress: () => void }) {
+  return (
+    <Tap haptic="selection" onPress={onPress} accessibilityRole="radio" accessibilityState={{ selected }}>
+      <View style={s.row}>
+        <SymbolChip name={icon} tint={selected ? palette.accent : palette.textDim} wash={selected ? palette.accentWash : palette.surface3} />
+        <View style={{ flex: 1 }}>
+          <Text style={s.rowLabel}>{label}</Text>
+          <Text style={s.rowSub}>{sub}</Text>
+        </View>
+        <View style={[s.radio, selected && s.radioOn]}>{selected ? <View style={s.radioDot} /> : null}</View>
+      </View>
+    </Tap>
   );
 }
 
@@ -498,54 +503,45 @@ function Stepper({ label, value, onChange }: { label: string; value: string; onC
   );
 }
 
+function summarise(setup: ShieldSetup | null | undefined): string | null {
+  if (!setup) return null;
+  const parts = [
+    setup.categories ? `${setup.categories} ${setup.categories === 1 ? 'category' : 'categories'}` : null,
+    setup.apps ? `${setup.apps} ${setup.apps === 1 ? 'app' : 'apps'}` : null,
+    setup.sites ? `${setup.sites} ${setup.sites === 1 ? 'site' : 'sites'}` : null,
+  ].filter(Boolean);
+  return parts.length ? parts.join(', ') : null;
+}
+
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: palette.bg },
   content: { padding: Spacing.four, gap: Spacing.two },
-  h1: { color: palette.text, fontSize: 28, lineHeight: 34, letterSpacing: -0.5, fontFamily: type.display },
-  body: { color: palette.textDim, fontSize: 16, lineHeight: 24, fontFamily: type.body },
-  strong: { color: palette.text, fontFamily: type.bodySemi },
-  section: { color: palette.textDim, fontSize: 13, fontFamily: type.bodySemi, letterSpacing: 0.3, marginTop: Spacing.three },
-  markWrap: { alignItems: 'center', marginTop: Spacing.four, marginBottom: Spacing.three },
-  disc: { width: 220, height: 220, borderRadius: 110, alignItems: 'center', justifyContent: 'center' },
-  mark: { width: 112, height: 112 },
-  summary: {
-    minHeight: 52,
-    borderRadius: 16,
-    backgroundColor: palette.surface,
-    paddingHorizontal: Spacing.three,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-  },
-  summaryText: { flex: 1, color: palette.text, fontSize: 15, fontFamily: type.bodyMed },
-  summaryLink: { color: palette.accent, fontSize: 15, fontFamily: type.bodySemi },
-  segment: { flexDirection: 'row', backgroundColor: palette.surface3, borderRadius: 14, padding: 3, gap: 3 },
-  segBtn: { flex: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 11 },
-  segBtnOn: { backgroundColor: palette.surface },
-  segLabel: { color: palette.textDim, fontSize: 14, fontFamily: type.bodyMed },
-  segLabelOn: { color: palette.text, fontFamily: type.bodySemi },
-  fine: { color: palette.textFaint, fontSize: 13, lineHeight: 20, fontFamily: type.body, marginTop: Spacing.one },
-  fineIn: { color: palette.textFaint, fontSize: 13, lineHeight: 20, fontFamily: type.body, paddingHorizontal: Spacing.three, paddingBottom: Spacing.three },
-  link: { color: palette.accent, fontFamily: type.bodySemi },
-  footer: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: Spacing.four, paddingBottom: 100, backgroundColor: 'transparent' },
-  chips: { flexDirection: 'row', gap: Spacing.two },
-  chip: { flex: 1, minHeight: 56, alignItems: 'center', justifyContent: 'center', borderRadius: 18, backgroundColor: hues.urge.solid },
-  chipLabel: { color: hues.urge.ink, fontSize: 15, fontFamily: type.bodySemi, textAlign: 'center' },
-  quiet: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
-  quietLabel: { color: palette.textDim, fontSize: 14, fontFamily: type.bodyMed },
-  steps: { gap: Spacing.two, marginTop: Spacing.two },
-  step: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  stepNum: { width: 26, height: 26, borderRadius: 13, backgroundColor: palette.surface3, alignItems: 'center', justifyContent: 'center' },
-  stepNumText: { color: palette.text, fontSize: 13, fontFamily: type.bodySemi, fontVariant: ['tabular-nums'] },
-  stepText: { flex: 1, color: palette.textDim, fontSize: 15, lineHeight: 21, fontFamily: type.body },
-  doneRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, backgroundColor: hues.urge.wash, borderRadius: 16, padding: Spacing.three },
-  doneTitle: { color: palette.text, fontSize: 15, fontFamily: type.bodySemi },
-  doneSub: { color: palette.textDim, fontSize: 13, fontFamily: type.body },
+  section: { color: palette.textDim, fontSize: 13, fontFamily: type.bodySemi, letterSpacing: 0.3, marginTop: Spacing.four },
   card: { padding: 0, overflow: 'hidden' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, paddingHorizontal: Spacing.three, paddingVertical: 14, minHeight: 56 },
-  sep: { height: 1, backgroundColor: palette.line, marginLeft: Spacing.three },
-  rowLabel: { color: palette.text, fontSize: 15, fontFamily: type.bodySemi },
-  rowSub: { color: palette.textDim, fontSize: 13, lineHeight: 18, fontFamily: type.body },
+  hero: { marginTop: Spacing.three, flexDirection: 'row', alignItems: 'center', gap: Spacing.three, padding: Spacing.three },
+  heroLabel: { color: palette.textDim, fontSize: 13, fontFamily: type.bodySemi, letterSpacing: 0.3 },
+  heroValue: { color: palette.text, fontSize: 22, lineHeight: 27, letterSpacing: -0.4, fontFamily: type.display, fontVariant: ['tabular-nums'] },
+  heroLink: { minHeight: 44, justifyContent: 'center' },
+  link: { color: palette.accent, fontSize: 15, fontFamily: type.bodySemi },
+  row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, paddingHorizontal: Spacing.three, paddingVertical: 14, minHeight: 60 },
+  sep: { height: 1, backgroundColor: palette.line, marginLeft: 54 },
+  rowLabel: { color: palette.text, fontSize: 15, lineHeight: 20, fontFamily: type.bodySemi },
+  rowSub: { color: palette.textDim, fontSize: 13, lineHeight: 18, fontFamily: type.body, marginTop: 2 },
+  chev: { color: palette.textFaint, fontSize: 20, fontFamily: type.body },
+  radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: palette.line, alignItems: 'center', justifyContent: 'center' },
+  radioOn: { borderColor: palette.accent },
+  radioDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: palette.accent },
+  pickedRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, backgroundColor: palette.accentWash, borderRadius: 16, padding: Spacing.three, marginBottom: Spacing.two },
+  pickedText: { flex: 1, color: palette.text, fontSize: 15, fontFamily: type.bodySemi },
+  durations: { flexDirection: 'row', gap: Spacing.two, marginBottom: Spacing.two },
+  durBtn: { flex: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 12, backgroundColor: palette.surface2, borderWidth: 1, borderColor: palette.line },
+  durBtnOn: { backgroundColor: palette.accentWash, borderColor: palette.accent },
+  durLabel: { color: palette.textDim, fontSize: 15, fontFamily: type.bodyMed },
+  durLabelOn: { color: palette.accent, fontFamily: type.bodySemi },
+  fine: { color: palette.textFaint, fontSize: 12, lineHeight: 17, fontFamily: type.body, marginTop: Spacing.two },
+  fineIn: { color: palette.textFaint, fontSize: 12, lineHeight: 17, fontFamily: type.body, paddingHorizontal: Spacing.three, paddingBottom: Spacing.three },
+  footer: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: Spacing.four, paddingBottom: 100, backgroundColor: palette.bg },
+  footerSheet: { paddingBottom: Spacing.four },
   miniBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 12, backgroundColor: palette.surface3 },
   miniLabel: { color: palette.text, fontSize: 20, fontFamily: type.bodyMed },
   value: { color: palette.text, fontSize: 15, fontFamily: type.bodySemi, fontVariant: ['tabular-nums'], minWidth: 64, textAlign: 'center' },
