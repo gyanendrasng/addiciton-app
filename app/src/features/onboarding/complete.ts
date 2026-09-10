@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { wipeDb } from '@/db/client';
 import { createProfile, getProfile } from '@/db/repo/profile';
 import { seedReasons } from '@/db/repo/reasons';
+import { removeShield } from '@/features/shield/store';
 import { rescheduleMilestones } from '@/features/streak/milestone-schedule';
 import { dayKey, now } from '@/lib/clock';
 import { steps } from './content';
@@ -67,6 +68,7 @@ export async function migrateLegacyOnboarding(): Promise<boolean> {
 
 /** Everything gone: database rows + onboarding flags. */
 export async function wipeEverything() {
+  await removeShield();
   await wipeDb();
   await resetOnboarding();
 }
