@@ -67,8 +67,14 @@ export default function Page() {
       <tr><td>Slip records</td><td>Which habit, the trigger, your notes, the next actions you chose</td></tr>
       <tr><td>Your reasons</td><td>The free-text reasons you wrote for quitting</td></tr>
       <tr><td>Preferences</td><td>Reminder times, theme, whether reminders are on</td></tr>
+      <tr><td>Shield settings (iPhone)</td><td>How many apps, categories and websites you chose to shield, your shielding hours, the unlock delay</td></tr>
     </tbody>
   </table>
+  <p><strong>Shield and Screen Time.</strong> On iPhone, Shield uses Apple’s Screen Time to keep
+  the apps and websites you choose out of reach. You pick them in Apple’s own list; iOS hands
+  Curb an opaque reference to your selection, not the names of the apps or sites, and Curb
+  never receives what you open or for how long. Shield works only if you grant Screen Time
+  access, and you can withdraw it at any time in iOS Settings → Screen Time.</p>
   <p>This is sensitive information about health and behaviour, and we treat it that way:
   access is restricted, it is never sold, and it is never used for advertising. Some of it
   also reaches our servers — see <a href="#leaves">section 3</a> for exactly what, and{' '}

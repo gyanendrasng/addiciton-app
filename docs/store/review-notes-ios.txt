@@ -36,6 +36,16 @@ Curb is a self-tracking tool. It makes no treatment claims and the disclaimer in
 Get help says so, including advising anyone physically dependent on alcohol or
 benzodiazepines to speak to a doctor before stopping.
 
+SCREEN TIME (SHIELD) — iPhone only
+Settings > Shield lets the user pick apps and websites in Apple's own picker and
+keep them out of reach during their trigger hours or for 15–60 minutes during an
+urge. This is self-management under the Family Controls entitlement, individual
+authorization only: no child accounts, no parental control, and no usage data is
+read or transmitted. The shield screen shows one of the user's own reasons and
+an "Open Curb" button. To test: Settings > Shield > Allow Screen Time (device
+passcode required) > Choose > pick any app > Shield now > 15 min, then open that
+app.
+
 ACCOUNT DELETION
 Settings > Manage account > Delete account removes the account and its data.
 Also documented at https://joincurb.app/delete-data
