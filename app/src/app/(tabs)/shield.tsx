@@ -182,7 +182,16 @@ export default function ShieldTab() {
         footer={
           <View style={s.footerStack}>
             <Cta label="Open Apple’s list" onPress={() => setPicking(true)} />
-            {natural === 2 ? <Cta label="Keep what I picked" variant="ghost" onPress={forward} /> : <Cta label="Back" variant="ghost" onPress={backward} />}
+            <View style={s.ghostRow}>
+              <View style={{ flex: 1 }}>
+                <Cta label="Back" variant="ghost" onPress={backward} />
+              </View>
+              {natural === 2 ? (
+                <View style={{ flex: 1 }}>
+                  <Cta label="Keep what I picked" variant="ghost" onPress={forward} />
+                </View>
+              ) : null}
+            </View>
           </View>
         }>
         <ShieldPicker visible={picking} current={current} onPicked={picked} onCancel={() => setPicking(false)} />
@@ -566,6 +575,7 @@ const s = StyleSheet.create({
   fineIn: { color: palette.textFaint, fontSize: 12, lineHeight: 17, fontFamily: type.body, paddingHorizontal: Spacing.three, paddingBottom: Spacing.three },
   footer: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: Spacing.four, paddingBottom: 100, backgroundColor: palette.bg },
   footerStack: { gap: Spacing.one },
+  ghostRow: { flexDirection: 'row', gap: Spacing.two },
   footerSheet: { paddingBottom: Spacing.four },
   miniBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 12, backgroundColor: palette.surface3 },
   miniLabel: { color: palette.text, fontSize: 20, fontFamily: type.bodyMed },
