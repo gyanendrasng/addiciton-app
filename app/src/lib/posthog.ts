@@ -32,8 +32,23 @@ if (__DEV__ && !isConfigured) {
  *
  * Autocapture is OFF entirely — `_layout.tsx` passes `autocapture={false}` to
  * PostHogProvider, and screens are tracked manually through the analytics seam.
- * That matches rule 3 of the privacy contract in `analytics.ts`; session
- * recording and heatmaps are likewise never enabled.
+ *
+ * Session replay IS on, and it is the one part of the privacy contract that has
+ * to be enforced by construction rather than by discipline. React Native replay
+ * captures **full screenshots** — native iOS and Android default to wireframes,
+ * React Native does not — so anything drawn on screen is in the recording
+ * unless something masks it.
+ *
+ * `maskAllTextInputs` covers every `TextInput`, which is where the check-in
+ * note, the relapse note and the reason editor live. Rendered `Text` is *not*
+ * covered, so any view that draws something the user wrote must be wrapped in
+ * `PostHogMaskView`. Today that is `ReasonsList` (used by both the Reasons
+ * screen and step 3 of the urge flow) and the account name.
+ *
+ * Rule 1 of `analytics.ts` depends on this, and so does the sentence the
+ * onboarding consent screen puts in front of people: "Never what you write".
+ * Add a screen that renders user text without masking it and that sentence
+ * silently becomes a lie.
  */
 export const posthog = isConfigured
   ? new PostHog(projectToken as string, {
@@ -49,6 +64,19 @@ export const posthog = isConfigured
        * is quitting is health data. `defaultOptIn: false` closes the window.
        */
       defaultOptIn: false,
+      enableSessionReplay: true,
+      sessionReplayConfig: {
+        // Both default to true; stated explicitly because the privacy contract
+        // rests on them and a silent upstream default change would break it.
+        maskAllTextInputs: true,
+        maskAllImages: true,
+        // Android only. Logs are a side channel nobody audits for user content,
+        // so they stay out of the recording.
+        captureLog: false,
+        // iOS only, and metrics only — no request or response bodies.
+        captureNetworkTelemetry: true,
+        throttleDelayMs: 1000,
+      },
       // Lifecycle events (install / update / open / background) carry no PII,
       // and are suppressed entirely until the user opts in.
       captureAppLifecycleEvents: true,

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { PostHogMaskView } from 'posthog-react-native';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 
 import { Tap } from '@/components/ui/tap';
@@ -55,7 +56,11 @@ export function ReasonsList({ compact = false }: { compact?: boolean }) {
                 setEditing(r.id);
                 setEditText(r.text);
               }}>
-              <Text style={s.text}>{r.text}</Text>
+              {/* A reason is the user's own words. Session replay screenshots
+                  the screen, so this has to be masked at the view. */}
+              <PostHogMaskView>
+                <Text style={s.text}>{r.text}</Text>
+              </PostHogMaskView>
             </Tap>
           )}
           {!compact && (
