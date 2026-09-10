@@ -21,6 +21,19 @@ export function ShieldStatus() {
   const router = useRouter();
   const shield = useShield();
   useMinuteTick();
+
+  // Not set up yet: one quiet line, until it is. Setting up takes Apple's
+  // permission and picker, so Home — not mid-urge — is where to offer it.
+  if (shield.available && !shield.setup) {
+    return (
+      <Animated.View entering={FadeIn.duration(durations.base)} exiting={FadeOut.duration(durations.fast)}>
+        <Tap haptic="light" onPress={() => router.push('/shield')} style={s.row} accessibilityRole="button">
+          <Text style={s.offer}>Shield the apps that pull you in</Text>
+          <Text style={s.chev}>›</Text>
+        </Tap>
+      </Animated.View>
+    );
+  }
   if (!shield.ready) return null;
 
   let line: string | null = null;
@@ -46,5 +59,6 @@ export function ShieldStatus() {
 const s = StyleSheet.create({
   row: { minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: -8 },
   text: { color: hues.urge.solid, fontSize: 13, fontFamily: type.bodySemi, fontVariant: ['tabular-nums'] },
+  offer: { color: palette.textDim, fontSize: 13, fontFamily: type.bodyMed },
   chev: { color: palette.textFaint, fontSize: 16, fontFamily: type.body },
 });
