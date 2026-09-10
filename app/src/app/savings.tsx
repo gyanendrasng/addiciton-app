@@ -8,6 +8,7 @@ import { setSetting, useSetting } from '@/db/repo/settings';
 import { habits as ALL_HABITS } from '@/features/onboarding/content';
 import { Subtitle } from '@/features/onboarding/components/chrome';
 import { withAccess } from '@/features/premium/access';
+import { HowWorkedOut, type WorkedOutRow } from '@/features/savings/HowWorkedOut';
 import { BASE_CURRENCY, defaultRate, perDayFor, type Rate } from '@/features/savings/rates';
 import {
   CURRENCY_KEY,
@@ -38,8 +39,25 @@ function SavingsScreen() {
   const { value: overrides } = useSetting<Record<string, Rate>>(RATES_KEY, {});
   const { value: currency } = useSetting<string>(CURRENCY_KEY, BASE_CURRENCY);
   const [draft, setDraft] = useState<Record<string, string>>({});
+  const [showHow, setShowHow] = useState(false);
 
   if (!profile || !savings) return <Screen title="What you’ve kept">{null}</Screen>;
+
+  // The working behind the headline, for the sheet. A price counts as the
+  // user's own once they've typed one; until then it's our default.
+  const workedOut: WorkedOutRow[] = profile.habits.map((id) => {
+    const habit = ALL_HABITS.find((h) => h.id === id);
+    const rate = savings.rates[id] ?? defaultRate(id);
+    return {
+      id,
+      label: habit?.label ?? id,
+      cost: rate.cost,
+      perDay: perDayFor(id, profile.answers),
+      unit: rate.unit,
+      units: rate.units,
+      isDefault: !overrides?.[id],
+    };
+  });
 
   const saveCost = async (habitId: string, text: string) => {
     const n = Number(text.replace(/[^0-9.]/g, ''));
@@ -56,8 +74,18 @@ function SavingsScreen() {
         {savings.days < 1
           ? 'today so far'
           : `your ${Math.floor(savings.days)} clean ${Math.floor(savings.days) === 1 ? 'day' : 'days'}`}
-        .
+        .{' '}
+        <Text style={s.link} onPress={() => setShowHow(true)} accessibilityRole="button">
+          How this is worked out
+        </Text>
       </Subtitle>
+      <HowWorkedOut
+        visible={showHow}
+        onClose={() => setShowHow(false)}
+        rows={workedOut}
+        days={Math.max(1, savings.days)}
+        currency={currency}
+      />
 
       <View style={s.big}>
         {savings.moneyUnknown ? null : (
@@ -155,6 +183,7 @@ function SavingsScreen() {
 }
 
 const s = StyleSheet.create({
+  link: { color: palette.accent, fontFamily: type.bodySemi },
   big: { flexDirection: 'row', gap: Spacing.three, marginTop: Spacing.five },
   bigStat: { flex: 1, gap: 4 },
   bigValue: {
