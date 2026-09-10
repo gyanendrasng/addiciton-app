@@ -1,59 +1,55 @@
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Tap } from '@/components/ui/tap';
+import { track } from '@/lib/analytics';
 import { palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
 import { SKIP_AFTER_MS } from '../machine';
-import { ColorsGame } from '../memory/ColorsGame';
-import { MemoryGame } from '../memory/MemoryGame';
-import { RecallGame } from '../memory/RecallGame';
-import { SevensGame } from '../memory/SevensGame';
-import { SpotGame } from '../memory/SpotGame';
+import { GAMES, gameById, randomGameId } from '../memory/registry';
 import { shared, SkipLater, StepHeader } from './shared';
 
-const GAMES = [
-  { id: 'pairs', label: 'Pairs' },
-  { id: 'recall', label: 'Recall' },
-  { id: 'spot', label: 'Spot it' },
-  { id: 'colors', label: 'Colors' },
-  { id: 'sevens', label: 'Countdown' },
-] as const;
-type GameId = (typeof GAMES)[number]['id'];
-
+/**
+ * Step 4: occupy the mind. A different game opens each time so the step
+ * doesn't wear thin, and the picker lets someone switch to the one that
+ * works for them. Finishing any game finishes the step.
+ */
 export function Game({ onDone, onSkip }: { onDone: () => void; onSkip: () => void }) {
-  const [game, setGame] = useState<GameId>('pairs');
+  const [gameId, setGameId] = useState<string>(randomGameId);
+  const game = gameById(gameId);
+  const Current = game.Component;
+
+  const finished = () => {
+    track('game_played', { game: gameId, where: 'urge' });
+    onDone();
+  };
 
   return (
     <View style={shared.pane}>
-      <StepHeader
-        center
-        kicker="Step 4 · Occupy your mind"
-        title={
-          game === 'recall' ? 'Hold the number.'
-          : game === 'spot' ? 'Spot the odd one.'
-          : game === 'colors' ? 'Word vs. color.'
-          : game === 'sevens' ? 'Do the math.'
-          : 'Match the pairs.'
-        }
-      />
-      <View style={s.picker}>
+      <StepHeader center kicker="Step 4 · Occupy your mind" title={game.headline} />
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={s.picker}
+        style={s.pickerScroll}>
         {GAMES.map((g) => {
-          const on = game === g.id;
+          const on = gameId === g.id;
           return (
-            <Tap key={g.id} haptic="selection" onPress={() => setGame(g.id)} style={[s.chip, on && s.chipOn]}>
-              <Text style={[s.chipLabel, on && s.chipLabelOn]}>{g.label}</Text>
+            <Tap
+              key={g.id}
+              haptic="selection"
+              onPress={() => setGameId(g.id)}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: on }}
+              style={[s.chip, on && s.chipOn]}>
+              <Text style={[s.chipLabel, on && s.chipLabelOn]}>{g.title}</Text>
             </Tap>
           );
         })}
-      </View>
+      </ScrollView>
       <View style={shared.center}>
-        {game === 'pairs' && <MemoryGame onDone={() => onDone()} />}
-        {game === 'recall' && <RecallGame onDone={onDone} />}
-        {game === 'spot' && <SpotGame onDone={onDone} />}
-        {game === 'colors' && <ColorsGame onDone={onDone} />}
-        {game === 'sevens' && <SevensGame onDone={onDone} />}
+        <Current key={gameId} onDone={finished} />
       </View>
       <SkipLater afterMs={SKIP_AFTER_MS.game} onSkip={onSkip} />
     </View>
@@ -61,8 +57,9 @@ export function Game({ onDone, onSkip }: { onDone: () => void; onSkip: () => voi
 }
 
 const s = StyleSheet.create({
-  picker: { flexDirection: 'row', gap: Spacing.two, justifyContent: 'center' },
-  chip: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 999, backgroundColor: palette.surface2 },
+  pickerScroll: { flexGrow: 0, marginHorizontal: -Spacing.four },
+  picker: { flexDirection: 'row', gap: Spacing.two, paddingHorizontal: Spacing.four },
+  chip: { minHeight: 36, paddingVertical: 8, paddingHorizontal: 14, borderRadius: 999, backgroundColor: palette.surface2 },
   chipOn: { backgroundColor: palette.accentWash },
   chipLabel: { color: palette.textDim, fontSize: 14, fontFamily: type.bodyMed },
   chipLabelOn: { color: palette.accent, fontFamily: type.bodySemi },

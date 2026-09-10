@@ -7,6 +7,7 @@ import { Tap } from '@/components/ui/tap';
 import { LockChips } from '@/features/shield/LockChips';
 import { curves } from '@/theme/motion';
 import { palette } from '@/theme/palette';
+import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
 import { SKIP_AFTER_MS } from '../machine';
 import { shared, SkipLater, StepHeader } from './shared';
@@ -18,7 +19,18 @@ const R = SIZE / 2 - 10;
 const CIRC = 2 * Math.PI * R;
 
 /** Two-minute delay. Urges peak and pass; the ring is linear because it's a clock. */
-export function Delay({ onDone, onSkip, onBreatheAgain }: { onDone: () => void; onSkip: () => void; onBreatheAgain: () => void }) {
+export function Delay({
+  onDone,
+  onSkip,
+  onBreatheAgain,
+  onGame,
+}: {
+  onDone: () => void;
+  onSkip: () => void;
+  onBreatheAgain: () => void;
+  /** Straight to Step 4 for someone who needs their hands busy now. */
+  onGame?: () => void;
+}) {
   const reduced = useReducedMotion();
   const [left, setLeft] = useState(TOTAL_S);
   const p = useSharedValue(0);
@@ -71,9 +83,16 @@ export function Delay({ onDone, onSkip, onBreatheAgain }: { onDone: () => void; 
         </View>
         <Text style={s.copy}>Two minutes is usually all it takes for the wave to break.</Text>
         <LockChips />
-        <Tap haptic="none" onPress={onBreatheAgain} style={s.again}>
-          <Text style={s.againLabel}>Breathe again</Text>
-        </Tap>
+        <View style={s.links}>
+          <Tap haptic="none" onPress={onBreatheAgain} style={s.again}>
+            <Text style={s.againLabel}>Breathe again</Text>
+          </Tap>
+          {onGame ? (
+            <Tap haptic="none" onPress={onGame} style={s.again}>
+              <Text style={s.againLabel}>Play a game</Text>
+            </Tap>
+          ) : null}
+        </View>
       </View>
       <SkipLater afterMs={SKIP_AFTER_MS.delay} onSkip={onSkip} />
     </View>
@@ -85,6 +104,7 @@ const s = StyleSheet.create({
   time: { color: palette.bright, fontSize: 60, fontFamily: type.display, fontVariant: ['tabular-nums'], letterSpacing: -1.5 },
   sub: { color: palette.textFaint, fontSize: 13, fontFamily: type.body, marginTop: 2 },
   copy: { marginTop: 28, color: palette.textDim, fontSize: 15, fontFamily: type.body, textAlign: 'center', maxWidth: 280, lineHeight: 22 },
-  again: { marginTop: 8, paddingHorizontal: 18, paddingVertical: 10, borderRadius: 20, borderWidth: 1, borderColor: palette.line },
+  links: { flexDirection: 'row', gap: Spacing.two, marginTop: 8 },
+  again: { minHeight: 44, paddingHorizontal: 18, justifyContent: 'center', borderRadius: 22, borderWidth: 1, borderColor: palette.line },
   againLabel: { color: palette.accent, fontSize: 15, fontFamily: type.bodySemi },
 });
