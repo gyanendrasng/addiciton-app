@@ -255,7 +255,7 @@ export function DateStep({ onNext }: { onNext: () => void }) {
         </View>
       </View>
       <Animated.View entering={FadeIn.delay(reduced ? 0 : 2200).duration(400)} style={s.bottom}>
-        <Cta label="Build my plan" onPress={onNext} />
+        <Cta label="What that’s worth" onPress={onNext} />
       </Animated.View>
     </View>
   );

@@ -42,6 +42,8 @@ appId: host.exp.Exponent
 # analyzing (auto) → score → freedom date → plan → signature → reminders
 - extendedWaitUntil: { visible: "See what’s possible", timeout: 60000 }
 - tapOn: "See what’s possible"
+- extendedWaitUntil: { visible: "What that’s worth", timeout: 20000 }
+- tapOn: "What that’s worth"
 - extendedWaitUntil: { visible: "Build my plan", timeout: 20000 }
 - tapOn: "Build my plan"
 - extendedWaitUntil: { visible: "Commit to it", timeout: 20000 }
