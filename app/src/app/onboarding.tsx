@@ -14,6 +14,7 @@ import { track } from '@/lib/analytics';
 import { Chevron, ProgressBar, StepFrame, Subtitle, Title } from '@/features/onboarding/components/chrome';
 import { MultiSelect, SingleSelect } from '@/features/onboarding/components/options';
 import { Analyzing, DateStep, ScoreStep } from '@/features/onboarding/components/hero-steps';
+import { SavingsStep } from '@/features/onboarding/components/savings-step';
 import { Framing, Interstitial, Plan, Welcome } from '@/features/onboarding/components/intro-steps';
 import { Analytics, Notifications, Signature } from '@/features/onboarding/components/closing-steps';
 
@@ -109,6 +110,7 @@ function Flow() {
         {step.kind === 'analyzing' && <Analyzing onDone={next} />}
         {step.kind === 'score' && <ScoreStep score={score} onNext={next} />}
         {step.kind === 'date' && <DateStep onNext={next} />}
+        {step.kind === 'savings' && <SavingsStep answers={answers} onNext={next} />}
         {step.kind === 'plan' && <Plan answers={answers} onNext={next} />}
         {step.kind === 'signature' && <Signature onNext={next} />}
         {step.kind === 'notifications' && <Notifications onNext={next} />}

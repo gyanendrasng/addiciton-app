@@ -128,6 +128,7 @@ export type Step =
   | { kind: 'analyzing' }
   | { kind: 'score' }
   | { kind: 'date' }
+  | { kind: 'savings' }
   | { kind: 'plan' }
   | { kind: 'signature' }
   | { kind: 'notifications' }
@@ -243,6 +244,9 @@ export const steps: Step[] = [
   { kind: 'analyzing' },
   { kind: 'score' },
   { kind: 'date' },
+  // What the freedom date is worth, in money and hours, across every habit —
+  // shown before the plan and the pledge, so the commitment has a number on it.
+  { kind: 'savings' },
   { kind: 'plan' },
   { kind: 'signature' },
   { kind: 'notifications' },
