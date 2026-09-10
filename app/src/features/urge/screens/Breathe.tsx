@@ -14,6 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 
+import { Tap } from '@/components/ui/tap';
 import { Cta } from '@/features/onboarding/components/chrome';
 import { curves } from '@/theme/motion';
 import { palette } from '@/theme/palette';
@@ -47,10 +48,13 @@ const GROW = 1.6;
 export function Breathe({
   onDone,
   onSkip,
+  onGame,
   opener,
 }: {
   onDone: () => void;
   onSkip: () => void;
+  /** Straight to Step 4. Some people know breathing won't hold them; a game will. */
+  onGame?: () => void;
   /** The user's own trigger, from onboarding — see notifications/trigger-window. */
   opener?: string | null;
 }) {
@@ -153,6 +157,11 @@ export function Breathe({
           ))}
         </View>
         <SkipLater afterMs={SKIP_AFTER_MS.breathe} onSkip={onSkip} />
+        {onGame ? (
+          <Tap haptic="none" onPress={onGame} style={s.gameLink} accessibilityRole="button">
+            <Text style={s.gameLinkLabel}>Just distract me</Text>
+          </Tap>
+        ) : null}
         {reduced && <Cta label="Continue" onPress={onDone} />}
       </View>
     </View>
@@ -160,6 +169,8 @@ export function Breathe({
 }
 
 const s = StyleSheet.create({
+  gameLink: { minHeight: 44, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 },
+  gameLinkLabel: { color: palette.accent, fontSize: 15, fontFamily: type.bodySemi },
   top: { alignItems: 'center', gap: Spacing.one, marginTop: Spacing.two },
   kicker: { color: palette.textFaint, fontSize: 12, letterSpacing: 1.4, textTransform: 'uppercase', fontFamily: type.bodySemi },
   phase: { color: palette.bright, fontSize: 34, fontFamily: type.display, letterSpacing: -0.5, marginTop: Spacing.one },

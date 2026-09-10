@@ -86,6 +86,9 @@ function UrgeScreen() {
   };
 
   const next = (completed: boolean) => dispatch({ type: 'next', completed });
+  // Some people know within seconds that breathing won't hold them. Let them
+  // go straight to a game; the outcome step still follows.
+  const toGame = () => dispatch({ type: 'goto', step: 'game' });
   const insets = useSafeAreaInsets();
 
   return (
@@ -100,9 +103,16 @@ function UrgeScreen() {
         entering={FadeIn.duration(durations.base)}
         exiting={FadeOut.duration(durations.fast)}
         style={{ flex: 1 }}>
-        {state.step === 'breathe' && <Breathe opener={opener} onDone={() => next(true)} onSkip={() => next(false)} />}
+        {state.step === 'breathe' && (
+          <Breathe opener={opener} onDone={() => next(true)} onSkip={() => next(false)} onGame={toGame} />
+        )}
         {state.step === 'delay' && (
-          <Delay onDone={() => next(true)} onSkip={() => next(false)} onBreatheAgain={() => dispatch({ type: 'goto', step: 'breathe' })} />
+          <Delay
+            onDone={() => next(true)}
+            onSkip={() => next(false)}
+            onBreatheAgain={() => dispatch({ type: 'goto', step: 'breathe' })}
+            onGame={toGame}
+          />
         )}
         {state.step === 'reasons' && <Reasons onDone={() => next(true)} />}
         {state.step === 'game' && <Game onDone={() => next(true)} onSkip={() => next(false)} />}
