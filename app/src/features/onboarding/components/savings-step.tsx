@@ -26,6 +26,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { BASE_CURRENCY, defaultRate, humanDuration, perDayFor, ratesFor, savedFor } from '@/features/savings/rates';
+import { HowWorkedOut, type WorkedOutRow } from '@/features/savings/HowWorkedOut';
 import { formatMoney } from '@/features/savings/use-savings';
 import { curves, stagger } from '@/theme/motion';
 import { hues, palette } from '@/theme/palette';
@@ -46,6 +47,7 @@ function land() {
 
 export function SavingsStep({ answers, onNext }: { answers: Answers; onNext: () => void }) {
   const reduced = useReducedMotion();
+  const [showHow, setShowHow] = useState(false);
 
   const model = useMemo(() => {
     const habits = selectedHabits(answers);
@@ -67,7 +69,21 @@ export function SavingsStep({ answers, onNext }: { answers: Answers; onNext: () 
         units: rate.units,
       };
     });
-    return { habits, program, year, moneyKnown, rows };
+    // The working, for the sheet: nothing has been set yet, so every price is
+    // our default.
+    const workedOut: WorkedOutRow[] = habits.map((h) => {
+      const rate = rates[h.id] ?? defaultRate(h.id);
+      return {
+        id: h.id,
+        label: h.label,
+        cost: rate.cost,
+        perDay: perDayFor(h.id, answers),
+        unit: rate.unit,
+        units: rate.units,
+        isDefault: true,
+      };
+    });
+    return { habits, program, year, moneyKnown, rows, workedOut };
   }, [answers]);
 
   // The hero counts up to the 90-day figure; the reaction formats on the JS
@@ -149,10 +165,25 @@ export function SavingsStep({ answers, onNext }: { answers: Answers; onNext: () 
       <Animated.View entering={FadeIn.delay(copyDelay + 400).duration(400)}>
         <Text style={s.fine}>
           {model.moneyKnown
-            ? 'At typical prices, from how often you said. Set what one really costs you in Settings.'
-            : 'From how often you said. Add what one costs you in Settings to see the money too.'}
+            ? 'At typical prices, from how often you said. Set what one really costs you in Settings. '
+            : 'From how often you said. Add what one costs you in Settings to see the money too. '}
+          <Text
+            style={s.link}
+            onPress={() => setShowHow(true)}
+            accessibilityRole="button"
+            accessibilityLabel="How this is worked out">
+            How this is worked out
+          </Text>
         </Text>
       </Animated.View>
+
+      <HowWorkedOut
+        visible={showHow}
+        onClose={() => setShowHow(false)}
+        rows={model.workedOut}
+        days={PROGRAM_DAYS}
+        currency={BASE_CURRENCY}
+      />
 
       <Animated.View entering={FadeIn.delay(copyDelay + 500).duration(400)} style={s.bottom}>
         <Cta label="Build my plan" onPress={onNext} />
@@ -198,5 +229,6 @@ const s = StyleSheet.create({
   rowValue: { color: palette.text, fontSize: 15, fontFamily: type.bodySemi, fontVariant: ['tabular-nums'] },
   rowCount: { color: palette.textFaint, fontFamily: type.body },
   fine: { color: palette.textFaint, fontSize: 13, lineHeight: 19, fontFamily: type.body, marginTop: Spacing.three },
+  link: { color: palette.accent, fontFamily: type.bodySemi },
   bottom: { position: 'absolute', left: 0, right: 0, bottom: Spacing.four },
 });
