@@ -1,5 +1,5 @@
 /**
- * PostHog client for Curb.
+ * PostHog client for Qwyt.
  *
  * Loaded via expo-constants so the token is baked at build time through
  * app.config.js → extras, not exposed as a raw EXPO_PUBLIC_ variable.

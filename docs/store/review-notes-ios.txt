@@ -1,4 +1,6 @@
-Curb is subscription-only with no free tier, so the paywall appears immediately
+REBRAND NOTE: This is the same app previously published as "Curb: Addiction Recovery" (same bundle ID, same developer, same subscriptions). Only the name and in-app wording changed. It is not a duplicate of any other app.
+
+Qwyt is subscription-only with no free tier, so the paywall appears immediately
 after onboarding.
 
 DEMO ACCOUNT (fastest path — already subscribed)
@@ -32,7 +34,7 @@ Crisis lines and a medical disclaimer are in Settings > Support > Get help, and
 are deliberately reachable without an account or a subscription.
 
 MEDICAL POSITIONING
-Curb is a self-tracking tool. It makes no treatment claims and the disclaimer in
+Qwyt is a self-tracking tool. It makes no treatment claims and the disclaimer in
 Get help says so, including advising anyone physically dependent on alcohol or
 benzodiazepines to speak to a doctor before stopping.
 
@@ -42,7 +44,7 @@ keep them out of reach always, during their trigger hours, or for 15–60 minute
 during an urge. This is self-management under the Family Controls entitlement, individual
 authorization only: no child accounts, no parental control, and no usage data is
 read or transmitted. The shield screen shows one of the user's own reasons and
-an "Open Curb" button. To test: Shield tab > Allow Screen Time (device passcode
+an "Open Qwyt" button. To test: Shield tab > Allow Screen Time (device passcode
 required) > Choose apps and sites > pick any app > Only when I ask > Shield 15 min,
 then open that app.
 

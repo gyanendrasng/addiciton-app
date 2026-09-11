@@ -1,7 +1,7 @@
 /**
  * Subscription plans.
  *
- * Curb has **no free tier and no trial** — the paywall is a hard wall, by
+ * Qwyt has **no free tier and no trial** — the paywall is a hard wall, by
  * decision. So there is no trial timeline, no "free for 7 days", and no copy
  * anywhere that implies either.
  *

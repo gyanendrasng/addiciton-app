@@ -1,4 +1,4 @@
-# Curb
+# Qwyt (formerly Curb)
 
 A multi-addiction recovery app. Three parts:
 

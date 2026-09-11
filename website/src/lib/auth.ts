@@ -13,7 +13,7 @@ import { sendSignInCode } from './mail';
 const isProd = process.env.NODE_ENV === 'production';
 
 /**
- * Curb auth.
+ * Qwyt auth.
  *
  * Accounts exist for ONE reason: syncing premium entitlements across a user's
  * devices.
@@ -27,7 +27,7 @@ const isProd = process.env.NODE_ENV === 'production';
  * prevent.
  */
 export const auth = betterAuth({
-  appName: 'Curb',
+  appName: 'Qwyt',
   database: drizzleAdapter(db, { provider: 'pg', schema }),
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL ?? 'https://joincurb.app',
@@ -39,7 +39,7 @@ export const auth = betterAuth({
   socialProviders: {
     apple: {
       /**
-       * Curb only ever uses Apple's NATIVE flow: expo-apple-authentication
+       * Qwyt only ever uses Apple's NATIVE flow: expo-apple-authentication
        * hands us an identity token and Better Auth verifies it. That path
        * checks `idToken.audience`, which prefers `appBundleIdentifier` over
        * `clientId` — so the bundle id below is the value that actually

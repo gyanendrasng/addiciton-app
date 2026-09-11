@@ -8,7 +8,7 @@
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 
 /** Verified sender on the joincurb.app domain. */
-const FROM = process.env.MAIL_FROM ?? 'Curb <hello@joincurb.app>';
+const FROM = process.env.MAIL_FROM ?? 'Qwyt <hello@joincurb.app>';
 
 async function send(to: string, subject: string, text: string, html: string) {
   const key = process.env.RESEND_API_KEY;
@@ -43,7 +43,7 @@ async function send(to: string, subject: string, text: string, html: string) {
  *   and modern CSS silently collapse.
  * - **Every style inline.** Gmail strips <style> blocks in some clients.
  * - **The one image degrades to text.** Many clients block images by default,
- *   so the mark carries `alt="Curb"` with explicit width/height: blocked, it
+ *   so the mark carries `alt="Qwyt"` with explicit width/height: blocked, it
  *   collapses to the word rather than a broken box that shifts the layout.
  *   It's a PNG, not the SVG — Gmail strips SVG.
  * - **Explicit colours on every element**, including the background, so dark
@@ -52,15 +52,15 @@ async function send(to: string, subject: string, text: string, html: string) {
  *   it's in the subject line too, which is what lets people read it from the
  *   notification without opening anything.
  *
- * And it says nothing about what Curb is for. These land in inboxes other
+ * And it says nothing about what Qwyt is for. These land in inboxes other
  * people sometimes see; "your addiction recovery app" on a lock screen is a
  * reason to delete the app.
  */
 export function signInCodeEmail(code: string) {
-  const subject = `${code} is your Curb code`;
+  const subject = `${code} is your Qwyt code`;
 
   const text = [
-    `Your Curb sign-in code is ${code}.`,
+    `Your Qwyt sign-in code is ${code}.`,
     '',
     'It expires in 5 minutes and can be used once.',
     'If you did not request it, you can ignore this email.',
@@ -74,7 +74,7 @@ export function signInCodeEmail(code: string) {
          rather than trusting it. -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Your Curb sign-in code</title>
+    <title>Your Qwyt sign-in code</title>
   </head>
   <body style="margin:0;padding:0;background:#F1F3F4;">
     <!-- Preheader: what shows next to the subject in the inbox list. -->
@@ -90,7 +90,7 @@ export function signInCodeEmail(code: string) {
                         border:1px solid #DDE1E4;">
             <tr>
               <td style="padding:32px 32px 0 32px;">
-                <img src="https://joincurb.app/email-mark.png" alt="Curb"
+                <img src="https://joincurb.app/email-mark.png" alt="Qwyt"
                      width="44" height="44"
                      style="display:block;width:44px;height:44px;border:0;
                             border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,
@@ -142,7 +142,7 @@ export function signInCodeEmail(code: string) {
           <div style="max-width:440px;padding:20px 8px 0 8px;
                       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
                       font-size:12px;line-height:18px;color:#606D66;text-align:center;">
-            Sent by Curb because someone entered this address to sign in.
+            Sent by Qwyt because someone entered this address to sign in.
           </div>
         </td>
       </tr>
