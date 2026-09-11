@@ -1,3 +1,4 @@
+import * as Device from 'expo-device';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Modal, Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
@@ -88,6 +89,16 @@ export default function ShieldTab() {
     return () => clearTimeout(t);
   }, []);
 
+  // The preview pin lives in state so finishing setup can drop it and let the
+  // real stage (status) show. A new preview is a new starting point.
+  const [preview, setPreview] = useState(params.preview);
+  const [seenPreview, setSeenPreview] = useState(params.preview);
+  if (seenPreview !== params.preview) {
+    setSeenPreview(params.preview);
+    setPreview(params.preview);
+    setBack(0);
+  }
+
   useEffect(() => {
     void reconcileLock();
   }, []);
@@ -106,11 +117,11 @@ export default function ShieldTab() {
           : 'pick';
   // Screen Time never runs in the Simulator; dev-only door to the later stages.
   let previewUp: boolean | null = null;
-  if (__DEV__ && params.preview) {
-    if (['allow', 'pick', 'when', 'status'].includes(params.preview)) stage = params.preview as Stage;
-    if (params.preview === 'up' || params.preview === 'down') {
+  if (__DEV__ && preview) {
+    if (['allow', 'pick', 'when', 'status'].includes(preview)) stage = preview as Stage;
+    if (preview === 'up' || preview === 'down') {
       stage = 'status';
-      previewUp = params.preview === 'up';
+      previewUp = preview === 'up';
     }
   }
   const SETUP: Stage[] = ['allow', 'pick', 'when'];
@@ -118,7 +129,7 @@ export default function ShieldTab() {
   // In production you can only step back from where the data says you are.
   // Under the dev preview the pinned stage is arbitrary, so Continue may step
   // forward past it too — otherwise the simulator's Continue does nothing.
-  const floor = __DEV__ && params.preview ? -2 : 0;
+  const floor = __DEV__ && preview ? -2 : 0;
   if (natural >= 0) stage = SETUP[Math.min(SETUP.length - 1, Math.max(0, natural - back))];
   const forward = () => setBack((b) => Math.max(floor, b - 1));
   const backward = () => setBack((b) => b + 1);
@@ -145,6 +156,10 @@ export default function ShieldTab() {
   const finishSetup = async () => {
     if (window && chosenMode) await setMode(chosenMode, window);
     setJustPicked(null);
+    setBack(0);
+    // Setup is real now; show the real status. A simulator can't report Screen
+    // Time authorization, so keep it pinned to the status stage there.
+    setPreview(__DEV__ && !Device.isDevice ? 'status' : undefined);
   };
 
   /* ------------------------------ setup ------------------------------ */
@@ -202,6 +217,21 @@ export default function ShieldTab() {
         footer={
           <View style={s.footerStack}>
             <Cta label="Open Apple’s list" onPress={() => setPicking(true)} />
+            {__DEV__ && !Device.isDevice ? (
+              <Cta
+                label="Skip (simulator)"
+                variant="ghost"
+                onPress={() => {
+                  // Apple's picker never opens in a simulator; pretend it did.
+                  const counts = { apps: 2, categories: 1, sites: 0 };
+                  void completeSetup('simulator', counts);
+                  setChosenMode(isPorn ? 'always' : 'window');
+                  // Under a pinned preview the data can't move the stage, so walk forward instead.
+                  setBack(preview ? -1 : 0);
+                  setJustPicked({ ...counts, at: Date.now() });
+                }}
+              />
+            ) : null}
             <View style={s.ghostRow}>
               <View style={{ flex: 1 }}>
                 <Cta label="Back" variant="ghost" onPress={backward} />
