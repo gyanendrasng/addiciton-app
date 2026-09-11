@@ -78,7 +78,15 @@ export default function ShieldTab() {
   const [duration, setDuration] = useState<(typeof LOCK_CHOICES_MIN)[number]>(30);
   const [managing, setManaging] = useState(false);
   const [refusedSchedule, setRefusedSchedule] = useState(false);
+  // Step 1's hero starts down and goes up once the screen has settled: the
+  // ring draws, the shield fills. One hero motion, then still.
+  const [armed, setArmed] = useState(false);
   useMinuteTick();
+
+  useEffect(() => {
+    const t = setTimeout(() => setArmed(true), 450);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     void reconcileLock();
@@ -166,12 +174,12 @@ export default function ShieldTab() {
           </View>
         }>
         <View style={s.setupHero}>
-          <ShieldMark up size={156} />
+          <ShieldMark up={armed} remaining={armed ? 1 : 0} size={156} />
         </View>
         <View style={s.tiles}>
-          <InfoTile hue="progress" icon="checklist" label="Your pick" status="from Apple’s list" />
-          <InfoTile hue="checkin" icon="clock.fill" label="Your hours" status="always, hours, or on ask" />
-          <InfoTile hue="reasons" icon="heart.fill" label="Your reason" status="on the shield screen" />
+          <InfoTile hue="progress" icon="square.grid.2x2.fill" label="What" status="apps & sites you pick" />
+          <InfoTile hue="checkin" icon="clock.fill" label="When" status="always, hard hours, or on ask" />
+          <InfoTile hue="reasons" icon="heart.fill" label="Why" status="your reason, on the shield" />
         </View>
         {denied || shield.auth === 'denied' ? (
           <Notice tone="warn">Screen Time access is off for Qwyt. Turn it on in Settings › Screen Time › Apps with Screen Time access, then come back.</Notice>
