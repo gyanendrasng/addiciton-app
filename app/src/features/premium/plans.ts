@@ -25,6 +25,8 @@ export type Plan = {
   name: string;
   /** fallback display price; replaced by the store's localised string */
   price: string;
+  /** the fallback as a number, USD */
+  amount: number;
   period: string;
   sub: string;
   badge?: string;
@@ -48,6 +50,7 @@ export const PLANS: Plan[] = [
     packageId: '$rc_weekly',
     name: 'Weekly',
     price: '$9.99',
+    amount: 9.99,
     period: '/week',
     sub: 'Try it a week at a time',
     per: 'per week',
@@ -60,6 +63,7 @@ export const PLANS: Plan[] = [
     packageId: '$rc_monthly',
     name: 'Monthly',
     price: '$14.99',
+    amount: 14.99,
     period: '/month',
     sub: 'Cancel whenever you want',
     per: 'per month',
@@ -72,6 +76,7 @@ export const PLANS: Plan[] = [
     packageId: '$rc_annual',
     name: 'Yearly',
     price: '$59.99',
+    amount: 59.99,
     period: '/year',
     // $59.99 ÷ 12 = $5.00; against $14.99/mo that's 67% off, computed not guessed.
     sub: 'Works out to $5 a month',
@@ -109,4 +114,18 @@ export const PRIVACY_URL = 'https://joincurb.app/privacy';
 export function disclosureFor(plan: Plan, storePrice?: string): string {
   if (!storePrice) return `${plan.billed[0].toUpperCase()}${plan.billed.slice(1)}. Renews until you cancel.`;
   return `${storePrice} ${plan.per}, ${plan.billed}. Renews until you cancel.`;
+}
+
+/**
+ * What a year costs on the monthly plan, in the store's currency — the number
+ * "SAVE 67%" is measured against. Computed from live prices, so it is true in
+ * every storefront; nothing is shown when the monthly price is unknown.
+ */
+export function yearlyAnchor(monthly: { amount: number; currency: string } | undefined): string | null {
+  if (!monthly || !(monthly.amount > 0)) return null;
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: monthly.currency }).format(monthly.amount * 12);
+  } catch {
+    return null;
+  }
 }
