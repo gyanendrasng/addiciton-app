@@ -15,7 +15,8 @@
         "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_OyzUoKdTCmBNCUmhPdkFQzgUTvs",
         "POSTHOG_PROJECT_TOKEN": "phc_C4QtDVAdfQURo67YRWr3R6CgjXLiFk85qBEaJQNHHmbk",
         "POSTHOG_HOST": "https://us.i.posthog.com",
-        "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY": "goog_iVQQRbwEBkGIVQZqrzcjahKSqlJ"
+        "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY": "goog_iVQQRbwEBkGIVQZqrzcjahKSqlJ",
+        "COPY_TO_TARGET_FOLDER": "1"
       }
     },
     "preview": {
@@ -25,7 +26,8 @@
         "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_OyzUoKdTCmBNCUmhPdkFQzgUTvs",
         "POSTHOG_PROJECT_TOKEN": "phc_C4QtDVAdfQURo67YRWr3R6CgjXLiFk85qBEaJQNHHmbk",
         "POSTHOG_HOST": "https://us.i.posthog.com",
-        "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY": "goog_iVQQRbwEBkGIVQZqrzcjahKSqlJ"
+        "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY": "goog_iVQQRbwEBkGIVQZqrzcjahKSqlJ",
+        "COPY_TO_TARGET_FOLDER": "1"
       }
     },
     "production": {
@@ -35,7 +37,8 @@
         "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_OyzUoKdTCmBNCUmhPdkFQzgUTvs",
         "POSTHOG_PROJECT_TOKEN": "phc_C4QtDVAdfQURo67YRWr3R6CgjXLiFk85qBEaJQNHHmbk",
         "POSTHOG_HOST": "https://us.i.posthog.com",
-        "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY": "goog_iVQQRbwEBkGIVQZqrzcjahKSqlJ"
+        "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY": "goog_iVQQRbwEBkGIVQZqrzcjahKSqlJ",
+        "COPY_TO_TARGET_FOLDER": "1"
       }
     }
   },
