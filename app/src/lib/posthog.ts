@@ -10,8 +10,10 @@
  *   – No autocapture, no session recording, no heatmaps.
  *   – Opt-in: analytics.ts defaults optedOut=true; the provider is only wired
  *     in once the user enables analytics in Settings.
+ *   – Never from __DEV__ or a simulator: `posthog` is null there.
  */
 import Constants from 'expo-constants';
+import * as Device from 'expo-device';
 import PostHog from 'posthog-react-native';
 
 const projectToken = Constants.expoConfig?.extra?.posthogProjectToken as string | undefined;
@@ -19,12 +21,17 @@ const host = Constants.expoConfig?.extra?.posthogHost as string | undefined;
 
 const isConfigured = Boolean(projectToken);
 
-if (__DEV__ && !isConfigured) {
-  console.error(
-    'POSTHOG_PROJECT_TOKEN variable required by PostHog is missing or un-configured, ' +
-      'this causes events to be silently missed. ' +
-      'This error stops appearing once POSTHOG_PROJECT_TOKEN is configured',
-  );
+/**
+ * No analytics from development builds or simulators. They are not users, and
+ * every screen view and replay they produce is noise in the numbers the real
+ * ones are measured by. Release builds on real devices are the only source.
+ */
+const disabled = __DEV__ || !Device.isDevice;
+
+if (disabled && isConfigured) {
+  console.log('[posthog] disabled: development build or simulator');
+} else if (!disabled && !isConfigured) {
+  console.warn('[posthog] POSTHOG_PROJECT_TOKEN missing — events are silently dropped');
 }
 
 /**
@@ -55,7 +62,7 @@ if (__DEV__ && !isConfigured) {
  * Add a screen that renders user text without masking it and that sentence
  * silently becomes a lie.
  */
-export const posthog = isConfigured
+export const posthog = isConfigured && !disabled
   ? new PostHog(projectToken as string, {
       host: host ?? 'https://us.i.posthog.com',
       /**
