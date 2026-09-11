@@ -147,34 +147,33 @@ export default function ShieldTab() {
   }
 
   if (stage === 'allow') {
+    const allowed = shield.auth === 'approved';
     return (
       <Frame
         eyebrow="Shield · Step 1 of 3"
         title="Put a shield between you and it."
-        subtitle="Choose the apps and sites that pull you in. Curb keeps them out of reach, and shows you one of your own reasons when you try."
+        subtitle="Choose the apps and sites that pull you in. Curb keeps them out of reach, and shows you your own reason when you try."
         footer={
-          shield.auth === 'approved' ? (
-            <Cta label="Continue" onPress={forward} />
-          ) : (
-            <Cta label={asking ? 'Asking…' : 'Allow Screen Time'} onPress={ask} disabled={asking} />
-          )
+          <View style={s.footerStack}>
+            {allowed ? (
+              <View style={s.status}>
+                <SymbolView name="checkmark.circle.fill" size={16} tintColor={hues.pledge.solid} />
+                <Text style={s.statusText}>Screen Time access allowed</Text>
+              </View>
+            ) : (
+              <Text style={s.statusHint}>Apple asks once, with your device passcode.</Text>
+            )}
+            {allowed ? <Cta label="Continue" onPress={forward} /> : <Cta label={asking ? 'Asking…' : 'Allow Screen Time'} onPress={ask} disabled={asking} />}
+          </View>
         }>
         <Card style={s.card}>
-          <InfoRow icon="checklist" hue="progress" label="You choose, in Apple’s list" sub="Apps, whole categories, or websites. Curb only ever sees how many." />
+          <MiniRow icon="checklist" hue="progress" label="You pick the apps and sites, in Apple’s list" />
           <Sep />
-          <InfoRow icon="clock.fill" hue="checkin" label="Up when it matters" sub="Always, in your hard hours, or only when you ask." />
+          <MiniRow icon="clock.fill" hue="checkin" label="Up always, in your hard hours, or when you ask" />
           <Sep />
-          <InfoRow icon="heart.fill" hue="reasons" label="Your reason on the wall" sub="The shield screen shows something you wrote, and a way back into Curb." />
+          <MiniRow icon="heart.fill" hue="reasons" label="Your own reason on the shield screen" />
         </Card>
         <ShieldMock reason={reasons[0]?.text ?? null} />
-        {shield.auth === 'approved' ? (
-          <View style={s.pickedRow}>
-            <SymbolChip name="checkmark" tint={hues.pledge.solid} wash={hues.pledge.wash} />
-            <Text style={s.pickedText}>Screen Time access is allowed</Text>
-          </View>
-        ) : (
-          <Text style={s.fine}>Apple asks once, with your device passcode.</Text>
-        )}
         {denied || shield.auth === 'denied' ? (
           <Notice tone="warn">Screen Time access is off for Curb. Turn it on in Settings › Screen Time › Apps with Screen Time access, then come back.</Notice>
         ) : null}
@@ -542,6 +541,15 @@ function InfoRow({ icon, hue, label, sub }: { icon: SFSymbol; hue: keyof typeof 
   );
 }
 
+function MiniRow({ icon, hue, label }: { icon: SFSymbol; hue: keyof typeof hues; label: string }) {
+  return (
+    <View style={s.miniRow}>
+      <SymbolChip name={icon} tint={hues[hue].solid} wash={hues[hue].wash} />
+      <Text style={s.miniText}>{label}</Text>
+    </View>
+  );
+}
+
 function OptionRow({ icon, label, sub, selected, onPress }: { icon: SFSymbol; label: string; sub: string; selected: boolean; onPress: () => void }) {
   return (
     <Tap haptic="selection" onPress={onPress} accessibilityRole="radio" accessibilityState={{ selected }}>
@@ -619,6 +627,11 @@ const s = StyleSheet.create({
   fineIn: { color: palette.textFaint, fontSize: 12, lineHeight: 17, fontFamily: type.body, paddingHorizontal: Spacing.three, paddingBottom: Spacing.three },
   footer: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: Spacing.four, paddingBottom: 100, backgroundColor: palette.bg },
   footerStack: { gap: Spacing.one },
+  status: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 28, marginBottom: 2 },
+  statusText: { color: palette.textDim, fontSize: 13, fontFamily: type.bodyMed },
+  statusHint: { color: palette.textFaint, fontSize: 12, fontFamily: type.body, textAlign: 'center', minHeight: 28, lineHeight: 28 },
+  miniRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, paddingHorizontal: Spacing.three, minHeight: 54 },
+  miniText: { flex: 1, color: palette.text, fontSize: 15, lineHeight: 20, fontFamily: type.bodyMed },
   ghostRow: { flexDirection: 'row', gap: Spacing.two },
   footerSheet: { paddingBottom: Spacing.four },
   miniBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 12, backgroundColor: palette.surface3 },
