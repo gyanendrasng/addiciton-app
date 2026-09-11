@@ -115,8 +115,12 @@ export default function ShieldTab() {
   }
   const SETUP: Stage[] = ['allow', 'pick', 'when'];
   const natural = SETUP.indexOf(stage);
-  if (natural > 0 && back > 0) stage = SETUP[Math.max(0, natural - back)];
-  const forward = () => setBack((b) => Math.max(0, b - 1));
+  // In production you can only step back from where the data says you are.
+  // Under the dev preview the pinned stage is arbitrary, so Continue may step
+  // forward past it too — otherwise the simulator's Continue does nothing.
+  const floor = __DEV__ && params.preview ? -2 : 0;
+  if (natural >= 0) stage = SETUP[Math.min(SETUP.length - 1, Math.max(0, natural - back))];
+  const forward = () => setBack((b) => Math.max(floor, b - 1));
   const backward = () => setBack((b) => b + 1);
 
   const ask = async () => {
