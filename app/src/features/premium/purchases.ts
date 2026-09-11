@@ -86,7 +86,15 @@ export async function logOutPurchases() {
   }
 }
 
-export type StorePrice = { productId: string; price: string; period: string };
+export type StorePrice = {
+  productId: string;
+  /** localised, e.g. "$59.99" */
+  price: string;
+  period: string;
+  /** numeric price in `currency`, for arithmetic the store can't do for us */
+  amount: number;
+  currency: string;
+};
 
 /**
  * Live, localised prices from the store.
@@ -110,6 +118,8 @@ export async function fetchPrices(): Promise<Record<string, StorePrice>> {
         productId: p.identifier,
         price: p.priceString,
         period: p.subscriptionPeriod ?? '',
+        amount: p.price,
+        currency: p.currencyCode,
       };
     }
     return out;

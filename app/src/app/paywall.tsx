@@ -29,7 +29,7 @@ import {
   type StorePrice,
 } from '@/features/premium/purchases';
 import { usePremium } from '@/features/premium/use-premium';
-import { BENEFITS, disclosureFor, PLANS, PRIVACY_URL, TERMS_URL, type Plan } from '@/features/premium/plans';
+import { BENEFITS, disclosureFor, PLANS, PRIVACY_URL, TERMS_URL, yearlyAnchor, type Plan } from '@/features/premium/plans';
 import { hues, palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
@@ -59,6 +59,9 @@ export default function PaywallScreen() {
   // account so it can be looked at without cancelling anything.
   const params = useLocalSearchParams<{ preview?: string }>();
   const pinned = __DEV__ && !!params.preview;
+  // A simulator has no store, so the preview shows the USD fallbacks instead of dashes.
+  const priceFor = (p: Plan): StorePrice | undefined =>
+    prices[p.packageId] ?? (pinned ? { productId: p.productId, price: p.price, period: '', amount: p.amount, currency: 'USD' } : undefined);
 
   const [selected, setSelected] = useState<Plan['id'] | null>(null);
   const [busy, setBusy] = useState<'buy' | 'restore' | null>(null);
@@ -222,13 +225,19 @@ export default function PaywallScreen() {
                   </View>
                   <Text maxFontSizeMultiplier={1.25} style={s.planSub}>{p.sub}</Text>
                 </View>
-                <Text maxFontSizeMultiplier={1.25} style={s.planPrice}>
-                  {/* Never render the USD placeholder to a non-US store — a
-                      price in the wrong currency is worse than none, and the
-                      purchase sheet would contradict it a tap later. */}
-                  {prices[p.packageId]?.price ?? '—'}
-                  <Text maxFontSizeMultiplier={1.25} style={s.planPeriod}>{p.period}</Text>
-                </Text>
+                <View style={s.priceCol}>
+                  {/* The year, priced the monthly way: the "was" that SAVE 67% is against. */}
+                  {p.id === 'yearly' && yearlyAnchor(priceFor(PLANS[1])) ? (
+                    <Text maxFontSizeMultiplier={1.25} style={s.anchor}>{yearlyAnchor(priceFor(PLANS[1]))}</Text>
+                  ) : null}
+                  <Text maxFontSizeMultiplier={1.25} style={s.planPrice}>
+                    {/* Never render the USD placeholder to a non-US store — a
+                        price in the wrong currency is worse than none, and the
+                        purchase sheet would contradict it a tap later. */}
+                    {priceFor(p)?.price ?? '—'}
+                    <Text maxFontSizeMultiplier={1.25} style={s.planPeriod}>{p.period}</Text>
+                  </Text>
+                </View>
               </Tap>
             );
           })}
@@ -245,8 +254,8 @@ export default function PaywallScreen() {
             <ActivityIndicator color={palette.accentInk} />
           ) : (
             <Text maxFontSizeMultiplier={1.25} style={s.ctaLabel}>
-              {prices[plan.packageId]
-                ? `Subscribe — ${prices[plan.packageId].price}${plan.period}`
+              {priceFor(plan)
+                ? `Subscribe — ${priceFor(plan)?.price}${plan.period}`
                 : 'Subscribe'}
             </Text>
           )}
@@ -254,7 +263,7 @@ export default function PaywallScreen() {
 
         {/* Apple 3.1.2: price and billing period, stated plainly. */}
         <Text maxFontSizeMultiplier={1.25} style={s.disclosure}>
-          {disclosureFor(plan, prices[plan.packageId]?.price)}
+          {disclosureFor(plan, priceFor(plan)?.price)}
         </Text>
 
         <View style={s.legal}>
@@ -337,6 +346,8 @@ const s = StyleSheet.create({
   planTop: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   planName: { color: palette.text, fontSize: 16, fontFamily: type.bodySemi },
   planSub: { color: palette.textDim, fontSize: 13, fontFamily: type.body },
+  priceCol: { alignItems: 'flex-end' },
+  anchor: { color: palette.textFaint, fontSize: 13, fontFamily: type.body, textDecorationLine: 'line-through', fontVariant: ['tabular-nums'] },
   planPrice: { color: palette.text, fontSize: 17, fontFamily: type.bodySemi },
   planPeriod: { color: palette.textDim, fontSize: 13, fontFamily: type.body },
   badge: {
