@@ -5,15 +5,15 @@ import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanim
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 
+import { HueIcon, tileStyles } from '@/components/ui/action-tile';
 import { Card } from '@/components/ui/card';
 import { Notice } from '@/components/ui/notice';
 import { SymbolChip } from '@/components/ui/symbol-chip';
 import { Tap } from '@/components/ui/tap';
 import { useProfile } from '@/db/repo/profile';
-import { useReasons } from '@/db/repo/reasons';
 import { Cta, Eyebrow, Subtitle, Title } from '@/features/onboarding/components/chrome';
 import { fmtHour } from '@/features/shield/format';
-import { sdk, SELECTION_ID, SHIELD_COPY, requestAuthorization } from '@/features/shield/module';
+import { sdk, SELECTION_ID, requestAuthorization } from '@/features/shield/module';
 import { ShieldMark } from '@/features/shield/ShieldMark';
 import { ShieldPicker } from '@/features/shield/ShieldPicker';
 import {
@@ -35,7 +35,7 @@ import {
 } from '@/features/shield/store';
 import { now, useMinuteTick } from '@/lib/clock';
 import { durations } from '@/theme/motion';
-import { hues, palette } from '@/theme/palette';
+import { hues, palette, type Hue } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
 
@@ -67,7 +67,6 @@ export default function ShieldTab() {
   const router = useRouter();
   const { profile } = useProfile();
   const shield = useShield();
-  const { reasons } = useReasons();
   const params = useLocalSearchParams<{ preview?: string }>();
   const [picking, setPicking] = useState(false);
   const [asking, setAsking] = useState(false);
@@ -166,14 +165,14 @@ export default function ShieldTab() {
             {allowed ? <Cta label="Continue" onPress={forward} /> : <Cta label={asking ? 'Asking…' : 'Allow Screen Time'} onPress={ask} disabled={asking} />}
           </View>
         }>
-        <Card style={s.card}>
-          <MiniRow icon="checklist" hue="progress" label="You pick the apps and sites, in Apple’s list" />
-          <Sep />
-          <MiniRow icon="clock.fill" hue="checkin" label="Up always, in your hard hours, or when you ask" />
-          <Sep />
-          <MiniRow icon="heart.fill" hue="reasons" label="Your own reason on the shield screen" />
-        </Card>
-        <ShieldMock reason={reasons[0]?.text ?? null} />
+        <View style={s.setupHero}>
+          <ShieldMark up size={156} />
+        </View>
+        <View style={s.tiles}>
+          <InfoTile hue="progress" icon="checklist" label="Your pick" status="from Apple’s list" />
+          <InfoTile hue="checkin" icon="clock.fill" label="Your hours" status="always, hours, or on ask" />
+          <InfoTile hue="reasons" icon="heart.fill" label="Your reason" status="on the shield screen" />
+        </View>
         {denied || shield.auth === 'denied' ? (
           <Notice tone="warn">Screen Time access is off for Qwyt. Turn it on in Settings › Screen Time › Apps with Screen Time access, then come back.</Notice>
         ) : null}
@@ -499,32 +498,6 @@ function Frame({
   );
 }
 
-/**
- * A drawn copy of the iOS shield screen, so the promise "your reason on the
- * wall" is something the person can see before they grant anything. Flat
- * colours, the real copy, their real first reason.
- */
-function ShieldMock({ reason }: { reason: string | null }) {
-  // Deliberately muted and small: it is a picture of a screen, not a screen.
-  // Nothing in it may read as tappable, so the one primary action stays the CTA.
-  return (
-    <View style={s.mockWrap} accessible accessibilityLabel={`Preview of the shield screen: ${SHIELD_COPY.title} ${reason ?? SHIELD_COPY.fallback}`}>
-      <Text style={s.mockEyebrow}>What they’ll see</Text>
-      <View style={s.mock}>
-        <SymbolView name="shield.fill" size={22} tintColor={hues.urge.solid} />
-        <Text style={s.mockTitle}>{SHIELD_COPY.title}</Text>
-        <Text style={s.mockReason} numberOfLines={2}>
-          {reason ?? SHIELD_COPY.fallback}
-        </Text>
-        <View style={s.mockPrimary}>
-          <Text style={s.mockPrimaryLabel}>{SHIELD_COPY.primary}</Text>
-        </View>
-        <Text style={s.mockSecondary}>{SHIELD_COPY.secondary}</Text>
-      </View>
-    </View>
-  );
-}
-
 function Sep() {
   return <View style={s.sep} />;
 }
@@ -541,11 +514,20 @@ function InfoRow({ icon, hue, label, sub }: { icon: SFSymbol; hue: keyof typeof 
   );
 }
 
-function MiniRow({ icon, hue, label }: { icon: SFSymbol; hue: keyof typeof hues; label: string }) {
+/** Home's action tile, without the tap: three facts, colour-coded like the rest of the app. */
+function InfoTile({ hue, icon, label, status }: { hue: Hue; icon: SFSymbol; label: string; status: string }) {
   return (
-    <View style={s.miniRow}>
-      <SymbolChip name={icon} tint={hues[hue].solid} wash={hues[hue].wash} />
-      <Text style={s.miniText}>{label}</Text>
+    <View style={[tileStyles.tile, s.infoTile]}>
+      <View style={s.infoIcon}>
+        {Platform.OS === 'ios' ? (
+          <SymbolView name={icon} size={22} tintColor={hues[hue].solid} resizeMode="scaleAspectFit" style={{ width: 22, height: 22 }} />
+        ) : (
+          <HueIcon hue={hue} color={hues[hue].solid} />
+        )}
+      </View>
+      <View style={{ flex: 1 }} />
+      <Text numberOfLines={1} style={s.infoLabel}>{label}</Text>
+      <Text numberOfLines={2} style={s.infoStatus}>{status}</Text>
     </View>
   );
 }
@@ -615,23 +597,19 @@ const s = StyleSheet.create({
   durBtnOn: { backgroundColor: palette.accentWash, borderColor: palette.accent },
   durLabel: { color: palette.textDim, fontSize: 15, fontFamily: type.bodyMed },
   durLabelOn: { color: palette.accent, fontFamily: type.bodySemi },
-  mockWrap: { alignItems: 'center', gap: Spacing.one, marginTop: Spacing.two },
-  mockEyebrow: { color: palette.textFaint, fontSize: 11, fontFamily: type.bodySemi, letterSpacing: 1.2, textTransform: 'uppercase' },
-  mock: { width: '72%', alignItems: 'center', gap: 6, paddingVertical: Spacing.three, paddingHorizontal: Spacing.two, borderRadius: 18, backgroundColor: palette.surface2, borderWidth: 1, borderColor: palette.line },
-  mockTitle: { color: palette.text, fontSize: 14, lineHeight: 18, fontFamily: type.bodySemi, textAlign: 'center', marginTop: 4 },
-  mockReason: { color: palette.textDim, fontSize: 12, lineHeight: 16, fontFamily: type.body, textAlign: 'center', fontStyle: 'italic' },
-  mockPrimary: { marginTop: 6, alignSelf: 'stretch', height: 32, borderRadius: 9, backgroundColor: palette.surface3, alignItems: 'center', justifyContent: 'center' },
-  mockPrimaryLabel: { color: palette.textDim, fontSize: 12, fontFamily: type.bodySemi },
-  mockSecondary: { color: palette.textFaint, fontSize: 11, fontFamily: type.bodyMed },
   fine: { color: palette.textFaint, fontSize: 12, lineHeight: 17, fontFamily: type.body, marginTop: Spacing.two },
   fineIn: { color: palette.textFaint, fontSize: 12, lineHeight: 17, fontFamily: type.body, paddingHorizontal: Spacing.three, paddingBottom: Spacing.three },
   footer: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: Spacing.four, paddingBottom: 100, backgroundColor: palette.bg },
   footerStack: { gap: Spacing.one },
+  setupHero: { alignItems: 'center', paddingVertical: Spacing.four },
+  tiles: { flexDirection: 'row', gap: Spacing.two },
+  infoTile: { backgroundColor: palette.surface2, minHeight: 112 },
+  infoIcon: { height: 24, justifyContent: 'center' },
+  infoLabel: { color: palette.text, fontSize: 16, fontFamily: type.bodySemi },
+  infoStatus: { color: palette.textDim, fontSize: 12, lineHeight: 16, fontFamily: type.bodyMed },
   status: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 28, marginBottom: 2 },
   statusText: { color: palette.textDim, fontSize: 13, fontFamily: type.bodyMed },
   statusHint: { color: palette.textFaint, fontSize: 12, fontFamily: type.body, textAlign: 'center', minHeight: 28, lineHeight: 28 },
-  miniRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, paddingHorizontal: Spacing.three, minHeight: 54 },
-  miniText: { flex: 1, color: palette.text, fontSize: 15, lineHeight: 20, fontFamily: type.bodyMed },
   ghostRow: { flexDirection: 'row', gap: Spacing.two },
   footerSheet: { paddingBottom: Spacing.four },
   miniBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 12, backgroundColor: palette.surface3 },
