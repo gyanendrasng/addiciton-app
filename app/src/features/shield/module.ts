@@ -209,20 +209,28 @@ function rgb(hex: string) {
  * the urge toolkit is the point; "Not now" just closes the shield — it does
  * not unblock, that takes the delay in the app.
  */
+/** The words on the shield screen. Also drawn as a preview during setup, so keep them here. */
+export const SHIELD_COPY = {
+  title: 'Curb has this shielded.',
+  fallback: 'You asked for this when you were clear-headed.',
+  primary: 'Open Curb',
+  secondary: 'Not now',
+} as const;
+
 export function configureAppearance(reason: string | null) {
   sdk()?.updateShield(
     {
-      title: 'Curb has this shielded.',
-      subtitle: reason ?? 'You asked for this when you were clear-headed.',
+      title: SHIELD_COPY.title,
+      subtitle: reason ?? SHIELD_COPY.fallback,
       iconSystemName: 'shield.fill',
       iconTint: rgb(hues.urge.solid),
       backgroundColor: rgb(palette.bg),
       titleColor: rgb(palette.text),
       subtitleColor: rgb(palette.textDim),
-      primaryButtonLabel: 'Open Curb',
+      primaryButtonLabel: SHIELD_COPY.primary,
       primaryButtonBackgroundColor: rgb(palette.accent),
       primaryButtonLabelColor: rgb(palette.accentInk),
-      secondaryButtonLabel: 'Not now',
+      secondaryButtonLabel: SHIELD_COPY.secondary,
       secondaryButtonLabelColor: rgb(palette.textDim),
     },
     {

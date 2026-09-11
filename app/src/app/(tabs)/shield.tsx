@@ -10,9 +10,10 @@ import { Notice } from '@/components/ui/notice';
 import { SymbolChip } from '@/components/ui/symbol-chip';
 import { Tap } from '@/components/ui/tap';
 import { useProfile } from '@/db/repo/profile';
+import { useReasons } from '@/db/repo/reasons';
 import { Cta, Eyebrow, Subtitle, Title } from '@/features/onboarding/components/chrome';
 import { fmtHour } from '@/features/shield/format';
-import { sdk, SELECTION_ID, requestAuthorization } from '@/features/shield/module';
+import { sdk, SELECTION_ID, SHIELD_COPY, requestAuthorization } from '@/features/shield/module';
 import { ShieldMark } from '@/features/shield/ShieldMark';
 import { ShieldPicker } from '@/features/shield/ShieldPicker';
 import {
@@ -66,6 +67,7 @@ export default function ShieldTab() {
   const router = useRouter();
   const { profile } = useProfile();
   const shield = useShield();
+  const { reasons } = useReasons();
   const params = useLocalSearchParams<{ preview?: string }>();
   const [picking, setPicking] = useState(false);
   const [asking, setAsking] = useState(false);
@@ -160,11 +162,20 @@ export default function ShieldTab() {
         <Card style={s.card}>
           <InfoRow icon="checklist" hue="progress" label="You choose, in Apple’s list" sub="Apps, whole categories, or websites. Curb only ever sees how many." />
           <Sep />
-          <InfoRow icon="clock.fill" hue="checkin" label="Up when it matters" sub="Always, in your hard hours, or only when you ask mid-urge." />
+          <InfoRow icon="clock.fill" hue="checkin" label="Up when it matters" sub="Always, in your hard hours, or only when you ask." />
           <Sep />
           <InfoRow icon="heart.fill" hue="reasons" label="Your reason on the wall" sub="The shield screen shows something you wrote, and a way back into Curb." />
         </Card>
-        <Text style={s.fine}>{shield.auth === 'approved' ? 'Screen Time access is already allowed.' : 'Apple asks once, with your device passcode.'}</Text>
+        <Text style={s.section}>What they’ll see when they try</Text>
+        <ShieldMock reason={reasons[0]?.text ?? null} />
+        {shield.auth === 'approved' ? (
+          <View style={s.pickedRow}>
+            <SymbolChip name="checkmark" tint={hues.pledge.solid} wash={hues.pledge.wash} />
+            <Text style={s.pickedText}>Screen Time access is allowed</Text>
+          </View>
+        ) : (
+          <Text style={s.fine}>Apple asks once, with your device passcode.</Text>
+        )}
         {denied || shield.auth === 'denied' ? (
           <Notice tone="warn">Screen Time access is off for Curb. Turn it on in Settings › Screen Time › Apps with Screen Time access, then come back.</Notice>
         ) : null}
@@ -490,6 +501,29 @@ function Frame({
   );
 }
 
+/**
+ * A drawn copy of the iOS shield screen, so the promise "your reason on the
+ * wall" is something the person can see before they grant anything. Flat
+ * colours, the real copy, their real first reason.
+ */
+function ShieldMock({ reason }: { reason: string | null }) {
+  return (
+    <Card style={s.mock}>
+      <View style={s.mockIcon}>
+        <SymbolChip name="shield.fill" tint={hues.urge.solid} wash={hues.urge.wash} />
+      </View>
+      <Text style={s.mockTitle}>{SHIELD_COPY.title}</Text>
+      <Text style={s.mockReason} numberOfLines={2}>
+        {reason ?? SHIELD_COPY.fallback}
+      </Text>
+      <View style={s.mockPrimary}>
+        <Text style={s.mockPrimaryLabel}>{SHIELD_COPY.primary}</Text>
+      </View>
+      <Text style={s.mockSecondary}>{SHIELD_COPY.secondary}</Text>
+    </Card>
+  );
+}
+
 function Sep() {
   return <View style={s.sep} />;
 }
@@ -571,6 +605,13 @@ const s = StyleSheet.create({
   durBtnOn: { backgroundColor: palette.accentWash, borderColor: palette.accent },
   durLabel: { color: palette.textDim, fontSize: 15, fontFamily: type.bodyMed },
   durLabelOn: { color: palette.accent, fontFamily: type.bodySemi },
+  mock: { alignItems: 'center', padding: Spacing.four, gap: Spacing.two, backgroundColor: palette.bg, borderWidth: 1, borderColor: palette.line },
+  mockIcon: { marginBottom: Spacing.one },
+  mockTitle: { color: palette.text, fontSize: 17, lineHeight: 22, fontFamily: type.bodySemi, textAlign: 'center' },
+  mockReason: { color: palette.textDim, fontSize: 14, lineHeight: 19, fontFamily: type.body, textAlign: 'center', fontStyle: 'italic' },
+  mockPrimary: { marginTop: Spacing.one, alignSelf: 'stretch', height: 44, borderRadius: 12, backgroundColor: palette.accent, alignItems: 'center', justifyContent: 'center' },
+  mockPrimaryLabel: { color: palette.accentInk, fontSize: 15, fontFamily: type.bodySemi },
+  mockSecondary: { color: palette.textDim, fontSize: 14, fontFamily: type.bodyMed },
   fine: { color: palette.textFaint, fontSize: 12, lineHeight: 17, fontFamily: type.body, marginTop: Spacing.two },
   fineIn: { color: palette.textFaint, fontSize: 12, lineHeight: 17, fontFamily: type.body, paddingHorizontal: Spacing.three, paddingBottom: Spacing.three },
   footer: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: Spacing.four, paddingBottom: 100, backgroundColor: palette.bg },
