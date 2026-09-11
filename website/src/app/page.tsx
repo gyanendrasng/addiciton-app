@@ -63,7 +63,7 @@ export default function Home() {
           Out now on iPhone · Android soon
         </p>
         <h1 className="text-[clamp(44px,8vw,76px)] font-extrabold">
-          Curb the urge.
+          Outlast the urge.
           <br />
           Keep the streak.
         </h1>
@@ -91,7 +91,7 @@ export default function Home() {
             Built for the hard moment, not the easy one.
           </h2>
           <p className="mt-4 max-w-2xl text-dim">
-            Most trackers count days. Curb is designed around the two minutes when a craving peaks
+            Most trackers count days. Qwyt is designed around the two minutes when a craving peaks
             — and around what happens after a slip.
           </p>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -116,13 +116,13 @@ export default function Home() {
         <div className="mx-auto max-w-5xl px-6">
           <div className="rounded-3xl border border-accent-deep bg-accent/[0.08] p-8 sm:p-10">
             <p className="mb-4 text-[13px] font-semibold uppercase tracking-[0.14em] text-accent">
-              Why Curb is different
+              Why Qwyt is different
             </p>
             <h2 className="text-[clamp(26px,3.6vw,36px)] font-extrabold">
               Built to be used at 2am, not shown off.
             </h2>
             <p className="mt-4 max-w-2xl text-dim">
-              Most quitting apps count days. Curb is built for the minute the count is about
+              Most quitting apps count days. Qwyt is built for the minute the count is about
               to break — and for the morning after it does.
             </p>
             <ul className="mt-6 space-y-2.5 text-dim">
@@ -136,7 +136,7 @@ export default function Home() {
               ))}
             </ul>
             <p className="mt-6 text-sm text-faint">
-              What Curb collects, and how long it is kept, is set out in the{' '}
+              What Qwyt collects, and how long it is kept, is set out in the{' '}
               <Link href="/privacy" className="text-accent hover:underline">
                 privacy policy
               </Link>
@@ -150,10 +150,10 @@ export default function Home() {
         <div className="mx-auto max-w-5xl px-6">
           <div className="max-w-2xl">
             <h2 className="text-[clamp(30px,4.4vw,42px)] font-extrabold">
-              Curb is a self-tracking tool, not treatment.
+              Qwyt is a self-tracking tool, not treatment.
             </h2>
             <p className="mt-4 text-dim">
-              Curb is not a medical device and does not diagnose, treat, cure, or prevent any
+              Qwyt is not a medical device and does not diagnose, treat, cure, or prevent any
               medical condition. It is not a substitute for professional medical advice, diagnosis,
               or treatment.
             </p>

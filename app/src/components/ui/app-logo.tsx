@@ -13,7 +13,7 @@ import Svg, { Path } from 'react-native-svg';
 import { curves, durations, springs } from '@/theme/motion';
 
 /**
- * The Curb mark: two chain links snapping apart.
+ * The Qwyt mark: two chain links snapping apart.
  *
  * Two colours, not one — the link you're breaking away from is ember, the one
  * that's already free is mint. A single flat green tile read as a placeholder;

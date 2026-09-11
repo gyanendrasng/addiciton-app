@@ -78,7 +78,7 @@ export default function SettingsScreen() {
     if (Platform.OS === 'web') return void run();
     Alert.alert(
       'Sign out?',
-      'Your subscription lives on your account, so you’ll need to sign back in to use Curb. Your streaks, slips and notes stay on this phone either way.',
+      'Your subscription lives on your account, so you’ll need to sign back in to use Qwyt. Your streaks, slips and notes stay on this phone either way.',
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Sign out', style: 'destructive', onPress: run },
@@ -259,7 +259,7 @@ export default function SettingsScreen() {
             iconTint={hues.urge.solid}
             iconWash={hues.urge.wash}
             label="Get help"
-            sub="Crisis and addiction lines, and what Curb isn’t."
+            sub="Crisis and addiction lines, and what Qwyt isn’t."
             onPress={() => router.push('/help')}
             chevron
           />
@@ -369,7 +369,7 @@ function ThemeRow() {
   const sub = !isExpoGo
     ? 'Switches instantly.'
     : pending
-      ? 'Applies next time you open Curb.'
+      ? 'Applies next time you open Qwyt.'
       : `Using ${activeScheme === 'light' ? 'light' : 'dark'}.`;
   return (
     <View style={s.row}>

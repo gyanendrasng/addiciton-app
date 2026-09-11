@@ -1,5 +1,5 @@
 /**
- * Session state for Curb.
+ * Session state for Qwyt.
  *
  * WHY THIS EXISTS instead of `authClient.useSession()`:
  *

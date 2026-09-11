@@ -212,9 +212,9 @@ export function Analytics({ onNext }: { onNext: () => void }) {
     <View style={s.wrap}>
       <View style={s.centerBlock}>
         <Animated.View entering={FadeIn.duration(350)}>
-          <Title>Help make Curb better?</Title>
+          <Title>Help make Qwyt better?</Title>
           <Subtitle>
-            Curb can report which features get used and how streaks progress, so the parts that
+            Qwyt can report which features get used and how streaks progress, so the parts that
             help get better and the parts that don’t get cut.
           </Subtitle>
           <Text style={s.consentNote}>

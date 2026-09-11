@@ -108,7 +108,7 @@ export const REGIONS: Region[] = [
  * where they'll see it.
  */
 export const DISCLAIMER =
-  'Curb is a self-tracking tool, not treatment and not medical advice. If you are ' +
+  'Qwyt is a self-tracking tool, not treatment and not medical advice. If you are ' +
   'physically dependent on alcohol or benzodiazepines, stopping suddenly can be ' +
   'dangerous — talk to a doctor about how to withdraw safely.';
 

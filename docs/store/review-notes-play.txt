@@ -1,4 +1,6 @@
-Curb is subscription-only with no free tier, so the paywall appears immediately
+REBRAND NOTE: This is the same app previously published as "Curb: Addiction Recovery" (same bundle ID, same developer, same subscriptions). Only the name and in-app wording changed. It is not a duplicate of any other app.
+
+Qwyt is subscription-only with no free tier, so the paywall appears immediately
 after onboarding.
 
 TEST ACCOUNT (credentials are also entered under App access)
@@ -18,7 +20,7 @@ Crisis lines and a medical disclaimer are in Settings > Support > Get help, and
 are deliberately reachable without an account or a subscription.
 
 MEDICAL POSITIONING
-Curb is a self-tracking tool for people reducing or stopping a habit. It makes
+Qwyt is a self-tracking tool for people reducing or stopping a habit. It makes
 no treatment claims, is not a medical device, and does not diagnose or treat any
 condition. The disclaimer in Get help says so, and advises anyone physically
 dependent on alcohol or benzodiazepines to speak to a doctor before stopping.
