@@ -66,7 +66,8 @@
         "react-native-device-activity",
         {
           "appleTeamId": "QCQ36X5458",
-          "appGroup": "group.app.joincurb.curb"
+          "appGroup": "group.app.joincurb.curb",
+          "copyToTargetFolder": false
         }
       ]
     ],
