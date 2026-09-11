@@ -230,7 +230,8 @@ export default function PaywallScreen() {
                   {p.id === 'yearly' && yearlyAnchor(priceFor(PLANS[1])) ? (
                     <Text maxFontSizeMultiplier={1.25} style={s.anchor}>{yearlyAnchor(priceFor(PLANS[1]))}</Text>
                   ) : null}
-                  <Text maxFontSizeMultiplier={1.25} style={s.planPrice}>
+                  {/* The deal price in the money-kept green, so the "was → now" reads at a glance. */}
+                  <Text maxFontSizeMultiplier={1.25} style={[s.planPrice, p.id === 'yearly' && yearlyAnchor(priceFor(PLANS[1])) ? s.planPriceDeal : null]}>
                     {/* Never render the USD placeholder to a non-US store — a
                         price in the wrong currency is worse than none, and the
                         purchase sheet would contradict it a tap later. */}
@@ -349,6 +350,7 @@ const s = StyleSheet.create({
   priceCol: { alignItems: 'flex-end' },
   anchor: { color: palette.textFaint, fontSize: 13, fontFamily: type.body, textDecorationLine: 'line-through', fontVariant: ['tabular-nums'] },
   planPrice: { color: palette.text, fontSize: 17, fontFamily: type.bodySemi },
+  planPriceDeal: { color: palette.accent },
   planPeriod: { color: palette.textDim, fontSize: 13, fontFamily: type.body },
   badge: {
     paddingHorizontal: 7,
