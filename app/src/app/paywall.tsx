@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useEffect, useState } from 'react';
 import {
@@ -55,6 +55,10 @@ export default function PaywallScreen() {
    */
   const tight = height < 780 || PixelRatio.getFontScale() > 1.15;
   const { premium, refresh, checking } = usePremium();
+  // Dev door: `curb://paywall?preview=1` keeps the screen up on a subscribed
+  // account so it can be looked at without cancelling anything.
+  const params = useLocalSearchParams<{ preview?: string }>();
+  const pinned = __DEV__ && !!params.preview;
 
   const [selected, setSelected] = useState<Plan['id'] | null>(null);
   const [busy, setBusy] = useState<'buy' | 'restore' | null>(null);
@@ -88,8 +92,8 @@ export default function PaywallScreen() {
    * restore and a background entitlement refresh too.
    */
   useEffect(() => {
-    if (premium) router.replace('/');
-  }, [premium, router]);
+    if (premium && !pinned) router.replace('/');
+  }, [premium, pinned, router]);
 
   // Weekly is preselected — the lowest number to say yes to.
   const plan = PLANS.find((p) => p.id === selected) ?? PLANS[0];
