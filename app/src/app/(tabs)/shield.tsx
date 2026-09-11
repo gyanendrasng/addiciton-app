@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Alert, Modal, Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { SFSymbol } from 'expo-symbols';
+import { SymbolView, type SFSymbol } from 'expo-symbols';
 
 import { Card } from '@/components/ui/card';
 import { Notice } from '@/components/ui/notice';
@@ -166,7 +166,6 @@ export default function ShieldTab() {
           <Sep />
           <InfoRow icon="heart.fill" hue="reasons" label="Your reason on the wall" sub="The shield screen shows something you wrote, and a way back into Curb." />
         </Card>
-        <Text style={s.section}>What they’ll see when they try</Text>
         <ShieldMock reason={reasons[0]?.text ?? null} />
         {shield.auth === 'approved' ? (
           <View style={s.pickedRow}>
@@ -507,20 +506,23 @@ function Frame({
  * colours, the real copy, their real first reason.
  */
 function ShieldMock({ reason }: { reason: string | null }) {
+  // Deliberately muted and small: it is a picture of a screen, not a screen.
+  // Nothing in it may read as tappable, so the one primary action stays the CTA.
   return (
-    <Card style={s.mock}>
-      <View style={s.mockIcon}>
-        <SymbolChip name="shield.fill" tint={hues.urge.solid} wash={hues.urge.wash} />
+    <View style={s.mockWrap} accessible accessibilityLabel={`Preview of the shield screen: ${SHIELD_COPY.title} ${reason ?? SHIELD_COPY.fallback}`}>
+      <Text style={s.mockEyebrow}>What they’ll see</Text>
+      <View style={s.mock}>
+        <SymbolView name="shield.fill" size={22} tintColor={hues.urge.solid} />
+        <Text style={s.mockTitle}>{SHIELD_COPY.title}</Text>
+        <Text style={s.mockReason} numberOfLines={2}>
+          {reason ?? SHIELD_COPY.fallback}
+        </Text>
+        <View style={s.mockPrimary}>
+          <Text style={s.mockPrimaryLabel}>{SHIELD_COPY.primary}</Text>
+        </View>
+        <Text style={s.mockSecondary}>{SHIELD_COPY.secondary}</Text>
       </View>
-      <Text style={s.mockTitle}>{SHIELD_COPY.title}</Text>
-      <Text style={s.mockReason} numberOfLines={2}>
-        {reason ?? SHIELD_COPY.fallback}
-      </Text>
-      <View style={s.mockPrimary}>
-        <Text style={s.mockPrimaryLabel}>{SHIELD_COPY.primary}</Text>
-      </View>
-      <Text style={s.mockSecondary}>{SHIELD_COPY.secondary}</Text>
-    </Card>
+    </View>
   );
 }
 
@@ -605,13 +607,14 @@ const s = StyleSheet.create({
   durBtnOn: { backgroundColor: palette.accentWash, borderColor: palette.accent },
   durLabel: { color: palette.textDim, fontSize: 15, fontFamily: type.bodyMed },
   durLabelOn: { color: palette.accent, fontFamily: type.bodySemi },
-  mock: { alignItems: 'center', padding: Spacing.four, gap: Spacing.two, backgroundColor: palette.bg, borderWidth: 1, borderColor: palette.line },
-  mockIcon: { marginBottom: Spacing.one },
-  mockTitle: { color: palette.text, fontSize: 17, lineHeight: 22, fontFamily: type.bodySemi, textAlign: 'center' },
-  mockReason: { color: palette.textDim, fontSize: 14, lineHeight: 19, fontFamily: type.body, textAlign: 'center', fontStyle: 'italic' },
-  mockPrimary: { marginTop: Spacing.one, alignSelf: 'stretch', height: 44, borderRadius: 12, backgroundColor: palette.accent, alignItems: 'center', justifyContent: 'center' },
-  mockPrimaryLabel: { color: palette.accentInk, fontSize: 15, fontFamily: type.bodySemi },
-  mockSecondary: { color: palette.textDim, fontSize: 14, fontFamily: type.bodyMed },
+  mockWrap: { alignItems: 'center', gap: Spacing.one, marginTop: Spacing.two },
+  mockEyebrow: { color: palette.textFaint, fontSize: 11, fontFamily: type.bodySemi, letterSpacing: 1.2, textTransform: 'uppercase' },
+  mock: { width: '72%', alignItems: 'center', gap: 6, paddingVertical: Spacing.three, paddingHorizontal: Spacing.two, borderRadius: 18, backgroundColor: palette.surface2, borderWidth: 1, borderColor: palette.line },
+  mockTitle: { color: palette.text, fontSize: 14, lineHeight: 18, fontFamily: type.bodySemi, textAlign: 'center', marginTop: 4 },
+  mockReason: { color: palette.textDim, fontSize: 12, lineHeight: 16, fontFamily: type.body, textAlign: 'center', fontStyle: 'italic' },
+  mockPrimary: { marginTop: 6, alignSelf: 'stretch', height: 32, borderRadius: 9, backgroundColor: palette.surface3, alignItems: 'center', justifyContent: 'center' },
+  mockPrimaryLabel: { color: palette.textDim, fontSize: 12, fontFamily: type.bodySemi },
+  mockSecondary: { color: palette.textFaint, fontSize: 11, fontFamily: type.bodyMed },
   fine: { color: palette.textFaint, fontSize: 12, lineHeight: 17, fontFamily: type.body, marginTop: Spacing.two },
   fineIn: { color: palette.textFaint, fontSize: 12, lineHeight: 17, fontFamily: type.body, paddingHorizontal: Spacing.three, paddingBottom: Spacing.three },
   footer: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: Spacing.four, paddingBottom: 100, backgroundColor: palette.bg },
