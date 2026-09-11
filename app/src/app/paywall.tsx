@@ -37,7 +37,7 @@ import { type } from '@/theme/type';
 /**
  * The wall.
  *
- * Curb has no free tier and no trial — this screen is the only way into the
+ * Nocrave has no free tier and no trial — this screen is the only way into the
  * app, and it is deliberately not dismissible. Apple 3.1.2 requires the price,
  * the billing period and links to Terms and Privacy to be visible here, plus a
  * Restore control, so none of those are optional decoration.
@@ -160,7 +160,7 @@ export default function PaywallScreen() {
           <AppLogo size={tight ? 40 : 52} />
           <Text maxFontSizeMultiplier={1.25} style={[s.h1, tight && s.h1Tight]}>Everything, from{'\n'}day one.</Text>
           <Text maxFontSizeMultiplier={1.25} style={s.sub}>
-            Curb has no free tier and no ads. One subscription, everything unlocked, on
+            Nocrave has no free tier and no ads. One subscription, everything unlocked, on
             every device you sign in on.
           </Text>
         </Animated.View>

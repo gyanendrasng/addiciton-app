@@ -3,7 +3,7 @@ import { LegalPage, Callout } from '@/components/legal';
 
 export const metadata = {
   title: 'Support',
-  description: 'Get help with Curb: contact, FAQs, subscriptions, and managing your data.',
+  description: 'Get help with Nocrave: contact, FAQs, subscriptions, and managing your data.',
 };
 
 export default function Page() {
@@ -18,7 +18,7 @@ export default function Page() {
 
   <h2>Frequently asked</h2>
 
-  <h3>What does Curb store, and for how long?</h3>
+  <h3>What does Nocrave store, and for how long?</h3>
   <p>That is set out in full in the <Link href="/privacy">privacy policy</Link>, including
   what is kept, why, and when it is deleted.</p>
 
@@ -39,10 +39,10 @@ export default function Page() {
   opening the app, never resets anything.</p>
 
   <h3>How do I cancel my subscription?</h3>
-  <p><strong>iPhone/iPad:</strong> Settings → tap your name → Subscriptions → Curb → Cancel
+  <p><strong>iPhone/iPad:</strong> Settings → tap your name → Subscriptions → Nocrave → Cancel
   Subscription.<br />
   <strong>Android:</strong> Google Play → profile icon → Payments &amp; subscriptions →
-  Subscriptions → Curb → Cancel.</p>
+  Subscriptions → Nocrave → Cancel.</p>
   <p>Cancel at least 24 hours before your renewal date to avoid the next charge. You keep
   access until the end of the period you’ve paid for.</p>
 
@@ -57,16 +57,16 @@ export default function Page() {
   Apple or Google account you bought with.</p>
 
   <h3>Reminders aren’t arriving.</h3>
-  <p>Check that notifications are allowed for Curb in your device settings, and that
-  reminders are switched on in <em>Curb → Settings → Reminders</em>. Focus modes and battery
+  <p>Check that notifications are allowed for Nocrave in your device settings, and that
+  reminders are switched on in <em>Nocrave → Settings → Reminders</em>. Focus modes and battery
   savers can also delay them.</p>
 
   <h3>How do I delete everything?</h3>
   <p><em>Settings → Delete everything</em>, or just delete the app. See{' '}
   <Link href="/delete-data">Delete my data</Link>.</p>
 
-  <h3>Is Curb a substitute for treatment?</h3>
-  <p>No. Curb is a self-tracking tool, not a medical device, and it doesn’t diagnose or treat
+  <h3>Is Nocrave a substitute for treatment?</h3>
+  <p>No. Nocrave is a self-tracking tool, not a medical device, and it doesn’t diagnose or treat
   anything. If you’re struggling, please talk to a professional — and see our{' '}
   <Link href="/crisis">crisis and support lines</Link>.</p>
     </LegalPage>

@@ -9,7 +9,7 @@
  * flow, keeps running on the Simulator, where Screen Time itself does not.
  *
  * Nothing here touches the server. Selections are opaque tokens Apple mints
- * per device; Curb never learns which apps were picked, only how many.
+ * per device; Nocrave never learns which apps were picked, only how many.
  */
 import { Platform } from 'react-native';
 
@@ -73,7 +73,7 @@ export async function requestAuthorization(): Promise<ShieldAuth> {
   return authorizationStatus();
 }
 
-/** The one selection Curb keeps. Everything blocks and unblocks by this id. */
+/** The one selection Nocrave keeps. Everything blocks and unblocks by this id. */
 export const SELECTION_ID = 'shield';
 
 /** Names for the DeviceActivity schedules, so they can be stopped by name. */
@@ -205,15 +205,15 @@ function rgb(hex: string) {
  *
  * This is the most-seen screen the feature has, and the only place a reason
  * written when clear-headed can reach someone who has already left the app.
- * Flat palette colours, no blur. "Open Curb" is the primary action because
+ * Flat palette colours, no blur. "Open Nocrave" is the primary action because
  * the urge toolkit is the point; "Not now" just closes the shield — it does
  * not unblock, that takes the delay in the app.
  */
 /** The words on the shield screen. Also drawn as a preview during setup, so keep them here. */
 export const SHIELD_COPY = {
-  title: 'Curb has this shielded.',
+  title: 'Nocrave has this shielded.',
   fallback: 'You asked for this when you were clear-headed.',
-  primary: 'Open Curb',
+  primary: 'Open Nocrave',
   secondary: 'Not now',
 } as const;
 

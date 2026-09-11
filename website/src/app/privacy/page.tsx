@@ -3,14 +3,14 @@ import { LegalPage, Callout } from '@/components/legal';
 
 export const metadata = {
   title: 'Privacy Policy',
-  description: 'How Curb handles your data: what we collect, why, how long we keep it, and how to have it deleted.',
+  description: 'How Nocrave handles your data: what we collect, why, how long we keep it, and how to have it deleted.',
 };
 
 export default function Page() {
   return (
     <LegalPage title={'Privacy Policy'} updated={'Effective 3 September 2026 · Version 1.0'}>
 <Callout>
-    <p><strong>The short version.</strong> Curb keeps your recovery record — habits,
+    <p><strong>The short version.</strong> Nocrave keeps your recovery record — habits,
     streaks, check-ins, urges, slips, reasons and notes — so the app can show it back to
     you. It is held on your device and, where needed to provide the service, on our
     servers. We also hold your <a href="#account">email address</a>, your{' '}
@@ -24,7 +24,7 @@ export default function Page() {
   <div className="my-8 rounded-2xl bg-surface px-6 py-5">
     <ol>
       <li><a href="#who">Who we are</a></li>
-      <li><a href="#ondevice">What Curb stores on your device</a></li>
+      <li><a href="#ondevice">What Nocrave stores on your device</a></li>
       <li><a href="#leaves">Data that leaves your device</a></li>
       <li className="ml-4"><a href="#account">— Your account</a></li>
       <li className="ml-4"><a href="#purchases">— Subscription purchases</a></li>
@@ -43,17 +43,17 @@ export default function Page() {
   </div>
 
   <h2 id="who">1. Who we are</h2>
-  <p>Curb (“Curb”, “we”, “us”) is a mobile application that helps people track and reduce
+  <p>Nocrave (“Nocrave”, formerly published as “Curb”, “we”, “us”) is a mobile application that helps people track and reduce
   addictive habits. This policy explains how the app handles information. It applies to
-  the Curb iOS and Android apps and to this website, <strong>joincurb.app</strong>.</p>
+  the Nocrave iOS and Android apps and to this website, <strong>joincurb.app</strong>.</p>
   <p>
     <strong>Data controller:</strong> Gyanendra Singh<br />
     <strong>Postal address:</strong> 110/05 Pinto Park, Delhi Cantt, New Delhi 110010, India<br />
     <strong>Email:</strong> <a href="mailto:privacy@joincurb.app">privacy@joincurb.app</a>
   </p>
 
-  <h2 id="ondevice">2. What Curb stores on your device</h2>
-  <p>Curb stores the following in a local database inside the app’s private storage area
+  <h2 id="ondevice">2. What Nocrave stores on your device</h2>
+  <p>Nocrave stores the following in a local database inside the app’s private storage area
   on your phone. <strong>None of it is transmitted to us, and we have no ability to access
   it.</strong></p>
   <table>
@@ -72,7 +72,7 @@ export default function Page() {
   </table>
   <p><strong>Shield and Screen Time.</strong> On iPhone, Shield uses Apple’s Screen Time to keep
   the apps and websites you choose out of reach. You pick them in Apple’s own list; iOS hands
-  Curb an opaque reference to your selection, not the names of the apps or sites, and Curb
+  Nocrave an opaque reference to your selection, not the names of the apps or sites, and Nocrave
   never receives what you open or for how long. Shield works only if you grant Screen Time
   access, and you can withdraw it at any time in iOS Settings → Screen Time.</p>
   <p>This is sensitive information about health and behaviour, and we treat it that way:
@@ -81,7 +81,7 @@ export default function Page() {
   <a href="#rights">section 8</a> for how to get it deleted.</p>
   <Callout tone="warn">
     <p><strong>Keep your own copy.</strong> <em>Settings → Export everything</em> writes a
-    JSON file of your Curb data that you can store wherever you like. Don’t rely on us to
+    JSON file of your Nocrave data that you can store wherever you like. Don’t rely on us to
     restore a lost phone.</p>
   </Callout>
 
@@ -89,7 +89,7 @@ export default function Page() {
   <p>Described in full below.</p>
 
   <h3 id="account">a. Your account</h3>
-  <p>Curb requires an account so that a subscription you buy on one phone works on your
+  <p>Nocrave requires an account so that a subscription you buy on one phone works on your
   next one. When you sign in with Apple, Google or an email code, we store on our servers:
   your <strong>email address</strong>, an internal user identifier, the sign-in provider
   you used, an optional display name you can set yourself, and session records (created
@@ -103,7 +103,7 @@ export default function Page() {
   use <em>Settings → Delete everything</em> for that.</p>
 
   <h3 id="purchases">b. Subscription purchases</h3>
-  <p>Curb offers a paid subscription and a one-time lifetime option. Payment is handled
+  <p>Nocrave offers a paid subscription and a one-time lifetime option. Payment is handled
   entirely by <strong>Apple</strong> or <strong>Google</strong> — we never see or receive
   your card details, billing address, or Apple/Google account credentials.</p>
   <p>To know whether your subscription is active, the app uses{' '}
@@ -117,7 +117,7 @@ export default function Page() {
   track you across apps or websites.</p>
 
   <h3 id="analytics">c. Usage and progress data</h3>
-  <p>Curb sends product analytics to{' '}
+  <p>Nocrave sends product analytics to{' '}
   <a href="https://posthog.com/privacy" rel="noopener noreferrer" target="_blank">PostHog</a>,
   so we can see which parts of the app help and which are ignored. It receives:</p>
   <ul>
@@ -133,7 +133,7 @@ export default function Page() {
     covered over, not captured.</li>
   </ul>
   <p>Because the habits you track say something about your health, we treat this as
-  sensitive personal information. It is used to improve Curb — never sold, never shared
+  sensitive personal information. It is used to improve Nocrave — never sold, never shared
   for advertising, and never used to build a profile of you for anyone else. You can turn
   analytics off in <em>Settings</em>; the rest of the app works exactly the same.</p>
   <p>Usage and progress data is retained for <strong>12 months</strong> and then deleted.
@@ -142,7 +142,7 @@ export default function Page() {
   delete it.</p>
 
   <h3 id="updates">d. App updates</h3>
-  <p>Curb can receive improvements and fixes without a full store update, using{' '}
+  <p>Nocrave can receive improvements and fixes without a full store update, using{' '}
   <strong>Expo Application Services (EAS Update)</strong>. When the app launches it asks
   Expo’s servers whether a newer version of the app’s code is available. That request
   contains only technical details — platform (iOS/Android), the app’s runtime version, the
@@ -156,7 +156,7 @@ export default function Page() {
   serving the font files.</p>
 
   <h2 id="notifications">4. Notifications</h2>
-  <p>Curb’s reminders (a morning pledge and an evening check-in) are <strong>local
+  <p>Nocrave’s reminders (a morning pledge and an evening check-in) are <strong>local
   notifications</strong> — scheduled by the app and delivered by your phone’s operating
   system. There is no push server and no push token; nothing is transmitted to us or to
   Apple/Google beyond what the OS does to display a local alert. Reminders are optional,
@@ -164,7 +164,7 @@ export default function Page() {
   your device settings.</p>
 
   <h2 id="export">5. Exporting your data</h2>
-  <p>Settings → <em>Export everything</em> writes a JSON file containing your Curb data and
+  <p>Settings → <em>Export everything</em> writes a JSON file containing your Nocrave data and
   hands it to your device’s standard share sheet. We do not receive this file. Once you
   send it somewhere — email, cloud storage, another app — that destination’s own privacy
   policy governs it.</p>
@@ -172,13 +172,13 @@ export default function Page() {
   <h2 id="nosale">6. No selling, sharing or advertising</h2>
   <p><strong>We do not sell or share personal information</strong> as those terms are
   defined by the California Consumer Privacy Act as amended by the CPRA, and we do not
-  process personal information for cross-context behavioural advertising. Curb contains no
+  process personal information for cross-context behavioural advertising. Nocrave contains no
   advertising SDKs and no social-media SDKs. It does contain a product-analytics SDK,
   described in <a href="#analytics">section 3c</a>, used only to improve the app. You can
   switch it off in Settings, which is how we honour the CPRA right to limit the use of
   sensitive personal information. We have never sold or shared
   personal information, including in the preceding twelve months.</p>
-  <p>Curb does not track you across other companies’ apps or websites, and does not request
+  <p>Nocrave does not track you across other companies’ apps or websites, and does not request
   permission to do so.</p>
 
   <h2 id="rights">7. Your rights</h2>
@@ -186,7 +186,7 @@ export default function Page() {
   restrict or object to the processing of your personal information, and to opt out of its
   sale or sharing (CCPA/CPRA and other US state laws), or the equivalent rights under the
   UK/EU GDPR.</p>
-  <p>Because your Curb data lives on your own device and is never sent to us, most of these
+  <p>Because your Nocrave data lives on your own device and is never sent to us, most of these
   rights are exercised directly by you and immediately:</p>
   <ul>
     <li><strong>Access and portability</strong> — Settings → Export everything.</li>
@@ -223,7 +223,7 @@ export default function Page() {
   does not remove your account — <a href="#rights">section 8</a> covers deletion.</p>
 
   <h2 id="children">9. Children</h2>
-  <p>Curb is for adults and is not directed to children. The Terms require you to be at
+  <p>Nocrave is for adults and is not directed to children. The Terms require you to be at
   least 18, and we do not knowingly collect personal information from anyone under 18. The
   store age ratings describe the app’s content rather than who may use it. If you believe someone younger has given us
   information, contact us and we will delete it and close the account.</p>
@@ -237,7 +237,7 @@ export default function Page() {
   are retained under their own policies and applicable tax and accounting law.</p>
 
   <h2 id="security">11. Security</h2>
-  <p>Curb’s database is stored inside the app’s private container, protected by your
+  <p>Nocrave’s database is stored inside the app’s private container, protected by your
   device’s operating-system sandbox and, on modern devices, by full-disk encryption tied to
   your passcode or biometrics. Network requests use HTTPS, and anything we do receive is held
   on access-controlled infrastructure. No system is perfectly secure, so keeping your device
@@ -245,7 +245,7 @@ export default function Page() {
 
   <h2 id="changes">12. Changes to this policy</h2>
   <p>If we change this policy we will update the effective date above and, for material
-  changes, notify you in the app. Continuing to use Curb after a change means you accept
+  changes, notify you in the app. Continuing to use Nocrave after a change means you accept
   the updated policy. Previous versions are available on request.</p>
 
   <h2 id="contact">13. Contact</h2>

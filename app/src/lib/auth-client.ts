@@ -1,5 +1,5 @@
 /**
- * Better Auth client for Curb.
+ * Better Auth client for Nocrave.
  *
  * Accounts exist only to sync premium across devices — no recovery data is ever
  * sent. The session token lives in the OS keychain (expo-secure-store), not in

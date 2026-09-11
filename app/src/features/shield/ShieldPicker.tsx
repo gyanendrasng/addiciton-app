@@ -2,7 +2,7 @@
  * Apple's app picker, as a sheet.
  *
  * The only UI Apple allows for choosing what to shield. It hands back an
- * opaque token and counts — never names — which is exactly the shape Curb
+ * opaque token and counts — never names — which is exactly the shape Nocrave
  * wants to hold. Mounted only while `visible`; the native view presents the
  * sheet on mount and reports every change, then a dismiss.
  */
@@ -32,7 +32,7 @@ export function ShieldPicker({
     <Sheet
       style={s.hidden}
       familyActivitySelection={current}
-      headerText="Choose what Curb shields"
+      headerText="Choose what Nocrave shields"
       footerText="Pick whole categories where you can — it keeps the selection small and covers new apps too."
       onSelectionChange={(e) => {
         const { familyActivitySelection, applicationCount, categoryCount, webDomainCount } = e.nativeEvent;

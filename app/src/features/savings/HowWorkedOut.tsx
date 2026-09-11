@@ -75,7 +75,7 @@ export function HowWorkedOut({
 
           <Text style={s.body}>
             The typical prices are deliberately on the low side, and they’re in {currency}. Your real number is
-            probably higher — set what one actually costs you and Curb uses that instead, everywhere.
+            probably higher — set what one actually costs you and Nocrave uses that instead, everywhere.
           </Text>
           <Text style={s.body}>
             This is an estimate from your own answers, not a promise. It counts what you didn’t buy on the days

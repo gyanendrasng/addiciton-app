@@ -49,7 +49,7 @@ export type ErrorContext = 'signin' | 'code' | 'network' | 'generic';
 const FALLBACK: Record<ErrorContext, string> = {
   signin: 'Couldn’t sign you in. Please try again.',
   code: 'Couldn’t send your code. Please try again.',
-  network: 'Couldn’t reach Curb. Check your connection and try again.',
+  network: 'Couldn’t reach Nocrave. Check your connection and try again.',
   generic: 'Something went wrong. Please try again.',
 };
 
@@ -67,7 +67,7 @@ export function humanError(e: unknown, context: ErrorContext = 'generic'): strin
   const lower = raw.toLowerCase();
 
   if (OFFLINE_MARKERS.some((m) => lower.includes(m))) {
-    return 'Couldn’t reach Curb. Check your connection and try again.';
+    return 'Couldn’t reach Nocrave. Check your connection and try again.';
   }
   if (RATE_LIMIT_MARKERS.some((m) => lower.includes(m))) {
     return 'Too many attempts. Wait a minute, then try again.';

@@ -1,7 +1,7 @@
 /**
  * Is this user premium?
  *
- * Curb is premium-only, so this decides whether the app opens at all. Two
+ * Nocrave is premium-only, so this decides whether the app opens at all. Two
  * sources, deliberately:
  *
  *  - **The server** (`useAccount` → RevenueCat webhooks → `entitlement`) is the

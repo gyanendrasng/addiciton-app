@@ -3,14 +3,14 @@ import { LegalPage, Callout } from '@/components/legal';
 
 export const metadata = {
   title: 'Terms of Use',
-  description: 'Curb terms of use, subscription terms, and medical disclaimer.',
+  description: 'Nocrave terms of use, subscription terms, and medical disclaimer.',
 };
 
 export default function Page() {
   return (
     <LegalPage title={'Terms of Use'} updated={'Effective 3 September 2026 · Version 1.0'}>
 <Callout tone="danger">
-    <p><strong>Curb is not medical care.</strong> Curb is not a medical device and does not
+    <p><strong>Nocrave is not medical care.</strong> Nocrave is not a medical device and does not
     diagnose, treat, cure, or prevent any medical condition. It is a self-tracking and
     habit-support tool and is not a substitute for professional medical advice, diagnosis,
     or treatment. Always consult a qualified healthcare professional about a medical
@@ -21,29 +21,29 @@ export default function Page() {
   <Callout tone="warn">
     <p><strong>Withdrawal can be dangerous.</strong> Stopping some substances abruptly —
     alcohol and benzodiazepines in particular — can cause serious, occasionally
-    life-threatening withdrawal. Do not use Curb as a reason to stop without medical
+    life-threatening withdrawal. Do not use Nocrave as a reason to stop without medical
     supervision. Speak to a doctor first. If you are in crisis, see{' '}
     <Link href="/crisis">crisis and support lines</Link>.</p>
   </Callout>
 
   <h2 id="agreement">1. Agreement</h2>
   <p>These Terms of Use (“Terms”) are a legal agreement between you and Gyanendra Singh
-  (“we”, “us”) governing your use of the Curb mobile application and joincurb.app (together,
-  the “Service”). By downloading, installing or using Curb you agree to these Terms. If you
+  (“we”, “us”) governing your use of the Nocrave mobile application and joincurb.app (together,
+  the “Service”). By downloading, installing or using Nocrave (formerly published as “Curb”) you agree to these Terms. If you
   do not agree, do not use the Service.</p>
-  <p>Curb is for adults. You must be at least 18 years old and able to form a binding
+  <p>Nocrave is for adults. You must be at least 18 years old and able to form a binding
   contract. The app is not directed to anyone younger, and we do not knowingly provide the
   Service to them.</p>
 
-  <h2 id="what">2. What Curb is</h2>
-  <p>Curb helps you record and reduce addictive habits: it tracks streaks, offers a guided
+  <h2 id="what">2. What Nocrave is</h2>
+  <p>Nocrave helps you record and reduce addictive habits: it tracks streaks, offers a guided
   toolkit for moments of craving, and lets you log slips and reflections. It is a personal
   tool. It provides no medical, psychological, legal or financial advice, makes no promise
   of any outcome, and does not guarantee that you will reduce or stop any behaviour.</p>
 
   <h2 id="responsibilities">3. Your responsibilities</h2>
   <ul>
-    <li>Use Curb only for lawful, personal, non-commercial purposes.</li>
+    <li>Use Nocrave only for lawful, personal, non-commercial purposes.</li>
     <li>Do not attempt to reverse engineer, decompile, or interfere with the app, except to
         the extent that restriction is prohibited by law.</li>
     <li>You are responsible for your own decisions about your health and behaviour.</li>
@@ -52,7 +52,7 @@ export default function Page() {
   </ul>
 
   <h2 id="subscription">4. Subscriptions, trials and billing</h2>
-  <p>Curb requires a paid subscription. Where a free trial is offered, its length and the
+  <p>Nocrave requires a paid subscription. Where a free trial is offered, its length and the
   price that follows are shown on the purchase screen before you buy.</p>
   <ul>
     <li>Payment is charged to your <strong>Apple Account</strong> or <strong>Google
@@ -110,7 +110,7 @@ export default function Page() {
   injury caused by negligence, or for fraud.</p>
 
   <h2 id="termination">9. Termination</h2>
-  <p>You may stop using Curb at any time by deleting it. We may suspend or terminate access
+  <p>You may stop using Nocrave at any time by deleting it. We may suspend or terminate access
   if you breach these Terms or if we discontinue the Service. Sections 6 to 11 survive
   termination.</p>
 

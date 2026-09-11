@@ -1,5 +1,5 @@
 /**
- * Session state for Curb.
+ * Session state for Nocrave.
  *
  * WHY THIS EXISTS instead of `authClient.useSession()`:
  *

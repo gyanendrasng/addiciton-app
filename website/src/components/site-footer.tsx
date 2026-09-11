@@ -20,7 +20,7 @@ export function SiteFooter() {
                 <path d="M 507.9 361 A 138 138 0 1 1 660 542.2" />
               </svg>
             </span>
-            Curb
+            Nocrave
           </Link>
           <nav className="flex flex-wrap gap-5">
             {links.map((l) => (
@@ -31,7 +31,7 @@ export function SiteFooter() {
           </nav>
         </div>
         <p className="mt-8 max-w-3xl leading-relaxed">
-          © {new Date().getFullYear()} Curb. Rated 16+/18+ — Curb references alcohol, tobacco and
+          © {new Date().getFullYear()} Nocrave. Rated 16+/18+ — Nocrave references alcohol, tobacco and
           other substances for the purpose of helping people reduce or stop using them. Apple and the
           Apple logo are trademarks of Apple Inc. Google Play and the Google Play logo are trademarks
           of Google LLC.

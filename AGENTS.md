@@ -1,4 +1,4 @@
-# Curb
+# Nocrave (formerly Curb)
 
 A multi-addiction recovery app. Three parts:
 

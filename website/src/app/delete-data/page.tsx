@@ -3,7 +3,7 @@ import { LegalPage, Callout } from '@/components/legal';
 
 export const metadata = {
   title: 'Delete My Data',
-  description: 'How to permanently delete all of your Curb data.',
+  description: 'How to permanently delete all of your Nocrave data.',
 };
 
 export default function Page() {
@@ -17,7 +17,7 @@ export default function Page() {
 
   <h2>Option 1 — Delete from inside the app</h2>
   <ol>
-    <li>Open Curb and go to the <strong>Settings</strong> tab.</li>
+    <li>Open Nocrave and go to the <strong>Settings</strong> tab.</li>
     <li>Scroll to <strong>Your data</strong>.</li>
     <li>Tap <strong>Delete everything</strong> and confirm twice.</li>
   </ol>
@@ -28,7 +28,7 @@ export default function Page() {
   <p>This removes your email address, sign-in records and subscription record from our
   servers, and your usage data along with them.</p>
   <ol>
-    <li>Open Curb and go to the <strong>Settings</strong> tab.</li>
+    <li>Open Nocrave and go to the <strong>Settings</strong> tab.</li>
     <li>Tap <strong>Manage account</strong>, then <strong>Delete account</strong>.</li>
     <li>Confirm twice.</li>
   </ol>
@@ -39,7 +39,7 @@ export default function Page() {
   signed in with and we will delete the account for you.</p>
 
   <h2 id="usage">Option 3 — Delete your usage data</h2>
-  <p>If you turned on <em>Share usage data</em>, Curb has sent product analytics to PostHog:
+  <p>If you turned on <em>Share usage data</em>, Nocrave has sent product analytics to PostHog:
   which screens you opened, which habits you track, how long your streaks ran. Deleting your
   account does not automatically delete that, because it is stored separately.</p>
   <ol>
@@ -52,12 +52,12 @@ export default function Page() {
   <p>Anything not deleted on request is removed automatically 12 months after collection.</p>
 
   <h2>Option 4 — Delete the app</h2>
-  <p>Uninstalling Curb removes the app and the recovery history it keeps on the phone. It
+  <p>Uninstalling Nocrave removes the app and the recovery history it keeps on the phone. It
   does not delete your account, your subscription record or your usage data — use options 1
   to 3 above for those.</p>
   <ul>
-    <li><strong>iOS:</strong> press and hold the Curb icon → Remove App → Delete App.</li>
-    <li><strong>Android:</strong> press and hold the Curb icon → App info → Uninstall.</li>
+    <li><strong>iOS:</strong> press and hold the Nocrave icon → Remove App → Delete App.</li>
+    <li><strong>Android:</strong> press and hold the Nocrave icon → App info → Uninstall.</li>
   </ul>
 
   <Callout tone="warn">

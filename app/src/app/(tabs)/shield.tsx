@@ -152,7 +152,7 @@ export default function ShieldTab() {
       <Frame
         eyebrow="Shield · Step 1 of 3"
         title="Put a shield between you and it."
-        subtitle="Choose the apps and sites that pull you in. Curb keeps them out of reach, and shows you your own reason when you try."
+        subtitle="Choose the apps and sites that pull you in. Nocrave keeps them out of reach, and shows you your own reason when you try."
         footer={
           <View style={s.footerStack}>
             {allowed ? (
@@ -175,7 +175,7 @@ export default function ShieldTab() {
         </Card>
         <ShieldMock reason={reasons[0]?.text ?? null} />
         {denied || shield.auth === 'denied' ? (
-          <Notice tone="warn">Screen Time access is off for Curb. Turn it on in Settings › Screen Time › Apps with Screen Time access, then come back.</Notice>
+          <Notice tone="warn">Screen Time access is off for Nocrave. Turn it on in Settings › Screen Time › Apps with Screen Time access, then come back.</Notice>
         ) : null}
       </Frame>
     );
@@ -187,7 +187,7 @@ export default function ShieldTab() {
       <Frame
         eyebrow="Shield · Step 2 of 3"
         title="Choose what to shield."
-        subtitle="Apple’s list opens next. Curb never sees the names — only how many you picked."
+        subtitle="Apple’s list opens next. Nocrave never sees the names — only how many you picked."
         footer={
           <View style={s.footerStack}>
             <Cta label="Open Apple’s list" onPress={() => setPicking(true)} />
@@ -415,7 +415,7 @@ export default function ShieldTab() {
 
         {refusedSchedule ? (
           <Animated.View entering={FadeIn.duration(durations.fast)} exiting={FadeOut.duration(durations.fast)}>
-            <Notice tone="info">The shield is up, but iOS didn’t take the timer. Curb lifts it the next time you open the app after it ends.</Notice>
+            <Notice tone="info">The shield is up, but iOS didn’t take the timer. Nocrave lifts it the next time you open the app after it ends.</Notice>
           </Animated.View>
         ) : null}
         <View style={{ height: state.up ? 96 : 220 }} />
@@ -457,7 +457,7 @@ export default function ShieldTab() {
               <Stepper label="Wait before it lifts" value={shield.unlockDelayMin === 0 ? 'none' : `${shield.unlockDelayMin} min`} onChange={(d) => void setUnlockDelay(shield.unlockDelayMin + d * 5)} />
               <Text style={s.fineIn}>Decided now, while you’re clear. A shield you can drop in one tap is a shield you will drop.</Text>
             </Card>
-            <Text style={s.fine}>Want it locked for real? In iOS Settings › Screen Time › Lock Screen Time Settings, a passcode stops Curb’s access being switched off — and the app being deleted — without it. Ask someone you trust to set the code.</Text>
+            <Text style={s.fine}>Want it locked for real? In iOS Settings › Screen Time › Lock Screen Time Settings, a passcode stops Nocrave’s access being switched off — and the app being deleted — without it. Ask someone you trust to set the code.</Text>
             <View style={{ height: 120 }} />
           </ScrollView>
           <View style={[s.footer, s.footerSheet]}>

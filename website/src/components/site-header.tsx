@@ -11,7 +11,7 @@ export function SiteHeader() {
               <path d="M 507.9 361 A 138 138 0 1 1 660 542.2" />
             </svg>
           </span>
-          Curb
+          Nocrave
         </Link>
         <nav className="ml-auto flex items-center gap-5 text-[15px] font-medium text-dim">
           <Link href="/privacy" className="transition-colors hover:text-ink">Privacy</Link>

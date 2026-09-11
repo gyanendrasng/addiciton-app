@@ -128,7 +128,7 @@ function RecoveryScreen() {
       </Card>
 
       <Text style={s.foot}>
-        Sourced from public health guidance. Curb isn’t medical advice — if you’re dependent on
+        Sourced from public health guidance. Nocrave isn’t medical advice — if you’re dependent on
         alcohol or a prescription, stopping suddenly can be dangerous, so talk to a doctor first.
       </Text>
     </Screen>

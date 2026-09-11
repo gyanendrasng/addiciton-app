@@ -22,17 +22,17 @@ const figtree = Figtree({
 export const metadata: Metadata = {
   metadataBase: new URL('https://joincurb.app'),
   title: {
-    default: 'Curb — Quit any addiction',
-    template: '%s — Curb',
+    default: 'Nocrave — Quit any addiction',
+    template: '%s — Nocrave',
   },
   description:
-    'Curb is a recovery companion. Track a streak for every habit, ride out urges with a guided toolkit, and log slips without shame.',
+    'Nocrave is a recovery companion. Track a streak for every habit, ride out urges with a guided toolkit, and log slips without shame.',
   openGraph: {
-    title: 'Curb — Quit any addiction',
+    title: 'Nocrave — Quit any addiction',
     description:
       'A recovery companion. Streaks, an urge toolkit, and shame-free slip logging.',
     url: 'https://joincurb.app',
-    siteName: 'Curb',
+    siteName: 'Nocrave',
     type: 'website',
   },
   icons: { icon: '/favicon.png', apple: '/apple-touch-icon.png' },

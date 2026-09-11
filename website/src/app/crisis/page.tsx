@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function Page() {
   return (
-    <LegalPage title={'If you need help right now'} updated={'Free, confidential, and available whether or not you use Curb.'}>
+    <LegalPage title={'If you need help right now'} updated={'Free, confidential, and available whether or not you use Nocrave.'}>
 <Callout tone="danger">
     <p><strong>If you are in immediate danger or think you may harm yourself, call your local
     emergency number now</strong> — 911 in the US, 999 in the UK, 112 across the EU, 000 in
@@ -52,7 +52,7 @@ export default function Page() {
   </ul>
 
   <Callout>
-    <p>Curb is a self-tracking tool, not a treatment service, and cannot respond to
+    <p>Nocrave is a self-tracking tool, not a treatment service, and cannot respond to
     emergencies. Please use the lines above — they are staffed by people trained for this.</p>
   </Callout>
     </LegalPage>
