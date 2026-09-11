@@ -86,10 +86,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: palette.bg }}>
       <StatusBar style={activeScheme === 'light' ? 'dark' : 'light'} />
-      <PostHogProvider
-        client={posthog ?? undefined}
-        autocapture={false}
-      >
+      <MaybePostHog>
         {/* Manual screen tracking — autocapture is off per privacy contract */}
         <ScreenTracker />
         <ThemeProvider
@@ -128,7 +125,7 @@ export default function RootLayout() {
           </SessionProvider>
         </DbProvider>
         </ThemeProvider>
-      </PostHogProvider>
+      </MaybePostHog>
     </GestureHandlerRootView>
   );
 }
@@ -155,3 +152,16 @@ function ScreenTracker() {
   return null;
 }
 
+/**
+ * PostHogProvider needs a client or an api key and logs a console error
+ * without one. The client is null in development builds and simulators (see
+ * posthog.ts), so there is nothing to provide — render the tree bare.
+ */
+function MaybePostHog({ children }: { children: React.ReactNode }) {
+  if (!posthog) return <>{children}</>;
+  return (
+    <PostHogProvider client={posthog} autocapture={false}>
+      {children}
+    </PostHogProvider>
+  );
+}
