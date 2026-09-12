@@ -18,6 +18,7 @@ import Svg, { Line } from 'react-native-svg';
 
 import { markCelebrated } from '@/db/repo/milestones';
 import { Cta } from '@/features/onboarding/components/chrome';
+import { maybeAskForReview } from '@/features/review';
 import { track } from '@/lib/analytics';
 import { TIERS } from '@/features/streak/tiers';
 import { curves, springs, stagger } from '@/theme/motion';
@@ -27,6 +28,7 @@ import { type } from '@/theme/type';
 import { withAccess } from '@/features/premium/access';
 
 const AnimatedLine = Animated.createAnimatedComponent(Line);
+const REVIEW_TIERS = new Set([3, 30, 90]);
 const RAYS = 12;
 const SIZE = 320;
 const R0 = 96;
@@ -108,6 +110,9 @@ function MilestoneScreen() {
             if (periodStart) await markCelebrated(days, periodStart);
             if (router.canGoBack()) router.back();
             else router.replace('/');
+            // Ask on the milestones that mean the app has earned it, once the
+            // celebration is behind them — never over the celebration itself.
+            if (REVIEW_TIERS.has(days)) void maybeAskForReview('milestone');
           }}
         />
       </Animated.View>
