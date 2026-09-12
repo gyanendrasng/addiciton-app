@@ -129,3 +129,33 @@ export function yearlyAnchor(monthly: { amount: number; currency: string } | und
     return null;
   }
 }
+
+function money(amount: number, currency: string): string | null {
+  try {
+    const whole = Math.abs(amount - Math.round(amount)) < 0.005;
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: whole ? 0 : 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch {
+    return null;
+  }
+}
+
+/** "Works out to ₹475 a month" — the yearly price divided by twelve, in the store's currency. */
+export function yearlyPerMonth(yearly: { amount: number; currency: string } | undefined): string | null {
+  if (!yearly || !(yearly.amount > 0)) return null;
+  return money(yearly.amount / 12, yearly.currency);
+}
+
+/** "SAVE 67%" measured against twelve months of the live monthly price. */
+export function yearlySaving(
+  yearly: { amount: number } | undefined,
+  monthly: { amount: number } | undefined,
+): string | null {
+  if (!yearly || !monthly || !(monthly.amount > 0)) return null;
+  const pct = Math.round((1 - yearly.amount / (monthly.amount * 12)) * 100);
+  return pct >= 5 ? `SAVE ${pct}%` : null;
+}
