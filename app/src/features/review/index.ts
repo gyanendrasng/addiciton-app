@@ -1,5 +1,3 @@
-import * as StoreReview from 'expo-store-review';
-
 import { getSetting, setSetting } from '@/db/repo/settings';
 import { latestActiveRelapse } from '@/db/repo/relapses';
 import { track } from '@/lib/analytics';
@@ -14,6 +12,23 @@ import { dayKey, now } from '@/lib/clock';
  * on its own; the gate here keeps us from even asking more than once a season,
  * so those three chances land on good days.
  */
+type StoreReviewModule = typeof import('expo-store-review');
+
+/**
+ * Loaded lazily and defensively: expo-store-review throws at import when its
+ * native side is absent, and this JS can reach binaries built before the
+ * module was added (runtime 1.1.2 build 8, dev clients) over the air. Those
+ * simply never ask.
+ */
+function storeReview(): StoreReviewModule | null {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require('expo-store-review') as StoreReviewModule;
+  } catch {
+    return null;
+  }
+}
+
 const ASKED_AT = 'review.askedAt';
 const COOLDOWN_MS = 90 * 86_400_000;
 const SETTLE_MS = 600;
@@ -22,7 +37,8 @@ export type ReviewMoment = 'milestone' | 'urge_survived';
 
 export async function maybeAskForReview(moment: ReviewMoment) {
   try {
-    if (!(await StoreReview.hasAction())) return;
+    const StoreReview = storeReview();
+    if (!StoreReview || !(await StoreReview.hasAction())) return;
     const askedAt = await getSetting<number>(ASKED_AT);
     if (askedAt && now() - askedAt < COOLDOWN_MS) return;
     const lapse = await latestActiveRelapse();
