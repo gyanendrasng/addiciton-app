@@ -29,7 +29,7 @@ import {
   type StorePrice,
 } from '@/features/premium/purchases';
 import { usePremium } from '@/features/premium/use-premium';
-import { BENEFITS, disclosureFor, PLANS, PRIVACY_URL, TERMS_URL, yearlyAnchor, type Plan } from '@/features/premium/plans';
+import { BENEFITS, disclosureFor, PLANS, PRIVACY_URL, TERMS_URL, yearlyAnchor, yearlyPerMonth, yearlySaving, type Plan } from '@/features/premium/plans';
 import { hues, palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
@@ -53,12 +53,13 @@ export default function PaywallScreen() {
    * scaled-up screen drops the whole wall to a compact variant so the reason to
    * subscribe stays visible next to the price.
    */
-  const tight = height < 780 || PixelRatio.getFontScale() > 1.15;
-  const { premium, refresh, checking } = usePremium();
   // Dev door: `curb://paywall?preview=1` keeps the screen up on a subscribed
-  // account so it can be looked at without cancelling anything.
+  // account so it can be looked at without cancelling anything; `preview=tight`
+  // also forces the short-screen layout on a tall simulator.
   const params = useLocalSearchParams<{ preview?: string }>();
   const pinned = __DEV__ && !!params.preview;
+  const tight = height < 780 || PixelRatio.getFontScale() > 1.15 || (pinned && params.preview === 'tight');
+  const { premium, refresh, checking } = usePremium();
   // A simulator has no store, so the preview shows the USD fallbacks instead of dashes.
   const priceFor = (p: Plan): StorePrice | undefined =>
     prices[p.packageId] ?? (pinned ? { productId: p.productId, price: p.price, period: '', amount: p.amount, currency: 'USD' } : undefined);
@@ -157,6 +158,58 @@ export default function PaywallScreen() {
     Linking.openURL(url).catch(() => setError('Couldn’t open that link.'));
   };
 
+  // The yearly card's words come from live prices too: "$5 a month" is only
+  // true in dollars, and 67% is only true where the ratio is.
+  const subFor = (p: Plan) => (p.id === 'yearly' ? `Works out to ${yearlyPerMonth(priceFor(p)) ?? '—'} a month` : p.sub);
+  const badgeFor = (p: Plan) => (p.id === 'yearly' ? yearlySaving(priceFor(p), priceFor(PLANS[1])) : p.badge);
+
+  const plansBlock = (
+  <View style={s.plans}>
+    {PLANS.map((p) => {
+      const on = p.id === plan.id;
+      return (
+        <Tap
+          key={p.id}
+          haptic="light"
+          onPress={() => setSelected(p.id)}
+          accessibilityRole="radio"
+          accessibilityState={{ selected: on }}
+          accessibilityLabel={`${p.name}, ${priceFor(p)?.price ?? ''}${p.period}. ${subFor(p)}`}
+          style={[s.plan, tight && s.planTight, on && s.planOn]}>
+          <View style={[s.radio, on && s.radioOn]}>
+            {on ? <View style={s.radioDot} /> : null}
+          </View>
+          <View style={s.planBody}>
+            <View style={s.planTop}>
+              <Text maxFontSizeMultiplier={1.25} style={s.planName}>{p.name}</Text>
+              {badgeFor(p) ? (
+                <View style={s.badge}>
+                  <Text maxFontSizeMultiplier={1.25} style={s.badgeText}>{badgeFor(p)}</Text>
+                </View>
+              ) : null}
+            </View>
+            <Text maxFontSizeMultiplier={1.25} style={s.planSub}>{subFor(p)}</Text>
+          </View>
+          <View style={s.priceCol}>
+            {/* The year, priced the monthly way: the "was" that SAVE 67% is against. */}
+            {p.id === 'yearly' && yearlyAnchor(priceFor(PLANS[1])) ? (
+              <Text maxFontSizeMultiplier={1.25} style={s.anchor}>{yearlyAnchor(priceFor(PLANS[1]))}</Text>
+            ) : null}
+            {/* The deal price in the money-kept green, so the "was → now" reads at a glance. */}
+            <Text maxFontSizeMultiplier={1.25} style={[s.planPrice, p.id === 'yearly' && yearlyAnchor(priceFor(PLANS[1])) ? s.planPriceDeal : null]}>
+              {/* Never render the USD placeholder to a non-US store — a
+                  price in the wrong currency is worse than none, and the
+                  purchase sheet would contradict it a tap later. */}
+              {priceFor(p)?.price ?? '—'}
+              <Text maxFontSizeMultiplier={1.25} style={s.planPeriod}>{p.period}</Text>
+            </Text>
+          </View>
+        </Tap>
+      );
+    })}
+  </View>
+  );
+
   return (
     <SafeAreaView style={s.root} edges={['top', 'bottom']}>
       <ScrollView
@@ -196,53 +249,11 @@ export default function PaywallScreen() {
           ))}
         </View>
 
+        {tight ? <View style={s.plansInline}>{plansBlock}</View> : null}
       </ScrollView>
 
       <View style={[s.actions, tight && s.actionsTight]}>
-        <View style={s.plans}>
-          {PLANS.map((p) => {
-            const on = p.id === plan.id;
-            return (
-              <Tap
-                key={p.id}
-                haptic="light"
-                onPress={() => setSelected(p.id)}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: on }}
-                accessibilityLabel={`${p.name}, ${p.price}${p.period}. ${p.sub}`}
-                style={[s.plan, tight && s.planTight, on && s.planOn]}>
-                <View style={[s.radio, on && s.radioOn]}>
-                  {on ? <View style={s.radioDot} /> : null}
-                </View>
-                <View style={s.planBody}>
-                  <View style={s.planTop}>
-                    <Text maxFontSizeMultiplier={1.25} style={s.planName}>{p.name}</Text>
-                    {p.badge ? (
-                      <View style={s.badge}>
-                        <Text maxFontSizeMultiplier={1.25} style={s.badgeText}>{p.badge}</Text>
-                      </View>
-                    ) : null}
-                  </View>
-                  <Text maxFontSizeMultiplier={1.25} style={s.planSub}>{p.sub}</Text>
-                </View>
-                <View style={s.priceCol}>
-                  {/* The year, priced the monthly way: the "was" that SAVE 67% is against. */}
-                  {p.id === 'yearly' && yearlyAnchor(priceFor(PLANS[1])) ? (
-                    <Text maxFontSizeMultiplier={1.25} style={s.anchor}>{yearlyAnchor(priceFor(PLANS[1]))}</Text>
-                  ) : null}
-                  {/* The deal price in the money-kept green, so the "was → now" reads at a glance. */}
-                  <Text maxFontSizeMultiplier={1.25} style={[s.planPrice, p.id === 'yearly' && yearlyAnchor(priceFor(PLANS[1])) ? s.planPriceDeal : null]}>
-                    {/* Never render the USD placeholder to a non-US store — a
-                        price in the wrong currency is worse than none, and the
-                        purchase sheet would contradict it a tap later. */}
-                    {priceFor(p)?.price ?? '—'}
-                    <Text maxFontSizeMultiplier={1.25} style={s.planPeriod}>{p.period}</Text>
-                  </Text>
-                </View>
-              </Tap>
-            );
-          })}
-        </View>
+        {tight ? null : plansBlock}
 
         {error ? <Notice>{error}</Notice> : null}
 
@@ -318,6 +329,7 @@ const s = StyleSheet.create({
   benefitText: { flex: 1, color: palette.textDim, fontSize: 14.5, lineHeight: 21, fontFamily: type.body },
 
   plans: { gap: Spacing.two, marginBottom: Spacing.two },
+  plansInline: { marginTop: Spacing.four },
   plan: {
     minHeight: 72,
     borderRadius: 16,
