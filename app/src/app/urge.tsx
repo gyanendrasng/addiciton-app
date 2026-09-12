@@ -5,7 +5,7 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Tap } from '@/components/ui/tap';
-import { finishUrge, insertUrge } from '@/db/repo/urges';
+import { countUrges, finishUrge, insertUrge } from '@/db/repo/urges';
 import { ORDER, urgeReducer, type UrgeStep } from '@/features/urge/machine';
 import { StepDots } from '@/features/urge/screens/shared';
 import { Breathe } from '@/features/urge/screens/Breathe';
@@ -21,6 +21,7 @@ import { type } from '@/theme/type';
 import { track } from '@/lib/analytics';
 import { useDismiss } from '@/lib/nav';
 import { withAccess } from '@/features/premium/access';
+import { maybeAskForReview } from '@/features/review';
 import { useProfile } from '@/db/repo/profile';
 import { triggerFrom } from '@/features/notifications/trigger-window';
 
@@ -81,8 +82,12 @@ function UrgeScreen() {
       });
     }
     if (outcome === 'slipped') router.replace({ pathname: '/relapse', params: { urgeId: id ?? '' } });
-    else if (router.canGoBack()) router.back();
-    else router.replace('/');
+    else {
+      if (router.canGoBack()) router.back();
+      else router.replace('/');
+      // The second survived urge, not the first: by then the toolkit has proven itself.
+      if ((await countUrges('survived')) >= 2) void maybeAskForReview('urge_survived');
+    }
   };
 
   const next = (completed: boolean) => dispatch({ type: 'next', completed });

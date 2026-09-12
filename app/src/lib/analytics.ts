@@ -66,6 +66,7 @@ export type AnalyticsEvent =
   | 'relapse_logged'
   | 'relapse_undone'
   | 'milestone_reached'
+  | 'review_prompted'
   // shield (Screen Time)
   | 'shield_set_up'
   | 'shield_lock_started'
