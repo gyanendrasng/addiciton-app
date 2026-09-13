@@ -34,12 +34,24 @@ export type Rate = {
  */
 export const BASE_CURRENCY = 'USD';
 
+/*
+ * Checked against US figures (Sept 2026), erring low every time:
+ *   cigarette   national average pack $8.60–$10.15 → $0.50; ~6 min to smoke
+ *   drink       bar median beer $6.52, at home $1–2; heavy drinking is mostly
+ *               at home → $4; 20 min for the drink itself, not the evening
+ *   weed        retail flower ~$8.92/g, a joint is 0.3–0.5 g → $4
+ *   vape        a $12–15 disposable lasts ~5 days → ~$3/day, at ~10 sessions
+ *   gambling    at-risk gamblers lose ~$3,000/yr, sports bettors avg $3,284
+ *               → $20 a session at a few times a week lands on that
+ *   porn        average visit 10–12 min; a session spans visits → 20 min
+ *   social      US adults average 2 h 16 min a day → 40 min × 3 scrolls
+ */
 export const DEFAULT_RATES: Record<string, Rate> = {
-  porn: { cost: 0, minutes: 35, unit: 'session', units: 'sessions' },
-  alcohol: { cost: 6, minutes: 45, unit: 'drink', units: 'drinks' },
-  smoking: { cost: 0.75, minutes: 7, unit: 'cigarette', units: 'cigarettes' },
-  vaping: { cost: 1.2, minutes: 5, unit: 'session', units: 'sessions' },
-  weed: { cost: 8, minutes: 60, unit: 'session', units: 'sessions' },
+  porn: { cost: 0, minutes: 20, unit: 'session', units: 'sessions' },
+  alcohol: { cost: 4, minutes: 20, unit: 'drink', units: 'drinks' },
+  smoking: { cost: 0.5, minutes: 6, unit: 'cigarette', units: 'cigarettes' },
+  vaping: { cost: 0.3, minutes: 5, unit: 'session', units: 'sessions' },
+  weed: { cost: 4, minutes: 45, unit: 'session', units: 'sessions' },
   social: { cost: 0, minutes: 40, unit: 'scroll', units: 'scrolls' },
   gambling: { cost: 20, minutes: 45, unit: 'session', units: 'sessions' },
   other: { cost: 0, minutes: 30, unit: 'session', units: 'sessions' },
@@ -80,14 +92,17 @@ export function ratesFor(
  *   0 Multiple times a day · 1 About once a day
  *   2 A few times a week   · 3 Weekly or less
  *
- * "Multiple" is taken as 3 rather than something larger — the honest low end
- * of a vague answer.
+ * "Multiple" is taken as 3 — the honest low end of a vague answer — except
+ * for cigarettes and vaping, where "multiple times a day" means something
+ * closer to ten: 58% of US smokers are under 15 a day, almost none are at 3.
  */
 const PER_DAY = [3, 1, 3 / 7, 1 / 7];
+const MULTIPLE_PER_DAY: Record<string, number> = { smoking: 10, vaping: 10 };
 
 export function perDayFor(habitId: string, answers: Record<string, number[]>): number {
   const idx = answers[`frequency:${habitId}`]?.[0] ?? answers['frequency']?.[0];
   if (idx == null) return PER_DAY[1]; // no answer: assume daily
+  if (idx === 0) return MULTIPLE_PER_DAY[habitId] ?? PER_DAY[0];
   return PER_DAY[idx] ?? PER_DAY[1];
 }
 

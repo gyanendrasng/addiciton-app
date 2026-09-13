@@ -15,7 +15,6 @@ import {
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AppLogo } from '@/components/ui/app-logo';
 import { Notice } from '@/components/ui/notice';
 import { Tap } from '@/components/ui/tap';
 import { Tick } from '@/components/ui/tick';
@@ -29,6 +28,8 @@ import {
   type StorePrice,
 } from '@/features/premium/purchases';
 import { usePremium } from '@/features/premium/use-premium';
+import { HowWorkedOut } from '@/features/savings/HowWorkedOut';
+import { useYearAhead } from '@/features/savings/use-year-ahead';
 import { BENEFITS, disclosureFor, PLANS, PRIVACY_URL, TERMS_URL, yearlyAnchor, yearlyPerMonth, yearlySaving, type Plan } from '@/features/premium/plans';
 import { hues, palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
@@ -66,6 +67,16 @@ export default function PaywallScreen() {
 
   const [selected, setSelected] = useState<Plan['id'] | null>(null);
   const [busy, setBusy] = useState<'buy' | 'restore' | null>(null);
+  /**
+   * The year ahead, from their own answers: the reason the price is small.
+   * An estimate, and it says so — "about", "going by your answers", and the
+   * working one tap away — while the plans below stay exactly as prominent
+   * as they were. That's the line App Review draws (3.1.2c): a big number is
+   * fine as long as it isn't standing in for the price.
+   */
+  const year = useYearAhead();
+  const [showHow, setShowHow] = useState(false);
+  const yearlyPlan = PLANS.find((p) => p.id === 'yearly');
   const [error, setError] = useState<string | null>(null);
   /**
    * Live prices from the store. Apple requires the real, localised price be
@@ -101,6 +112,7 @@ export default function PaywallScreen() {
 
   // Weekly is preselected — the lowest number to say yes to.
   const plan = PLANS.find((p) => p.id === selected) ?? PLANS[0];
+  const yearlyPrice = yearlyPlan ? priceFor(yearlyPlan)?.price : undefined;
 
   const buy = async () => {
     if (busy) return;
@@ -217,12 +229,40 @@ export default function PaywallScreen() {
         contentContainerStyle={s.content}
         showsVerticalScrollIndicator={false}>
         <Animated.View entering={FadeIn.duration(320)} style={s.head}>
-          <AppLogo size={tight ? 40 : 52} />
-          <Text maxFontSizeMultiplier={1.25} style={[s.h1, tight && s.h1Tight]}>Everything, from{'\n'}day one.</Text>
-          <Text maxFontSizeMultiplier={1.25} style={s.sub}>
-            Qwyt has no free tier and no ads. One subscription, everything unlocked, on
-            every device you sign in on.
-          </Text>
+          {year ? (
+            <>
+              <Text maxFontSizeMultiplier={1.25} style={[s.h1, s.h1Year, tight && s.h1Tight]}>
+                {year.money ? 'You’d save about' : 'You’d get back about'}
+                {'\n'}
+                <Text style={s.h1Number}>{year.money ?? `${year.hours.toLocaleString()} hours`}</Text>
+                {'\u00A0a year'}
+                {'\n'}
+                <Text style={s.h1Dim}>
+                  {year.money && year.hours >= 10 ? (
+                    <>
+                      and <Text style={s.h1Accent}>{year.hours.toLocaleString()} hours</Text>,{' '}
+                    </>
+                  ) : null}
+                  by quitting {year.quitting}.
+                </Text>
+              </Text>
+              <Text maxFontSizeMultiplier={1.25} style={s.sub}>
+                {year.money ? 'Going by your answers, at typical prices. ' : 'Going by how often you said. '}
+                {yearlyPrice ? `Qwyt is ${yearlyPrice} for the year. ` : ''}
+                <Text style={s.link} onPress={() => setShowHow(true)} accessibilityRole="button" accessibilityLabel="How this is worked out">
+                  How that’s worked out
+                </Text>
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text maxFontSizeMultiplier={1.25} style={[s.h1, tight && s.h1Tight]}>Everything, from{'\n'}day one.</Text>
+              <Text maxFontSizeMultiplier={1.25} style={s.sub}>
+                Qwyt has no free tier and no ads. One subscription, everything unlocked, on
+                every device you sign in on.
+              </Text>
+            </>
+          )}
         </Animated.View>
 
         <View style={[s.benefits, tight && s.benefitsTight]}>
@@ -302,6 +342,7 @@ export default function PaywallScreen() {
           </Tap>
         </View>
       </View>
+      {year ? <HowWorkedOut visible={showHow} onClose={() => setShowHow(false)} rows={year.rows} days={365} currency={year.currency} /> : null}
     </SafeAreaView>
   );
 }
@@ -320,7 +361,13 @@ const s = StyleSheet.create({
     fontFamily: type.display,
   },
   h1Tight: { fontSize: 26, lineHeight: 31 },
+  // The number is the headline; the words around it step back a size.
+  h1Year: { fontSize: 22, lineHeight: 30, letterSpacing: -0.4 },
+  h1Number: { color: palette.accent, fontSize: 40, lineHeight: 44, letterSpacing: -1 },
+  h1Dim: { color: palette.textDim },
+  h1Accent: { color: palette.accent },
   sub: { color: palette.textDim, fontSize: 15, lineHeight: 22, fontFamily: type.body },
+  link: { color: palette.text, fontFamily: type.bodySemi },
 
   benefits: { marginTop: Spacing.five, gap: 14 },
   benefitsTight: { marginTop: Spacing.three, gap: 10 },
