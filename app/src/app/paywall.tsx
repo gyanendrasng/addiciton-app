@@ -29,6 +29,8 @@ import {
   type StorePrice,
 } from '@/features/premium/purchases';
 import { usePremium } from '@/features/premium/use-premium';
+import { HowWorkedOut } from '@/features/savings/HowWorkedOut';
+import { useYearAhead } from '@/features/savings/use-year-ahead';
 import { BENEFITS, disclosureFor, PLANS, PRIVACY_URL, TERMS_URL, yearlyAnchor, yearlyPerMonth, yearlySaving, type Plan } from '@/features/premium/plans';
 import { hues, palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
@@ -66,6 +68,16 @@ export default function PaywallScreen() {
 
   const [selected, setSelected] = useState<Plan['id'] | null>(null);
   const [busy, setBusy] = useState<'buy' | 'restore' | null>(null);
+  /**
+   * The year ahead, from their own answers: the reason the price is small.
+   * An estimate, and it says so — "about", "going by your answers", and the
+   * working one tap away — while the plans below stay exactly as prominent
+   * as they were. That's the line App Review draws (3.1.2c): a big number is
+   * fine as long as it isn't standing in for the price.
+   */
+  const year = useYearAhead();
+  const [showHow, setShowHow] = useState(false);
+  const yearlyPlan = PLANS.find((p) => p.id === 'yearly');
   const [error, setError] = useState<string | null>(null);
   /**
    * Live prices from the store. Apple requires the real, localised price be
@@ -101,6 +113,7 @@ export default function PaywallScreen() {
 
   // Weekly is preselected — the lowest number to say yes to.
   const plan = PLANS.find((p) => p.id === selected) ?? PLANS[0];
+  const yearlyPrice = yearlyPlan ? priceFor(yearlyPlan)?.price : undefined;
 
   const buy = async () => {
     if (busy) return;
@@ -218,11 +231,30 @@ export default function PaywallScreen() {
         showsVerticalScrollIndicator={false}>
         <Animated.View entering={FadeIn.duration(320)} style={s.head}>
           <AppLogo size={tight ? 40 : 52} />
-          <Text maxFontSizeMultiplier={1.25} style={[s.h1, tight && s.h1Tight]}>Everything, from{'\n'}day one.</Text>
-          <Text maxFontSizeMultiplier={1.25} style={s.sub}>
-            Qwyt has no free tier and no ads. One subscription, everything unlocked, on
-            every device you sign in on.
-          </Text>
+          {year ? (
+            <>
+              <Text maxFontSizeMultiplier={1.25} style={[s.h1, s.h1Big, tight && s.h1Tight]}>
+                About {year.money ?? year.time}
+                {'\n'}
+                <Text style={s.h1Dim}>{year.money ? 'kept this year.' : 'back this year.'}</Text>
+              </Text>
+              <Text maxFontSizeMultiplier={1.25} style={s.sub}>
+                {year.money ? 'Going by your answers, at typical prices. ' : 'Going by how often you said. '}
+                {yearlyPrice ? `Qwyt is ${yearlyPrice} for the year. ` : ''}
+                <Text style={s.link} onPress={() => setShowHow(true)} accessibilityRole="button" accessibilityLabel="How this is worked out">
+                  How that’s worked out
+                </Text>
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text maxFontSizeMultiplier={1.25} style={[s.h1, tight && s.h1Tight]}>Everything, from{'\n'}day one.</Text>
+              <Text maxFontSizeMultiplier={1.25} style={s.sub}>
+                Qwyt has no free tier and no ads. One subscription, everything unlocked, on
+                every device you sign in on.
+              </Text>
+            </>
+          )}
         </Animated.View>
 
         <View style={[s.benefits, tight && s.benefitsTight]}>
@@ -302,6 +334,7 @@ export default function PaywallScreen() {
           </Tap>
         </View>
       </View>
+      {year ? <HowWorkedOut visible={showHow} onClose={() => setShowHow(false)} rows={year.rows} days={365} currency={year.currency} /> : null}
     </SafeAreaView>
   );
 }
@@ -320,7 +353,10 @@ const s = StyleSheet.create({
     fontFamily: type.display,
   },
   h1Tight: { fontSize: 26, lineHeight: 31 },
+  h1Big: { fontSize: 40, lineHeight: 44, letterSpacing: -1 },
+  h1Dim: { color: palette.textDim },
   sub: { color: palette.textDim, fontSize: 15, lineHeight: 22, fontFamily: type.body },
+  link: { color: palette.text, fontFamily: type.bodySemi },
 
   benefits: { marginTop: Spacing.five, gap: 14 },
   benefitsTight: { marginTop: Spacing.three, gap: 10 },
