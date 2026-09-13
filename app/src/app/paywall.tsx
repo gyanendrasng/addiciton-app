@@ -357,7 +357,7 @@ const s = StyleSheet.create({
   },
   h1Tight: { fontSize: 26, lineHeight: 31 },
   // The number is the headline; the words around it step back a size.
-  h1Year: { fontSize: 27, lineHeight: 36, letterSpacing: -0.5 },
+  h1Year: { fontSize: 22, lineHeight: 30, letterSpacing: -0.4 },
   h1Number: { color: palette.accent, fontSize: 40, lineHeight: 44, letterSpacing: -1 },
   h1Dim: { color: palette.textDim },
   sub: { color: palette.textDim, fontSize: 15, lineHeight: 22, fontFamily: type.body },
