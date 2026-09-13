@@ -20,6 +20,7 @@ import type { ComponentType } from 'react';
 import type { SFSymbol } from 'expo-symbols';
 
 import type { Hue } from '@/theme/palette';
+import { EchoArt, FlapArt, MergeArt, TowerArt, type ArtProps } from './art';
 import { EchoGame } from './EchoGame';
 import { FlapGame } from './FlapGame';
 import { MergeGame } from './MergeGame';
@@ -35,16 +36,58 @@ export type GameMeta = {
   headline: string;
   icon: SFSymbol;
   hue: Hue;
+  /** the tile's picture of the game */
+  Art: ComponentType<ArtProps>;
   /** where the personal best lives (settings key), and how to print it */
   best: { key: string; unit?: string; label: string };
   Component: ComponentType<{ onDone: () => void }>;
 };
 
 export const GAMES: readonly GameMeta[] = [
-  { id: 'tower', title: 'Tower', blurb: 'Drop it flush. Go high.', headline: 'Build the tower.', icon: 'square.stack.3d.up.fill', hue: 'progress', best: { key: 'game.tower.best', label: 'Best height' }, Component: TowerGame },
-  { id: 'flap', title: 'Flap', blurb: 'Tap. Thread the gaps.', headline: 'Thread the gaps.', icon: 'bird.fill', hue: 'reasons', best: { key: 'game.flap.best', label: 'Best' }, Component: FlapGame },
-  { id: 'merge', title: 'Merge', blurb: 'Swipe. Reach 2048.', headline: 'Reach 2048.', icon: 'square.grid.2x2.fill', hue: 'checkin', best: { key: 'game.merge.best', label: 'Best score' }, Component: MergeGame },
-  { id: 'echo', title: 'Echo', blurb: 'Repeat it. It grows.', headline: 'Repeat the pattern.', icon: 'waveform.path', hue: 'urge', best: { key: 'game.echo.best', label: 'Best round' }, Component: EchoGame },
+  {
+    id: 'tower',
+    title: 'Tower',
+    blurb: 'Drop it flush. Go high.',
+    headline: 'Build the tower.',
+    icon: 'square.stack.3d.up.fill',
+    hue: 'progress',
+    Art: TowerArt,
+    best: { key: 'game.tower.best', label: 'Best height' },
+    Component: TowerGame,
+  },
+  {
+    id: 'flap',
+    title: 'Flap',
+    blurb: 'Tap. Thread the gaps.',
+    headline: 'Thread the gaps.',
+    icon: 'bird.fill',
+    hue: 'reasons',
+    Art: FlapArt,
+    best: { key: 'game.flap.best', label: 'Best' },
+    Component: FlapGame,
+  },
+  {
+    id: 'merge',
+    title: 'Merge',
+    blurb: 'Swipe. Reach 2048.',
+    headline: 'Reach 2048.',
+    icon: 'square.grid.2x2.fill',
+    hue: 'checkin',
+    Art: MergeArt,
+    best: { key: 'game.merge.best', label: 'Best score' },
+    Component: MergeGame,
+  },
+  {
+    id: 'echo',
+    title: 'Echo',
+    blurb: 'Repeat it. It grows.',
+    headline: 'Repeat the pattern.',
+    icon: 'waveform.path',
+    hue: 'urge',
+    Art: EchoArt,
+    best: { key: 'game.echo.best', label: 'Best round' },
+    Component: EchoGame,
+  },
 ];
 
 export type GameId = (typeof GAMES)[number]['id'];
