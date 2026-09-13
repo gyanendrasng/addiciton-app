@@ -35,10 +35,13 @@ function gerund(verb: string): string {
   return [ing, ...rest].join(' ');
 }
 
+/** Up to three named; past that the sentence stops being a sentence. */
 function joinAnd(parts: string[]): string {
   if (parts.length <= 1) return parts[0] ?? '';
   if (parts.length === 2) return `${parts[0]} and ${parts[1]}`;
-  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
+  if (parts.length === 3) return `${parts[0]}, ${parts[1]} and ${parts[2]}`;
+  // Non-breaking, so "all five" never leaves "five." alone on a line.
+  return `all\u00A0${['four', 'five', 'six', 'seven', 'eight'][parts.length - 4] ?? 'of them'}`;
 }
 
 export function useYearAhead(): YearAhead | null {

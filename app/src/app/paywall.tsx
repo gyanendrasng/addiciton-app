@@ -234,11 +234,16 @@ export default function PaywallScreen() {
               <Text maxFontSizeMultiplier={1.25} style={[s.h1, s.h1Year, tight && s.h1Tight]}>
                 {year.money ? 'You’d save about' : 'You’d get back about'}
                 {'\n'}
-                <Text style={s.h1Number}>{year.money ?? `${year.hours} hours`}</Text>
+                <Text style={s.h1Number}>{year.money ?? `${year.hours.toLocaleString()} hours`}</Text>
                 {'\u00A0a year'}
                 {'\n'}
                 <Text style={s.h1Dim}>
-                  {year.money && year.hours >= 10 ? `and ${year.hours} hours, ` : ''}by quitting {year.quitting}.
+                  {year.money && year.hours >= 10 ? (
+                    <>
+                      and <Text style={s.h1Accent}>{year.hours.toLocaleString()} hours</Text>,{' '}
+                    </>
+                  ) : null}
+                  by quitting {year.quitting}.
                 </Text>
               </Text>
               <Text maxFontSizeMultiplier={1.25} style={s.sub}>
@@ -360,6 +365,7 @@ const s = StyleSheet.create({
   h1Year: { fontSize: 22, lineHeight: 30, letterSpacing: -0.4 },
   h1Number: { color: palette.accent, fontSize: 40, lineHeight: 44, letterSpacing: -1 },
   h1Dim: { color: palette.textDim },
+  h1Accent: { color: palette.accent },
   sub: { color: palette.textDim, fontSize: 15, lineHeight: 22, fontFamily: type.body },
   link: { color: palette.text, fontFamily: type.bodySemi },
 
