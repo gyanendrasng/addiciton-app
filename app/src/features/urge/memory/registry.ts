@@ -2,23 +2,29 @@
  * The one list of games.
  *
  * Both the urge toolkit's Step 4 and the Games tab draw from here, so adding a
- * game is one entry. Every game takes `onDone` and nothing else, finishes in
- * one to two minutes, and never keeps score against the player — the job is
- * to hold attention until the wave breaks, not to be lost.
+ * game is one entry. Every game takes `onDone` and nothing else, and ends in
+ * one to two minutes.
+ *
+ * Four, on purpose, and all four visuospatial: the craving research (Skorka-
+ * Brown & Andrade) found it's *spatial* working-memory load — shapes, edges,
+ * positions — that competes with the imagery an urge runs on, not words or
+ * arithmetic. Each is a loop with years of proof behind it (timing, reflex,
+ * planning, memory), each has a score that goes up and a best to beat, and
+ * none has a "game over": a round ending is just a round ending, the next go
+ * a tap away.
+ *
+ * Rules aren't copyrightable; names and looks are. So these are the
+ * mechanics under our own names, in our own palette, with no borrowed art.
  */
 import type { ComponentType } from 'react';
 import type { SFSymbol } from 'expo-symbols';
 
 import type { Hue } from '@/theme/palette';
-import { BubblesGame } from './BubblesGame';
-import { ColorsGame } from './ColorsGame';
+import { EchoArt, FlapArt, MergeArt, TowerArt, type ArtProps } from './art';
 import { EchoGame } from './EchoGame';
-import { LettersGame } from './LettersGame';
-import { MemoryGame } from './MemoryGame';
-import { RecallGame } from './RecallGame';
-import { SevensGame } from './SevensGame';
-import { SpotGame } from './SpotGame';
-import { SumsGame } from './SumsGame';
+import { FlapGame } from './FlapGame';
+import { MergeGame } from './MergeGame';
+import { TowerGame } from './TowerGame';
 
 export type GameMeta = {
   id: string;
@@ -30,19 +36,58 @@ export type GameMeta = {
   headline: string;
   icon: SFSymbol;
   hue: Hue;
+  /** the tile's picture of the game */
+  Art: ComponentType<ArtProps>;
+  /** where the personal best lives (settings key), and how to print it */
+  best: { key: string; unit?: string; label: string };
   Component: ComponentType<{ onDone: () => void }>;
 };
 
 export const GAMES: readonly GameMeta[] = [
-  { id: 'bubbles', title: 'Bubbles', blurb: 'Pop before they shrink.', headline: 'Pop them before they go.', icon: 'circle.hexagongrid.fill', hue: 'checkin', Component: BubblesGame },
-  { id: 'pairs', title: 'Pairs', blurb: 'Match six pairs.', headline: 'Match the pairs.', icon: 'square.grid.2x2.fill', hue: 'progress', Component: MemoryGame },
-  { id: 'echo', title: 'Echo', blurb: 'Repeat the pattern.', headline: 'Repeat the pattern.', icon: 'waveform.path', hue: 'pledge', Component: EchoGame },
-  { id: 'letters', title: 'Letters', blurb: 'Unscramble the word.', headline: 'Unscramble the word.', icon: 'textformat.abc', hue: 'reasons', Component: LettersGame },
-  { id: 'spot', title: 'Spot it', blurb: 'Find the tilted one.', headline: 'Spot the odd one.', icon: 'eye.fill', hue: 'urge', Component: SpotGame },
-  { id: 'sums', title: 'Sums', blurb: 'Two that add up.', headline: 'Find two that add up.', icon: 'plus.circle.fill', hue: 'checkin', Component: SumsGame },
-  { id: 'colors', title: 'Colors', blurb: 'Word vs. ink — match?', headline: 'Word vs. color.', icon: 'paintpalette.fill', hue: 'reasons', Component: ColorsGame },
-  { id: 'recall', title: 'Recall', blurb: 'Hold a growing number.', headline: 'Hold the number.', icon: 'textformat.123', hue: 'progress', Component: RecallGame },
-  { id: 'sevens', title: 'Countdown', blurb: 'Subtract your way down.', headline: 'Do the math.', icon: 'minus.circle.fill', hue: 'pledge', Component: SevensGame },
+  {
+    id: 'tower',
+    title: 'Tower',
+    blurb: 'Drop it flush. Go high.',
+    headline: 'Build the tower.',
+    icon: 'square.stack.3d.up.fill',
+    hue: 'progress',
+    Art: TowerArt,
+    best: { key: 'game.tower.best', label: 'Best height' },
+    Component: TowerGame,
+  },
+  {
+    id: 'flap',
+    title: 'Flap',
+    blurb: 'Tap. Thread the gaps.',
+    headline: 'Thread the gaps.',
+    icon: 'bird.fill',
+    hue: 'reasons',
+    Art: FlapArt,
+    best: { key: 'game.flap.best', label: 'Best' },
+    Component: FlapGame,
+  },
+  {
+    id: 'merge',
+    title: 'Merge',
+    blurb: 'Swipe. Reach 2048.',
+    headline: 'Reach 2048.',
+    icon: 'square.grid.2x2.fill',
+    hue: 'checkin',
+    Art: MergeArt,
+    best: { key: 'game.merge.best', label: 'Best score' },
+    Component: MergeGame,
+  },
+  {
+    id: 'echo',
+    title: 'Echo',
+    blurb: 'Repeat it. It grows.',
+    headline: 'Repeat the pattern.',
+    icon: 'waveform.path',
+    hue: 'urge',
+    Art: EchoArt,
+    best: { key: 'game.echo.best', label: 'Best round' },
+    Component: EchoGame,
+  },
 ];
 
 export type GameId = (typeof GAMES)[number]['id'];

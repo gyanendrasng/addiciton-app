@@ -178,7 +178,6 @@ export default function ShieldTab() {
       <Frame
         eyebrow="Shield · Step 1 of 3"
         title="Put a shield between you and it."
-        subtitle="Choose the apps and sites that pull you in. Qwyt keeps them out of reach, and shows you your own reason when you try."
         footer={
           <View style={s.footerStack}>
             {allowed ? (
@@ -186,9 +185,7 @@ export default function ShieldTab() {
                 <SymbolView name="checkmark.circle.fill" size={16} tintColor={hues.pledge.solid} />
                 <Text style={s.statusText}>Screen Time access allowed</Text>
               </View>
-            ) : (
-              <Text style={s.statusHint}>Apple asks once, with your device passcode.</Text>
-            )}
+            ) : null}
             {allowed ? <Cta label="Continue" onPress={forward} /> : <Cta label={asking ? 'Asking…' : 'Allow Screen Time'} onPress={ask} disabled={asking} />}
           </View>
         }>
@@ -197,7 +194,7 @@ export default function ShieldTab() {
         </View>
         <View style={s.tiles}>
           <InfoTile hue="progress" icon="square.grid.2x2.fill" label="What" status="apps & sites you pick" />
-          <InfoTile hue="checkin" icon="clock.fill" label="When" status="always, hard hours, or on ask" />
+          <InfoTile hue="checkin" icon="clock.fill" label="When" status="always, at night, or on ask" />
           <InfoTile hue="reasons" icon="heart.fill" label="Why" status="your reason, on the shield" />
         </View>
         {denied || shield.auth === 'denied' ? (
@@ -325,16 +322,8 @@ export default function ShieldTab() {
     remaining = 1;
   }
 
+  // The hero card under this says when and why; the title only needs the state.
   const headline = state.up ? 'Shield is up.' : 'Shield is down.';
-  const detail = state.up
-    ? state.reason === 'lock'
-      ? `Until ${state.until}, because you asked.`
-      : state.reason === 'always'
-        ? 'Always on. Turning it off waits your delay.'
-        : `Until ${state.until}, your hard hours.`
-    : mode === 'window' && state.next
-      ? `Back up at ${state.next}.`
-      : 'Up only when you ask.';
 
   const lock = async () => {
     const scheduled = await startLock(duration);
@@ -379,7 +368,6 @@ export default function ShieldTab() {
       <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         <Eyebrow>Shield</Eyebrow>
         <Title>{headline}</Title>
-        <Subtitle>{detail}</Subtitle>
 
         <Animated.View layout={LinearTransition.duration(durations.base)}>
           <Card style={s.hero}>
@@ -521,7 +509,8 @@ function Frame({
 }: {
   eyebrow: string;
   title: string;
-  subtitle: string;
+  /** one line at most — the cards below carry the explanation */
+  subtitle?: string;
   footer?: React.ReactNode;
   children?: React.ReactNode;
 }) {
@@ -530,7 +519,7 @@ function Frame({
       <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         <Eyebrow>{eyebrow}</Eyebrow>
         <Title>{title}</Title>
-        <Subtitle>{subtitle}</Subtitle>
+        {subtitle ? <Subtitle>{subtitle}</Subtitle> : null}
         <View style={{ height: Spacing.two }} />
         {children}
         <View style={{ height: 220 }} />
@@ -651,7 +640,6 @@ const s = StyleSheet.create({
   infoStatus: { color: palette.textDim, fontSize: 12, lineHeight: 16, fontFamily: type.bodyMed },
   status: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 28, marginBottom: 2 },
   statusText: { color: palette.textDim, fontSize: 13, fontFamily: type.bodyMed },
-  statusHint: { color: palette.textFaint, fontSize: 12, fontFamily: type.body, textAlign: 'center', minHeight: 28, lineHeight: 28 },
   ghostRow: { flexDirection: 'row', gap: Spacing.two },
   footerSheet: { paddingBottom: Spacing.four },
   miniBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 12, backgroundColor: palette.surface3 },
