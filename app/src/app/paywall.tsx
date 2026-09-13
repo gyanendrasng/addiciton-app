@@ -15,7 +15,6 @@ import {
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AppLogo } from '@/components/ui/app-logo';
 import { Notice } from '@/components/ui/notice';
 import { Tap } from '@/components/ui/tap';
 import { Tick } from '@/components/ui/tick';
@@ -230,16 +229,17 @@ export default function PaywallScreen() {
         contentContainerStyle={s.content}
         showsVerticalScrollIndicator={false}>
         <Animated.View entering={FadeIn.duration(320)} style={s.head}>
-          <AppLogo size={tight ? 40 : 52} />
           {year ? (
             <>
               <Text maxFontSizeMultiplier={1.25} style={[s.h1, s.h1Year, tight && s.h1Tight]}>
                 {year.money ? 'You’d save about' : 'You’d get back about'}
                 {'\n'}
-                <Text style={s.h1Number}>{year.money ?? year.time}</Text>
+                <Text style={s.h1Number}>{year.money ?? `${year.hours} hours`}</Text>
                 {'\u00A0a year'}
                 {'\n'}
-                <Text style={s.h1Dim}>by quitting {year.quitting}.</Text>
+                <Text style={s.h1Dim}>
+                  {year.money && year.hours >= 10 ? `and ${year.hours} hours, ` : ''}by quitting {year.quitting}.
+                </Text>
               </Text>
               <Text maxFontSizeMultiplier={1.25} style={s.sub}>
                 {year.money ? 'Going by your answers, at typical prices. ' : 'Going by how often you said. '}

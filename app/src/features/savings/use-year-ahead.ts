@@ -19,6 +19,8 @@ import { CURRENCY_KEY, formatMoney, RATES_KEY } from './use-savings';
 export type YearAhead = {
   money: string | null;
   time: string;
+  /** whole hours, for the paywall line */
+  hours: number;
   /** "drinking and smoking" — the habits as things one stops doing */
   quitting: string;
   rows: WorkedOutRow[];
@@ -65,6 +67,7 @@ export function useYearAhead(): YearAhead | null {
     return {
       money: moneyKnown && year.money >= 20 ? formatMoney(year.money, currency) : null,
       time: humanDuration(year.minutes),
+      hours: Math.round(year.minutes / 60),
       quitting: joinAnd([...new Set(verbs.map(gerund))]),
       rows,
       currency,
