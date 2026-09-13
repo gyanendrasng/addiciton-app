@@ -8,18 +8,22 @@
  * Four, on purpose, and all four visuospatial: the craving research (Skorka-
  * Brown & Andrade) found it's *spatial* working-memory load — shapes, edges,
  * positions — that competes with the imagery an urge runs on, not words or
- * arithmetic. Each has a score that goes up and a best to beat, because a
- * game nobody wants to open holds nothing. What none of them has is a "game
- * over": a round ending is just a round ending, and the next go is a tap away.
+ * arithmetic. Each is a loop with years of proof behind it (timing, reflex,
+ * planning, memory), each has a score that goes up and a best to beat, and
+ * none has a "game over": a round ending is just a round ending, the next go
+ * a tap away.
+ *
+ * Rules aren't copyrightable; names and looks are. So these are the
+ * mechanics under our own names, in our own palette, with no borrowed art.
  */
 import type { ComponentType } from 'react';
 import type { SFSymbol } from 'expo-symbols';
 
 import type { Hue } from '@/theme/palette';
-import { BubblesGame } from './BubblesGame';
 import { EchoGame } from './EchoGame';
-import { MemoryGame } from './MemoryGame';
-import { StackGame } from './StackGame';
+import { FlapGame } from './FlapGame';
+import { MergeGame } from './MergeGame';
+import { TowerGame } from './TowerGame';
 
 export type GameMeta = {
   id: string;
@@ -37,9 +41,9 @@ export type GameMeta = {
 };
 
 export const GAMES: readonly GameMeta[] = [
-  { id: 'stack', title: 'Stack', blurb: 'Land it flush. Go high.', headline: 'Build the tower.', icon: 'square.stack.3d.up.fill', hue: 'progress', best: { key: 'game.stack.best', label: 'Best height' }, Component: StackGame },
-  { id: 'bubbles', title: 'Bubbles', blurb: 'How many in 45s?', headline: 'Pop them before they go.', icon: 'circle.hexagongrid.fill', hue: 'checkin', best: { key: 'game.bubbles.best', label: 'Best' }, Component: BubblesGame },
-  { id: 'pairs', title: 'Pairs', blurb: 'Clear six pairs, fast.', headline: 'Match the pairs.', icon: 'square.grid.2x2.fill', hue: 'pledge', best: { key: 'game.pairs.best', unit: 's', label: 'Best time' }, Component: MemoryGame },
+  { id: 'tower', title: 'Tower', blurb: 'Drop it flush. Go high.', headline: 'Build the tower.', icon: 'square.stack.3d.up.fill', hue: 'progress', best: { key: 'game.tower.best', label: 'Best height' }, Component: TowerGame },
+  { id: 'flap', title: 'Flap', blurb: 'Tap. Thread the gaps.', headline: 'Thread the gaps.', icon: 'bird.fill', hue: 'reasons', best: { key: 'game.flap.best', label: 'Best' }, Component: FlapGame },
+  { id: 'merge', title: 'Merge', blurb: 'Swipe. Reach 2048.', headline: 'Reach 2048.', icon: 'square.grid.2x2.fill', hue: 'checkin', best: { key: 'game.merge.best', label: 'Best score' }, Component: MergeGame },
   { id: 'echo', title: 'Echo', blurb: 'Repeat it. It grows.', headline: 'Repeat the pattern.', icon: 'waveform.path', hue: 'urge', best: { key: 'game.echo.best', label: 'Best round' }, Component: EchoGame },
 ];
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -69,18 +69,22 @@ export default function GamesScreen() {
     );
   }
 
+  // Four tiles, two by two, filling the screen — no scroll, nothing else.
   return (
     <SafeAreaView style={s.root} edges={['top']}>
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <View style={s.content}>
         <Eyebrow>Games</Eyebrow>
         <Title>Pick a game.</Title>
         <View style={s.gamesGrid}>
-          {GAMES.map((g) => (
-            <GameTile key={g.id} game={g} onPress={() => setPlaying(g.id)} />
+          {[GAMES.slice(0, 2), GAMES.slice(2, 4)].map((row, i) => (
+            <View key={i} style={s.gamesRow}>
+              {row.map((g) => (
+                <GameTile key={g.id} game={g} onPress={() => setPlaying(g.id)} />
+              ))}
+            </View>
           ))}
         </View>
-        <View style={{ height: 96 }} />
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -90,7 +94,7 @@ function GameTile({ game: g, onPress }: { game: GameMeta; onPress: () => void })
   const { value: best } = useSetting<number>(g.best.key, 0);
   return (
     <Tap haptic="light" onPress={onPress} style={s.tile} accessibilityRole="button" accessibilityLabel={`${g.title}. ${g.blurb}${best ? ` ${g.best.label} ${best}${g.best.unit ?? ''}.` : ''}`}>
-      <SymbolChip name={g.icon} tint={hues[g.hue].solid} wash={hues[g.hue].wash} size={38} />
+      <SymbolChip name={g.icon} tint={hues[g.hue].solid} wash={hues[g.hue].wash} size={44} />
       <View style={{ flex: 1 }} />
       <Text numberOfLines={1} style={s.cardTitle}>
         {g.title}
@@ -107,19 +111,20 @@ function GameTile({ game: g, onPress }: { game: GameMeta; onPress: () => void })
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: palette.bg },
-  content: { padding: Spacing.four, gap: Spacing.two },
-  gamesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginTop: Spacing.two },
+  // The floating tab bar covers the bottom ~96pt; the grid stops above it.
+  content: { flex: 1, paddingHorizontal: Spacing.four, paddingTop: Spacing.four, paddingBottom: 96, gap: Spacing.two },
+  gamesGrid: { flex: 1, gap: Spacing.two, marginTop: Spacing.two },
+  gamesRow: { flex: 1, flexDirection: 'row', gap: Spacing.two },
   tile: {
-    width: '48.4%',
-    minHeight: 168,
+    flex: 1,
     backgroundColor: palette.surface2,
     borderRadius: 22,
     padding: Spacing.three,
     gap: 2,
   },
-  cardTitle: { color: palette.text, fontSize: 17, fontFamily: type.bodySemi },
-  cardSub: { color: palette.textDim, fontSize: 13, fontFamily: type.body, marginTop: 2 },
-  cardBest: { color: palette.textFaint, fontSize: 12, fontFamily: type.bodySemi, fontVariant: ['tabular-nums'], marginTop: Spacing.two },
+  cardTitle: { color: palette.text, fontSize: 20, fontFamily: type.bodySemi },
+  cardSub: { color: palette.textDim, fontSize: 14, fontFamily: type.body, marginTop: 2 },
+  cardBest: { color: palette.textFaint, fontSize: 13, fontFamily: type.bodySemi, fontVariant: ['tabular-nums'], marginTop: Spacing.two },
   playHeader: { height: 60, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.four },
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   playTitle: { color: palette.text, fontSize: 17, fontFamily: type.bodySemi },

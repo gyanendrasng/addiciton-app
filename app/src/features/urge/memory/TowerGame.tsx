@@ -31,7 +31,7 @@ const HEAL_EVERY = 3;
 const HEAL_PX = 12;
 /** The tower is finished at this height, so the game has an end in the urge flow. */
 const GOAL = 30;
-const BEST_KEY = 'game.stack.best';
+const BEST_KEY = 'game.tower.best';
 
 type Block = { key: number; left: number; width: number; perfect: boolean };
 type Cut = { key: number; left: number; width: number; bottom: number };
@@ -43,7 +43,7 @@ function slideMs(height: number, reduced: boolean) {
 }
 
 /**
- * Stack. A block slides across the top of the tower; tap to drop it. Whatever
+ * Tower. A block slides across the top of the tower; tap to drop it. Whatever
  * hangs over the edge is sliced off and falls, so the tower narrows and every
  * drop matters a little more than the last. Land it flush and it flashes,
  * keeps its width, and three in a row grow it back.
@@ -103,7 +103,7 @@ function dropAt(g: Game, at: number): Game {
   return { ...finished([...g.tower, { key, left: overlapLeft, width: overlap, perfect: false }], 'cut'), cuts, streak: 0 };
 }
 
-export function StackGame({ onDone }: { onDone: () => void }) {
+export function TowerGame({ onDone }: { onDone: () => void }) {
   const reduced = useReducedMotion();
   const [g, setG] = useState<Game>(FRESH);
   const { best, beats, record } = useBest(BEST_KEY);
