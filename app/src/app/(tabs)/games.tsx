@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SymbolChip } from '@/components/ui/symbol-chip';
 import { Tap } from '@/components/ui/tap';
 import { useSetting } from '@/db/repo/settings';
-import { Chevron, Eyebrow, Subtitle, Title } from '@/features/onboarding/components/chrome';
+import { Chevron, Eyebrow, Title } from '@/features/onboarding/components/chrome';
 import { GAMES, gameById, type GameMeta } from '@/features/urge/memory/registry';
 import { track } from '@/lib/analytics';
 import { durations } from '@/theme/motion';
@@ -17,7 +17,8 @@ import { type } from '@/theme/type';
 /**
  * The same games the urge toolkit uses, playable any time. Practising them
  * when calm is what makes them reachable when not — and for a lot of people
- * a two-minute game is the whole intervention.
+ * a two-minute game is the whole intervention. The tiles say all that needs
+ * saying; the header stays out of the way.
  */
 export default function GamesScreen() {
   const [playing, setPlaying] = useState<string | null>(null);
@@ -72,10 +73,7 @@ export default function GamesScreen() {
     <SafeAreaView style={s.root} edges={['top']}>
       <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         <Eyebrow>Games</Eyebrow>
-        <Title>Train the distraction muscle.</Title>
-        <Subtitle>
-          The same games the urge toolkit uses. Practice now, so they’re second nature when it counts.
-        </Subtitle>
+        <Title>Pick a game.</Title>
         <View style={s.gamesGrid}>
           {GAMES.map((g) => (
             <GameTile key={g.id} game={g} onPress={() => setPlaying(g.id)} />
