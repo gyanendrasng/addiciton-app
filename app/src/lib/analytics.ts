@@ -29,7 +29,9 @@
  *    account id, User ID is collected for App Functionality *and* Analytics,
  *    and everything sent alongside it counts as linked to the user.
  * 5. Honour `optedOut` — it is user-facing in Settings and defaults to OFF
- *    (i.e. analytics disabled) until the user opts in.
+ *    (i.e. analytics disabled) until the user opts in. Before the user has
+ *    answered at all, events are held on-device and sent only on a "yes"; see
+ *    `preConsent` below.
  *
  * Turning this on changes the app's privacy posture. Before shipping a provider:
  *   - /privacy §3c already describes PostHog and what it receives; keep the
@@ -40,12 +42,14 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
+import { nowDate } from './clock';
 import { posthog } from './posthog';
 
 /** Interaction events. Keep this list closed — no free-form event names. */
 export type AnalyticsEvent =
   // onboarding funnel
   | 'onboarding_started'
+  | 'onboarding_step_viewed'
   | 'onboarding_quiz_completed'
   | 'onboarding_completed'
   | 'paywall_viewed'
@@ -81,7 +85,7 @@ export type AnalyticsEvent =
 export type AnalyticsProps = Record<string, string | number | boolean | undefined>;
 
 type Provider = {
-  capture: (event: AnalyticsEvent, props?: AnalyticsProps) => void;
+  capture: (event: AnalyticsEvent, props?: AnalyticsProps, at?: Date) => void;
   screen: (name: string, props?: AnalyticsProps) => void;
   identify: (anonymousId: string, props?: AnalyticsProps) => void;
   reset: () => void;
@@ -106,7 +110,7 @@ const client = posthog;
 
 let provider: Provider | null = client
   ? {
-      capture: (event, props) => client.capture(event, defined(props)),
+      capture: (event, props, at) => client.capture(event, defined(props), at ? { timestamp: at } : undefined),
       screen: (name, props) => client.screen(name, defined(props)),
       identify: (id, props) => client.identify(id, { $set: defined(props) }),
       reset: () => client.reset(),
@@ -129,20 +133,61 @@ export function setAnalyticsProvider(p: Provider | null) {
  */
 let pendingIdentity: { id: string; props?: AnalyticsProps } | null = null;
 
+/**
+ * Events from before the user has answered the consent question.
+ *
+ * The ask is the last step of onboarding, so with a plain opt-out gate every
+ * onboarding event was dropped and the funnel PostHog shows started at the
+ * paywall — `onboarding_started` never arrived from anyone. Instead, while the
+ * decision is still *pending* (no stored preference yet), events are held here
+ * in memory with their own timestamps. A "yes" replays them in order; a "no"
+ * throws them away. Nothing leaves the device before the answer, which is what
+ * the consent screen and /privacy §3c promise, and §3c already lists "where
+ * people stop during onboarding" as something PostHog receives.
+ *
+ * Bounded so a stalled onboarding can't grow it without limit, and only
+ * filled while the decision is pending — a stored "no" buffers nothing.
+ */
+type Consent = 'pending' | 'in' | 'out';
+let consent: Consent = 'pending';
+const PRE_CONSENT_CAP = 200;
+let preConsent: { event: AnalyticsEvent; props?: AnalyticsProps; at: Date }[] = [];
+
 export function setAnalyticsOptOut(value: boolean) {
-  optedOut = value;
+  setAnalyticsConsent(value ? 'out' : 'in');
+}
+
+/**
+ * Apply the user's decision — or the lack of one. `pending` behaves like
+ * opted out on the wire (PostHog itself is told to opt out) but keeps the
+ * pre-consent buffer alive.
+ */
+export function setAnalyticsConsent(value: Consent) {
+  consent = value;
+  optedOut = value !== 'in';
   if (posthog) {
-    if (value) {
+    if (optedOut) {
       void posthog.optOut();
     } else {
       void posthog.optIn();
     }
   }
-  if (value) {
+  if (value === 'out') {
+    preConsent = [];
     provider?.reset();
-  } else if (pendingIdentity && provider) {
+    return;
+  }
+  if (value === 'pending') return;
+  if (pendingIdentity && provider) {
     try {
       provider.identify(pendingIdentity.id, pendingIdentity.props);
+    } catch {}
+  }
+  const held = preConsent;
+  preConsent = [];
+  for (const e of held) {
+    try {
+      provider?.capture(e.event, e.props, e.at);
     } catch {}
   }
 }
@@ -153,6 +198,9 @@ export function isAnalyticsEnabled() {
 
 export function track(event: AnalyticsEvent, props?: AnalyticsProps) {
   if (optedOut || !provider) {
+    if (consent === 'pending' && provider && preConsent.length < PRE_CONSENT_CAP) {
+      preConsent.push({ event, props, at: nowDate() });
+    }
     if (__DEV__) console.log('[analytics:noop]', event, props ?? '');
     return;
   }

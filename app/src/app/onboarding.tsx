@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Tap } from '@/components/ui/tap';
 import { Spacing } from '@/theme/spacing';
 import { palette } from '@/theme/palette';
-import { buildSteps, quizRangeOf } from '@/features/onboarding/content';
+import { buildSteps, quizRangeOf, type Step } from '@/features/onboarding/content';
 import { computeScore, mergedSymptoms, selectedHabits } from '@/features/onboarding/lib';
 import { completeOnboarding } from '@/features/onboarding/complete';
 import { OnboardingProvider, useOnboarding } from '@/features/onboarding/state';
@@ -29,6 +29,18 @@ function Flow() {
   const picked = selectedHabits(answers);
   const effSteps = useMemo(() => buildSteps(picked), [picked]);
   const step = effSteps[Math.min(index, effSteps.length - 1)];
+
+  /**
+   * One event per screen shown, so the funnel says *which* of the ~20 steps
+   * people leave on rather than just that they left. `analyzing` doubles as
+   * the end of the quiz — it is the first step after the last question.
+   */
+  useEffect(() => {
+    track('onboarding_step_viewed', { index, step: stepName(step), direction: direction < 0 ? 'back' : 'forward' });
+    if (step.kind === 'analyzing') track('onboarding_quiz_completed', { habit_count: picked.length });
+    // `step` is derived from `index`; re-firing on answer changes would double-count.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index]);
 
   const next = useCallback(() => {
     dispatch({ type: 'goto', index: Math.min(index + 1, effSteps.length - 1), direction: 1 });
@@ -118,6 +130,23 @@ function Flow() {
       </StepFrame>
     </SafeAreaView>
   );
+}
+
+/**
+ * A stable, non-personal name for a step. Question ids are fixed keys
+ * (`frequency:porn`), interstitial titles are fixed copy — nothing here is
+ * something the user typed.
+ */
+function stepName(step: Step): string {
+  switch (step.kind) {
+    case 'question':
+    case 'multi':
+      return step.id;
+    case 'interstitial':
+      return `interstitial:${step.title}`;
+    default:
+      return step.kind;
+  }
 }
 
 export default function OnboardingScreen() {
