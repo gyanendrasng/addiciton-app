@@ -10,14 +10,20 @@
  * can turn analytics off in Settings" — so the two move together.
  */
 import { getSetting, setSetting } from '@/db/repo/settings';
-import { setAnalyticsOptOut } from '@/lib/analytics';
+import { setAnalyticsConsent, setAnalyticsOptOut } from '@/lib/analytics';
 
 export const ANALYTICS_KEY = 'analytics.enabled';
 
-/** Apply the stored preference. Called once, after the database opens. */
+/**
+ * Apply the stored preference. Called once, after the database opens.
+ *
+ * No stored value means the user has not been asked yet — the consent step is
+ * the last screen of onboarding — and that is `pending`, not `out`: the seam
+ * holds onboarding events until the answer instead of dropping them.
+ */
 export async function loadAnalyticsPref() {
   const on = await getSetting<boolean>(ANALYTICS_KEY);
-  setAnalyticsOptOut(on !== true);
+  setAnalyticsConsent(on === true ? 'in' : on === false ? 'out' : 'pending');
 }
 
 /** Persist and apply in one step, so the two can never drift. */
