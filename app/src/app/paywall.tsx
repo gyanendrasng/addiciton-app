@@ -233,10 +233,13 @@ export default function PaywallScreen() {
           <AppLogo size={tight ? 40 : 52} />
           {year ? (
             <>
-              <Text maxFontSizeMultiplier={1.25} style={[s.h1, s.h1Big, tight && s.h1Tight]}>
-                About {year.money ?? year.time}
+              <Text maxFontSizeMultiplier={1.25} style={[s.h1, s.h1Year, tight && s.h1Tight]}>
+                {year.money ? 'You’d save about' : 'You’d get back about'}
                 {'\n'}
-                <Text style={s.h1Dim}>{year.money ? 'kept this year.' : 'back this year.'}</Text>
+                <Text style={s.h1Number}>{year.money ?? year.time}</Text>
+                {'\u00A0a year'}
+                {'\n'}
+                <Text style={s.h1Dim}>by quitting {year.quitting}.</Text>
               </Text>
               <Text maxFontSizeMultiplier={1.25} style={s.sub}>
                 {year.money ? 'Going by your answers, at typical prices. ' : 'Going by how often you said. '}
@@ -353,7 +356,9 @@ const s = StyleSheet.create({
     fontFamily: type.display,
   },
   h1Tight: { fontSize: 26, lineHeight: 31 },
-  h1Big: { fontSize: 40, lineHeight: 44, letterSpacing: -1 },
+  // The number is the headline; the words around it step back a size.
+  h1Year: { fontSize: 27, lineHeight: 36, letterSpacing: -0.5 },
+  h1Number: { color: palette.accent, fontSize: 40, lineHeight: 44, letterSpacing: -1 },
   h1Dim: { color: palette.textDim },
   sub: { color: palette.textDim, fontSize: 15, lineHeight: 22, fontFamily: type.body },
   link: { color: palette.text, fontFamily: type.bodySemi },

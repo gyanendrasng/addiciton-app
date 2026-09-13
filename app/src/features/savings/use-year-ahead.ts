@@ -19,9 +19,25 @@ import { CURRENCY_KEY, formatMoney, RATES_KEY } from './use-savings';
 export type YearAhead = {
   money: string | null;
   time: string;
+  /** "drinking and smoking" — the habits as things one stops doing */
+  quitting: string;
   rows: WorkedOutRow[];
   currency: string;
 };
+
+/** "drink" → "drinking"; "watch porn" → "watching porn"; "do it" → "this". */
+function gerund(verb: string): string {
+  if (verb === 'do it') return 'this';
+  const [head, ...rest] = verb.split(' ');
+  const ing = head.endsWith('e') ? `${head.slice(0, -1)}ing` : /[aeiou][bdgklmnprt]$/.test(head) && !head.endsWith('ll') ? `${head}${head.slice(-1)}ing` : `${head}ing`;
+  return [ing, ...rest].join(' ');
+}
+
+function joinAnd(parts: string[]): string {
+  if (parts.length <= 1) return parts[0] ?? '';
+  if (parts.length === 2) return `${parts[0]} and ${parts[1]}`;
+  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
+}
 
 export function useYearAhead(): YearAhead | null {
   const { profile } = useProfile();
@@ -45,9 +61,11 @@ export function useYearAhead(): YearAhead | null {
         isDefault: !overrides?.[id],
       };
     });
+    const verbs = profile.habits.map((id) => habits.find((h) => h.id === id)?.verb ?? 'do it');
     return {
       money: moneyKnown && year.money >= 20 ? formatMoney(year.money, currency) : null,
       time: humanDuration(year.minutes),
+      quitting: joinAnd([...new Set(verbs.map(gerund))]),
       rows,
       currency,
     };
