@@ -185,9 +185,7 @@ export default function ShieldTab() {
                 <SymbolView name="checkmark.circle.fill" size={16} tintColor={hues.pledge.solid} />
                 <Text style={s.statusText}>Screen Time access allowed</Text>
               </View>
-            ) : (
-              <Text style={s.statusHint}>Apple asks once, with your device passcode.</Text>
-            )}
+            ) : null}
             {allowed ? <Cta label="Continue" onPress={forward} /> : <Cta label={asking ? 'Asking…' : 'Allow Screen Time'} onPress={ask} disabled={asking} />}
           </View>
         }>
@@ -642,7 +640,6 @@ const s = StyleSheet.create({
   infoStatus: { color: palette.textDim, fontSize: 12, lineHeight: 16, fontFamily: type.bodyMed },
   status: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 28, marginBottom: 2 },
   statusText: { color: palette.textDim, fontSize: 13, fontFamily: type.bodyMed },
-  statusHint: { color: palette.textFaint, fontSize: 12, fontFamily: type.body, textAlign: 'center', minHeight: 28, lineHeight: 28 },
   ghostRow: { flexDirection: 'row', gap: Spacing.two },
   footerSheet: { paddingBottom: Spacing.four },
   miniBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 12, backgroundColor: palette.surface3 },
