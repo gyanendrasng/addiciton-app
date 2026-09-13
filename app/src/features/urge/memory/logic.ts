@@ -26,7 +26,7 @@ export function createGame(): GameState {
   return { cards, open: [], matched: [], moves: 0, locked: false };
 }
 
-export type GameAction = { type: 'flip'; index: number } | { type: 'resolve' };
+export type GameAction = { type: 'flip'; index: number } | { type: 'resolve' } | { type: 'reset' };
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
@@ -43,6 +43,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case 'resolve':
       return state.locked ? { ...state, open: [], locked: false } : state;
+    case 'reset':
+      return createGame();
     default:
       return state;
   }

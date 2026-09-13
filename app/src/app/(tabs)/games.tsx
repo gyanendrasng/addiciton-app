@@ -5,8 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SymbolChip } from '@/components/ui/symbol-chip';
 import { Tap } from '@/components/ui/tap';
+import { useSetting } from '@/db/repo/settings';
 import { Chevron, Eyebrow, Subtitle, Title } from '@/features/onboarding/components/chrome';
-import { GAMES, gameById } from '@/features/urge/memory/registry';
+import { GAMES, gameById, type GameMeta } from '@/features/urge/memory/registry';
 import { track } from '@/lib/analytics';
 import { durations } from '@/theme/motion';
 import { hues, palette } from '@/theme/palette';
@@ -77,21 +78,32 @@ export default function GamesScreen() {
         </Subtitle>
         <View style={s.gamesGrid}>
           {GAMES.map((g) => (
-            <Tap key={g.id} haptic="light" onPress={() => setPlaying(g.id)} style={s.tile} accessibilityRole="button">
-              <SymbolChip name={g.icon} tint={hues[g.hue].solid} wash={hues[g.hue].wash} size={38} />
-              <View style={{ flex: 1 }} />
-              <Text numberOfLines={1} style={s.cardTitle}>
-                {g.title}
-              </Text>
-              <Text numberOfLines={1} style={s.cardSub}>
-                {g.blurb}
-              </Text>
-            </Tap>
+            <GameTile key={g.id} game={g} onPress={() => setPlaying(g.id)} />
           ))}
         </View>
         <View style={{ height: 96 }} />
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+/** One game, with the number that makes it worth opening again. */
+function GameTile({ game: g, onPress }: { game: GameMeta; onPress: () => void }) {
+  const { value: best } = useSetting<number>(g.best.key, 0);
+  return (
+    <Tap haptic="light" onPress={onPress} style={s.tile} accessibilityRole="button" accessibilityLabel={`${g.title}. ${g.blurb}${best ? ` ${g.best.label} ${best}${g.best.unit ?? ''}.` : ''}`}>
+      <SymbolChip name={g.icon} tint={hues[g.hue].solid} wash={hues[g.hue].wash} size={38} />
+      <View style={{ flex: 1 }} />
+      <Text numberOfLines={1} style={s.cardTitle}>
+        {g.title}
+      </Text>
+      <Text numberOfLines={1} style={s.cardSub}>
+        {g.blurb}
+      </Text>
+      <Text numberOfLines={1} style={[s.cardBest, best ? { color: hues[g.hue].solid } : null]}>
+        {best ? `${g.best.label} ${best}${g.best.unit ?? ''}` : 'Not played yet'}
+      </Text>
+    </Tap>
   );
 }
 
@@ -101,7 +113,7 @@ const s = StyleSheet.create({
   gamesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginTop: Spacing.two },
   tile: {
     width: '48.4%',
-    minHeight: 132,
+    minHeight: 168,
     backgroundColor: palette.surface2,
     borderRadius: 22,
     padding: Spacing.three,
@@ -109,6 +121,7 @@ const s = StyleSheet.create({
   },
   cardTitle: { color: palette.text, fontSize: 17, fontFamily: type.bodySemi },
   cardSub: { color: palette.textDim, fontSize: 13, fontFamily: type.body, marginTop: 2 },
+  cardBest: { color: palette.textFaint, fontSize: 12, fontFamily: type.bodySemi, fontVariant: ['tabular-nums'], marginTop: Spacing.two },
   playHeader: { height: 60, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.four },
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   playTitle: { color: palette.text, fontSize: 17, fontFamily: type.bodySemi },
