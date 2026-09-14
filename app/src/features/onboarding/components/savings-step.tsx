@@ -125,12 +125,16 @@ export function SavingsStep({ answers, onNext }: { answers: Answers; onNext: () 
         {model.moneyKnown ? (
           <View style={s.heroBlock}>
             <Text style={[s.heroNumber, { color: palette.accent }]}>{formatMoney(heroMoney)}</Text>
-            <Text style={s.heroSub}>not spent · about {formatMoney(model.year.money)} a year</Text>
+            <Text style={s.heroSub}>
+              not spent · about <Text style={[s.heroSubStrong, { color: palette.accent }]}>{formatMoney(model.year.money)}</Text> a year
+            </Text>
           </View>
         ) : null}
         <View style={s.heroBlock}>
           <Text style={[s.heroNumber, { color: hues.checkin.solid }]}>{hoursLabel(heroMinutes)}</Text>
-          <Text style={s.heroSub}>of your time back · about {hoursLabel(model.year.minutes)} a year</Text>
+          <Text style={s.heroSub}>
+            of your time back · about <Text style={[s.heroSubStrong, { color: hues.checkin.solid }]}>{hoursLabel(model.year.minutes)}</Text> a year
+          </Text>
         </View>
       </View>
 
@@ -205,6 +209,7 @@ const s = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   heroSub: { color: palette.textDim, fontSize: 15, fontFamily: type.bodyMed, fontVariant: ['tabular-nums'] },
+  heroSubStrong: { fontSize: 20, fontFamily: type.display },
   rows: { marginTop: Spacing.four, borderRadius: 16, backgroundColor: palette.surface, overflow: 'hidden' },
   row: {
     minHeight: 52,
