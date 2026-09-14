@@ -23,7 +23,7 @@ export type OrganSlide = {
   name: string;
   /** the habit, shown only when there's more than one */
   caption?: string;
-  /** 0–1 through the program */
+  /** 0–1 along the organ's documented recovery */
   progress: number;
 };
 
@@ -140,7 +140,7 @@ function Slide({
         onPress={() => onOpen(slide.id)}
         style={[s.card, peeking && s.cardPeek]}
         accessibilityRole="button"
-        accessibilityLabel={`${slide.name}${slide.caption ? `, ${slide.caption}` : ''}, ${pct} percent through the 90 days. See your recovery.`}>
+        accessibilityLabel={`${slide.name}${slide.caption ? `, ${slide.caption}` : ''}, ${pct} percent of the way through recovery. See your recovery.`}>
         <OrganPicture organ={slide.organ} progress={slide.progress} size={Math.round(width * 0.54)} />
         <View style={s.words}>
           <Text style={s.name}>{slide.name}</Text>

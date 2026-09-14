@@ -6,6 +6,7 @@ import { ActionTile, HueIcon } from '@/components/ui/action-tile';
 import { useProfile } from '@/db/repo/profile';
 import { OrganCarousel, type OrganSlide } from '@/features/recovery/OrganCarousel';
 import { ORGAN_NAME, organFor } from '@/features/recovery/OrganFill';
+import { recoveryFill } from '@/features/recovery/timeline';
 import { SavingsCard } from '@/features/savings/savings-card';
 import { Tap } from '@/components/ui/tap';
 import { DayGrid } from '@/components/ui/day-grid';
@@ -32,7 +33,7 @@ export default function HomeScreen() {
   const { reasons } = useReasons();
   if (!state) return <SafeAreaView style={s.root} />;
 
-  // One organ per habit, filling with that habit's streak. The words live on /recovery.
+  // One organ per habit, filling along that habit's documented recovery. The words live on /recovery.
   const slides: OrganSlide[] = profile
     ? profile.habits.map((id) => {
         const own = state.perHabit.find((h) => h.id === id);
@@ -43,7 +44,7 @@ export default function HomeScreen() {
           organ,
           name: ORGAN_NAME[organ],
           caption: profile.habits.length > 1 ? own?.label : undefined,
-          progress: Math.max(0, Math.min(1, hours / (90 * 24))),
+          progress: recoveryFill(id, hours).fraction,
         };
       })
     : [];

@@ -11,10 +11,10 @@ const AnimatedPath = Animated.createAnimatedComponent(Path);
  * The organ that habit wears on, drawn translucent, filling with green from
  * the bottom as the streak runs. One picture, one mechanic, every habit.
  *
- * The fill is progress through the 90-day program — the same number as
- * "Day 12 of 90" — not a measurement of anything, and the card it sits on
- * says nothing more than the organ and the percentage. The documented
- * milestones live on /recovery, one tap away.
+ * The fill is how far along the organ's documented recovery the streak has
+ * come (`recoveryFill` in timeline.ts) — a position on a published timeline,
+ * not a measurement of anyone — and the card it sits on says nothing more
+ * than the organ and the percentage. The milestones live on /recovery.
  */
 export type Organ = 'lungs' | 'liver' | 'brain';
 

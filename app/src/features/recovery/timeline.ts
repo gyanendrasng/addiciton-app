@@ -114,6 +114,56 @@ export function progressThrough(habitId: string, hoursClean: number): TimelineEn
   });
 }
 
+/**
+ * How long each habit's documented recovery runs, from the sources above:
+ * cilia regrown and clearing normally by about nine months for nicotine; liver
+ * enzymes typically back in range by six months for alcohol (fibrosis is a
+ * longer, different story a quit app shouldn't assume); receptor density and
+ * attention back by three months for cannabis; and for the behavioural habits,
+ * the three months by which a new response has become the default — there is
+ * no imaging-grade timeline for those, so nothing more is claimed.
+ */
+const HORIZON: Record<string, number> = {
+  smoking: 9 * MONTH,
+  vaping: 9 * MONTH,
+  alcohol: 6 * MONTH,
+  weed: 3 * MONTH,
+  porn: 3 * MONTH,
+  social: 3 * MONTH,
+  gambling: 3 * MONTH,
+  other: 3 * MONTH,
+};
+
+export type RecoveryFill = {
+  /** 0–1: documented steps passed, plus the part of the way to the next */
+  fraction: number;
+  reached: number;
+  total: number;
+  next: TimelineEntry | null;
+};
+
+/**
+ * How far through the organ's documented recovery the streak has come.
+ *
+ * Each milestone within the habit's horizon is one step; the fill is the
+ * steps passed plus the fraction of the way to the next. The early steps are
+ * close together — 20 minutes, 12 hours, 48, 72 — so the first days move the
+ * picture visibly, and it slows as the remaining milestones spread out. The
+ * brain's three-month horizon fills before the liver's six or the lungs' nine.
+ * It is the same sourced list the detail page shows, so the two agree, and it
+ * is a position along a published timeline, not a measurement of anyone.
+ */
+export function recoveryFill(habitId: string, hoursClean: number): RecoveryFill {
+  const horizon = HORIZON[habitId] ?? 3 * MONTH;
+  const steps = progressThrough(habitId, hoursClean).filter((e) => e.at <= horizon);
+  const total = steps.length;
+  if (total === 0) return { fraction: 0, reached: 0, total: 0, next: null };
+  const reached = steps.filter((e) => e.reached).length;
+  const next = steps.find((e) => !e.reached) ?? null;
+  const fraction = Math.min(1, (reached + (next ? next.progress : 0)) / total);
+  return { fraction, reached, total, next };
+}
+
 export type HealthRing = TimelineEntry & { short: string };
 
 /**
