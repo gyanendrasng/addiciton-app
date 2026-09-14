@@ -27,9 +27,12 @@ export type OrganSlide = {
   progress: number;
 };
 
-/** How much of the screen one slide takes; the rest is the peek of its neighbours. */
-const SLIDE_FRACTION = 0.78;
-const GAP = Spacing.two;
+/**
+ * The card sits on the page's own margins, the same width as the urge button
+ * below it, and the gap is wider than the margin so the neighbours wait
+ * entirely off-screen — the dots say there are more, the edges stay clean.
+ */
+const GAP = Spacing.four + Spacing.two;
 
 /**
  * One organ at a time, the neighbours peeking in at both edges, dots beneath.
@@ -49,9 +52,9 @@ export function OrganCarousel({ slides, onOpen }: { slides: OrganSlide[]; onOpen
   const reduced = useReducedMotion();
   const ref = useAnimatedRef<Animated.ScrollView>();
   const many = slides.length > 1;
-  const slideWidth = many ? Math.round(width * SLIDE_FRACTION) : width - Spacing.four * 2;
+  const slideWidth = width - Spacing.four * 2;
   const step = slideWidth + GAP;
-  const sidePad = (width - slideWidth) / 2;
+  const sidePad = Spacing.four;
   const n = slides.length;
   // The run on screen: [last, ...slides, first]; the real cards sit at 1…n.
   const run = many ? [slides[n - 1], ...slides, slides[0]] : slides;
