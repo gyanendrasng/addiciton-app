@@ -1,9 +1,8 @@
 /**
  * Analytics seam.
  *
- * Nothing is sent anywhere today — every call is a no-op. This exists so that
- * adding a provider later (PostHog is the plan) is a one-file change instead of
- * touching every screen.
+ * Every screen talks to this; only this talks to PostHog. Two tiers, one gate
+ * each, and which tier an event belongs to is decided here, not at the call.
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * RULES — these are not style preferences, they keep the app in agreement with
@@ -13,31 +12,39 @@
  *    relapse or check-in notes, no free-text triggers. Not truncated, not
  *    hashed, not "just the first few words". This is the line /privacy draws,
  *    and the Apple and Play data filings are made on the strength of it.
- * 2. Structured progress data IS sent: which habits are tracked, streak
- *    lengths, slip and urge counts, milestones. Disclosed in /privacy §3c as
- *    sensitive personal information, and switchable off in Settings.
- * 3. No autocapture, no heatmaps. Session replay IS on, and it records
- *    screenshots — so every `TextInput` that takes prose or personal data, and
- *    every `Text` that draws user-written text, must be wrapped in
- *    `PostHogMaskView`. Nothing is masked by config: `maskAllTextInputs`
- *    blacks out every RN <Text>. See `posthog.ts`.
+ *
+ * 2. Two tiers.
+ *    **Product analytics** — on by default, off in Settings. Which screens
+ *    open, where onboarding is left, whether the paywall converts, which game
+ *    is played from the Games tab. Anonymous: a random device id, never
+ *    `identify()`, and nothing in the props that says which habit someone is
+ *    quitting. This is ordinary app analytics and carries no health data.
+ *    **Progress data** — off until the person says yes (the onboarding ask,
+ *    or Settings). Which habits, streaks, slips, urges, milestones, shield use,
+ *    and session recordings; sent under the account id. Which habits someone
+ *    is quitting is health data — special category under GDPR, sensitive under
+ *    Play's User Data policy, consumer health data in Washington — so this
+ *    tier waits for consent, and nothing in it is buffered past a "no".
+ *    `PROGRESS` below is the one list; a tier-1 event must stay habit-free.
+ *
+ * 3. No autocapture, no heatmaps. Session replay records screenshots and only
+ *    ever runs under tier 2 — so every `TextInput` that takes prose or
+ *    personal data, and every `Text` that draws user-written text, must be
+ *    wrapped in `PostHogMaskView`. Nothing is masked by config:
+ *    `maskAllTextInputs` blacks out every RN <Text>. See `posthog.ts`.
+ *
  * 4. Identity is the opaque Better Auth user id — account-scoped, not
  *    device-scoped, so progress follows the person across devices. Never the
- *    email, never the name. `session.tsx` calls `identify()` with it and
- *    `resetAnalytics()` on sign-out.
- *    NOTE for the App Store privacy labels: because this id is also the
- *    account id, User ID is collected for App Functionality *and* Analytics,
- *    and everything sent alongside it counts as linked to the user.
- * 5. Honour `optedOut` — it is user-facing in Settings and defaults to OFF
- *    (i.e. analytics disabled) until the user opts in. Before the user has
- *    answered at all, events are held on-device and sent only on a "yes"; see
- *    `preConsent` below.
+ *    email, never the name. It is attached only under tier 2: `session.tsx`
+ *    calls `identify()` on sign-in and the seam holds it until consent.
+ *    NOTE for the store forms: tier 1 is "collected, not linked to you";
+ *    tier 2 is linked, because the id is the account id.
  *
- * Turning this on changes the app's privacy posture. Before shipping a provider:
- *   - /privacy §3c already describes PostHog and what it receives; keep the
- *     code and that section in agreement, in both directions
- *   - update Apple's App Privacy answers (Usage Data)
- *   - update Google Play's Data safety form
+ * Changing a tier changes the app's privacy posture. Before shipping:
+ *   - /privacy §3c describes both tiers; keep the code and that section in
+ *     agreement, in both directions
+ *   - Apple's App Privacy answers and Google Play's Data safety form must
+ *     match (docs/APPSTORE.md, docs/PLAY.md)
  * A mismatch between those and the shipped app is the top policy-takedown risk.
  * ─────────────────────────────────────────────────────────────────────────────
  */
@@ -52,6 +59,7 @@ export type AnalyticsEvent =
   | 'onboarding_step_viewed'
   | 'onboarding_quiz_completed'
   | 'onboarding_completed'
+  | 'habits_chosen'
   | 'paywall_viewed'
   | 'paywall_dismissed'
   | 'purchase_started'
@@ -84,11 +92,46 @@ export type AnalyticsEvent =
 /** Only primitives, and only non-identifying ones. */
 export type AnalyticsProps = Record<string, string | number | boolean | undefined>;
 
+export type Tier = 'product' | 'progress';
+
+/**
+ * Which events are progress data. Everything not listed is product analytics,
+ * so an event that says anything about a habit, a streak, an urge or a slip
+ * goes in here first.
+ */
+const PROGRESS: ReadonlySet<AnalyticsEvent> = new Set<AnalyticsEvent>([
+  'habits_chosen',
+  'pledge_made',
+  'checkin_saved',
+  'urge_started',
+  'urge_step_completed',
+  'urge_survived',
+  'urge_slipped',
+  'urge_abandoned',
+  'relapse_logged',
+  'relapse_undone',
+  'milestone_reached',
+  'review_prompted',
+  'shield_set_up',
+  'shield_lock_started',
+  'shield_lock_ended_early',
+  'shield_window_enabled',
+]);
+
+export function tierOf(event: AnalyticsEvent, props?: AnalyticsProps): Tier {
+  if (PROGRESS.has(event)) return 'progress';
+  // A game from the Games tab is product use; a game mid-urge says there was an urge.
+  if (event === 'game_played' && props?.where === 'urge') return 'progress';
+  return 'product';
+}
+
 type Provider = {
   capture: (event: AnalyticsEvent, props?: AnalyticsProps, at?: Date) => void;
   screen: (name: string, props?: AnalyticsProps) => void;
   identify: (anonymousId: string, props?: AnalyticsProps) => void;
   reset: () => void;
+  startRecording: () => void;
+  stopRecording: () => void;
 };
 
 /**
@@ -114,94 +157,107 @@ let provider: Provider | null = client
       screen: (name, props) => client.screen(name, defined(props)),
       identify: (id, props) => client.identify(id, { $set: defined(props) }),
       reset: () => client.reset(),
+      startRecording: () => void client.startSessionRecording(false),
+      stopRecording: () => void client.stopSessionRecording(),
     }
   : null;
-let optedOut = true; // privacy-first default: nothing until the user opts in
-// Opt out of PostHog capture on startup until the user explicitly enables analytics.
-if (posthog) void posthog.optOut();
 
 /** Wire a provider in (e.g. PostHog). Called once at startup, if enabled. */
 export function setAnalyticsProvider(p: Provider | null) {
   provider = p;
 }
 
-/**
- * The identity we were handed while opted out, replayed the moment the user
- * opts in. Sign-in resolves on launch, long before the consent screen or the
- * Settings switch; without this the identify() call was dropped and every
- * consenting user stayed anonymous until their next cold start.
- */
-let pendingIdentity: { id: string; props?: AnalyticsProps } | null = null;
-
-/**
- * Events from before the user has answered the consent question.
+/*
+ * The two gates.
  *
- * The ask is the last step of onboarding, so with a plain opt-out gate every
- * onboarding event was dropped and the funnel PostHog shows started at the
- * paywall — `onboarding_started` never arrived from anyone. Instead, while the
- * decision is still *pending* (no stored preference yet), events are held here
- * in memory with their own timestamps. A "yes" replays them in order; a "no"
- * throws them away. Nothing leaves the device before the answer, which is what
- * the consent screen and /privacy §3c promise, and §3c already lists "where
- * people stop during onboarding" as something PostHog receives.
+ * `productOn` is the Settings switch: off means nothing at all leaves, tier 2
+ * included, and PostHog itself is told to opt out.
  *
- * Bounded so a stalled onboarding can't grow it without limit, and only
- * filled while the decision is pending — a stored "no" buffers nothing.
+ * `consent` is the progress-data decision. `pending` — no answer stored yet,
+ * which is the whole of onboarding — behaves like "no" on the wire but holds
+ * tier-2 events in memory with their own timestamps; a "yes" replays them in
+ * order after `identify`, a "no" throws them away. Nothing in tier 2 leaves
+ * the device before the answer, which is what the consent screen promises.
+ * Bounded so a stalled onboarding can't grow it without limit.
  */
 type Consent = 'pending' | 'in' | 'out';
+let productOn = true;
 let consent: Consent = 'pending';
 const PRE_CONSENT_CAP = 200;
 let preConsent: { event: AnalyticsEvent; props?: AnalyticsProps; at: Date }[] = [];
 
+/**
+ * The identity we were handed before consent, attached the moment the user
+ * says yes. Sign-in resolves on launch, long before the consent screen; without
+ * this the identify() call was dropped and every consenting user stayed
+ * anonymous until their next cold start.
+ */
+let pendingIdentity: { id: string; props?: AnalyticsProps } | null = null;
+
+const progressLive = () => productOn && consent === 'in' && provider !== null;
+
+function applyClientOptOut() {
+  if (!posthog) return;
+  if (productOn) void posthog.optIn();
+  else void posthog.optOut();
+}
+
+/** The Settings switch for product analytics. Off silences everything. */
+export function setProductAnalytics(on: boolean) {
+  productOn = on;
+  applyClientOptOut();
+  if (!on) provider?.stopRecording();
+  else if (consent === 'in') attachProgress();
+}
+
+/** Backwards-compatible name: the progress-data decision as a boolean. */
 export function setAnalyticsOptOut(value: boolean) {
   setAnalyticsConsent(value ? 'out' : 'in');
 }
 
-/**
- * Apply the user's decision — or the lack of one. `pending` behaves like
- * opted out on the wire (PostHog itself is told to opt out) but keeps the
- * pre-consent buffer alive.
- */
+/** Apply the progress-data decision — or the lack of one. */
 export function setAnalyticsConsent(value: Consent) {
   consent = value;
-  optedOut = value !== 'in';
-  if (posthog) {
-    if (optedOut) {
-      void posthog.optOut();
-    } else {
-      void posthog.optIn();
-    }
-  }
   if (value === 'out') {
     preConsent = [];
+    provider?.stopRecording();
     provider?.reset();
     return;
   }
   if (value === 'pending') return;
-  if (pendingIdentity && provider) {
+  attachProgress();
+}
+
+/** Consent is in: attach the identity, start recording, send what was held. */
+function attachProgress() {
+  if (!progressLive() || !provider) return;
+  if (pendingIdentity) {
     try {
       provider.identify(pendingIdentity.id, pendingIdentity.props);
     } catch {}
   }
+  provider.startRecording();
   const held = preConsent;
   preConsent = [];
   for (const e of held) {
     try {
-      provider?.capture(e.event, e.props, e.at);
+      provider.capture(e.event, e.props, e.at);
     } catch {}
   }
 }
 
 export function isAnalyticsEnabled() {
-  return !optedOut && provider !== null;
+  return productOn && provider !== null;
 }
 
 export function track(event: AnalyticsEvent, props?: AnalyticsProps) {
-  if (optedOut || !provider) {
-    if (consent === 'pending' && provider && preConsent.length < PRE_CONSENT_CAP) {
+  const tier = tierOf(event, props);
+  const live = tier === 'product' ? productOn && provider !== null : progressLive();
+  if (!live || !provider) {
+    if (tier === 'progress' && productOn && consent === 'pending' && provider && preConsent.length < PRE_CONSENT_CAP) {
       preConsent.push({ event, props, at: nowDate() });
     }
-    if (__DEV__) console.log('[analytics:noop]', event, props ?? '');
+    if (__DEV__) console.log(`[analytics:noop:${tier}]`, event, props ?? '');
     return;
   }
   try {
@@ -212,6 +268,13 @@ export function track(event: AnalyticsEvent, props?: AnalyticsProps) {
 }
 
 /**
+ * Screens whose opening says something about the person's recovery — an urge,
+ * a slip, a milestone, a check-in. Opening them is progress data; every other
+ * screen view is product analytics.
+ */
+const PROGRESS_SCREENS = ['/urge', '/relapse', '/milestone', '/milestones', '/recovery', '/checkin', '/reasons', '/savings'];
+
+/**
  * Screen views, routed through the same gate as `track`.
  *
  * Calling `posthog.screen()` directly works while opted in and vanishes
@@ -220,8 +283,10 @@ export function track(event: AnalyticsEvent, props?: AnalyticsProps) {
  * Going through here gives screens the same dev noop log as every event.
  */
 export function trackScreen(name: string, props?: AnalyticsProps) {
-  if (optedOut || !provider) {
-    if (__DEV__) console.log('[analytics:noop] $screen', name, props ?? '');
+  const sensitive = PROGRESS_SCREENS.some((p) => name === p || name.startsWith(`${p}/`));
+  const live = sensitive ? progressLive() : productOn && provider !== null;
+  if (!live || !provider) {
+    if (__DEV__) console.log(`[analytics:noop:${sensitive ? 'progress' : 'product'}] $screen`, name, props ?? '');
     return;
   }
   try {
@@ -231,9 +296,10 @@ export function trackScreen(name: string, props?: AnalyticsProps) {
   }
 }
 
+/** The account id. Held until progress consent; tier 1 stays anonymous. */
 export function identify(anonymousId: string, props?: AnalyticsProps) {
   pendingIdentity = { id: anonymousId, props };
-  if (optedOut || !provider) return;
+  if (!progressLive() || !provider) return;
   try {
     provider.identify(anonymousId, props);
   } catch {}

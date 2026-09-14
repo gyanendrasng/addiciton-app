@@ -94,8 +94,12 @@ Play blocks release until all of these are done:
   and tobacco, no sexual content, no violence
 - **Target audience**: 18+ (or 13+); **not** designed for children
 - **Data safety** — must match the Apple privacy labels exactly: email, name,
-  user id, device id, purchases, usage data, health. Collected, linked to the
-  user, encrypted in transit, deletable in-app, not sold or shared
+  user id, device id, purchases, usage data, health. Collected, encrypted in
+  transit, deletable in-app, not sold or shared. *App interactions* is
+  collected for everyone (product analytics, anonymous, optional via
+  Settings); *Health info* is collected only with consent (the onboarding
+  ask). Mark health as optional, and note in the disclosure that the
+  in-app ask is the consent.
 - **Health apps declaration** — tick exactly one box: *Health and fitness →
   "Stress management, relaxation, mental acuity"*. Leave **every** box under
   **Medical** clear, including "Mental and behavioral health".
@@ -161,6 +165,8 @@ preference:
    and the one most likely to come back as a rejection.
 
 **Data safety must be answered as of the shipped Android build.** PostHog now
-ships and is consent-gated in onboarding; declare usage and health data as
-collected. A Data safety form that under-declares is the Play equivalent of the
-Apple label mismatch, and it is enforced by removal rather than rejection.
+ships in two tiers: anonymous product analytics on by default (declare *App
+interactions*, optional, not linked), and health/progress data behind the
+onboarding ask (declare *Health info*, optional, collected with consent). A
+Data safety form that under-declares is the Play equivalent of the Apple label
+mismatch, and it is enforced by removal rather than rejection.

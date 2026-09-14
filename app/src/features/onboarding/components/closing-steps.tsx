@@ -182,14 +182,15 @@ export function Notifications({ onNext }: { onNext: () => void }) {
 }
 
 /**
- * The analytics ask.
+ * The progress-data ask.
  *
  * Asked here rather than left to a switch in Settings because almost nobody
- * finds a switch in Settings — and asked at all because of *what* is sent.
- * Alongside interaction events, PostHog receives which habits someone tracks
- * and how their streaks run, which is health data: special category under GDPR
- * and consent-bound under India's DPDP Act. Neither store requires this prompt;
- * the law does.
+ * finds a switch in Settings — and asked at all because of *what* this tier
+ * sends: which habits someone tracks and how their streaks run, plus screen
+ * recordings. That is health data — special category under GDPR, sensitive
+ * under Play's User Data policy, consumer health data in Washington — so it
+ * waits for a yes. Anonymous product analytics (screens, funnel) don't carry
+ * any of that and aren't gated here; they have their own switch in Settings.
  *
  * Both buttons write the preference, so a decline is recorded as a decision
  * rather than left at the default.
@@ -212,10 +213,11 @@ export function Analytics({ onNext }: { onNext: () => void }) {
     <View style={s.wrap}>
       <View style={s.centerBlock}>
         <Animated.View entering={FadeIn.duration(350)}>
-          <Title>Help make Qwyt better?</Title>
+          <Title>Share your progress?</Title>
           <Subtitle>
-            Qwyt can report which features get used and how streaks progress, so the parts that
-            help get better and the parts that don’t get cut.
+            Qwyt can report which habits you’re quitting, how your streaks go and how you move
+            through the screens, so the parts that help get better and the parts that don’t get
+            cut.
           </Subtitle>
           <Text style={s.consentNote}>
             Never what you write — your reasons, notes and check-ins are not part of it. You can
@@ -224,7 +226,7 @@ export function Analytics({ onNext }: { onNext: () => void }) {
         </Animated.View>
       </View>
       <View style={{ gap: Spacing.two }}>
-        <Cta label="Share usage data" onPress={() => choose(true)} disabled={busy} />
+        <Cta label="Share my progress" onPress={() => choose(true)} disabled={busy} />
         <Cta label="Not now" variant="ghost" onPress={() => choose(false)} />
       </View>
     </View>

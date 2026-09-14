@@ -25,7 +25,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { BASE_CURRENCY, defaultRate, humanDuration, perDayFor, ratesFor, savedFor } from '@/features/savings/rates';
+import { BASE_CURRENCY, defaultRate, perDayFor, ratesFor, savedFor } from '@/features/savings/rates';
 import { HowWorkedOut, type WorkedOutRow } from '@/features/savings/HowWorkedOut';
 import { formatMoney } from '@/features/savings/use-savings';
 import { curves, stagger } from '@/theme/motion';
@@ -120,30 +120,23 @@ export function SavingsStep({ answers, onNext }: { answers: Answers; onNext: () 
         <Text style={s.kicker}>Over the next {PROGRAM_DAYS} days, at your pace, stopping gives back</Text>
       </Animated.View>
 
+      {/* Money and time, equal weight — both count up together. */}
       <View style={s.hero} accessibilityLabel={heroLabel(model)}>
         {model.moneyKnown ? (
-          <>
+          <View style={s.heroBlock}>
             <Text style={[s.heroNumber, { color: palette.accent }]}>{formatMoney(heroMoney)}</Text>
             <Text style={s.heroSub}>
-              not spent · about {formatMoney(model.year.money)} a year
+              not spent · about <Text style={[s.heroSubStrong, { color: palette.accent }]}>{formatMoney(model.year.money)}</Text> a year
             </Text>
-          </>
-        ) : (
-          <>
-            <Text style={[s.heroNumber, { color: hues.checkin.solid }]}>{humanDuration(heroMinutes)}</Text>
-            <Text style={s.heroSub}>back in your days · about {humanDuration(model.year.minutes)} a year</Text>
-          </>
-        )}
-      </View>
-
-      <Animated.View entering={FadeIn.delay(copyDelay).duration(400)} style={s.second}>
-        {model.moneyKnown ? (
-          <Text style={s.secondLine}>
-            <Text style={[s.secondStrong, { color: hues.checkin.solid }]}>{humanDuration(model.program.minutes)}</Text> of
-            your time, too.
-          </Text>
+          </View>
         ) : null}
-      </Animated.View>
+        <View style={s.heroBlock}>
+          <Text style={[s.heroNumber, { color: hues.checkin.solid }]}>{hoursLabel(heroMinutes)}</Text>
+          <Text style={s.heroSub}>
+            of your time back · about <Text style={[s.heroSubStrong, { color: hues.checkin.solid }]}>{hoursLabel(model.year.minutes)}</Text> a year
+          </Text>
+        </View>
+      </View>
 
       <View style={s.rows}>
         {model.rows.map((r, i) => (
@@ -153,7 +146,7 @@ export function SavingsStep({ answers, onNext }: { answers: Answers; onNext: () 
             style={s.row}>
             <Text style={s.rowLabel}>{r.label}</Text>
             <Text style={s.rowValue}>
-              {r.money > 0 ? formatMoney(r.money) : humanDuration(r.minutes)}
+              {r.money > 0 ? formatMoney(r.money) : hoursLabel(r.minutes)}
               <Text style={s.rowCount}>
                 {'  '}· {r.count.toLocaleString()} {r.units}
               </Text>
@@ -192,27 +185,31 @@ export function SavingsStep({ answers, onNext }: { answers: Answers; onNext: () 
   );
 }
 
+/** "90 hours" — whole hours, because that's the unit people budget in. */
+function hoursLabel(minutes: number): string {
+  const h = Math.round(minutes / 60);
+  return `${h.toLocaleString()} ${h === 1 ? 'hour' : 'hours'}`;
+}
+
 function heroLabel(m: { moneyKnown: boolean; program: { money: number; minutes: number } }) {
-  return m.moneyKnown
-    ? `${formatMoney(m.program.money)} not spent over ${PROGRAM_DAYS} days`
-    : `${humanDuration(m.program.minutes)} back over ${PROGRAM_DAYS} days`;
+  const time = `${hoursLabel(m.program.minutes)} back over ${PROGRAM_DAYS} days`;
+  return m.moneyKnown ? `${formatMoney(m.program.money)} not spent and ${time}` : time;
 }
 
 const s = StyleSheet.create({
   root: { flex: 1, paddingTop: Spacing.four },
   kicker: { color: palette.textDim, fontSize: 17, lineHeight: 24, fontFamily: type.body, maxWidth: 320 },
-  hero: { marginTop: Spacing.four, gap: Spacing.one },
+  hero: { marginTop: Spacing.four, gap: Spacing.four },
+  heroBlock: { gap: Spacing.one },
   heroNumber: {
-    fontSize: 64,
-    lineHeight: 72,
-    letterSpacing: -2,
+    fontSize: 56,
+    lineHeight: 62,
+    letterSpacing: -1.8,
     fontFamily: type.display,
     fontVariant: ['tabular-nums'],
   },
   heroSub: { color: palette.textDim, fontSize: 15, fontFamily: type.bodyMed, fontVariant: ['tabular-nums'] },
-  second: { marginTop: Spacing.three, minHeight: 24 },
-  secondLine: { color: palette.textDim, fontSize: 17, lineHeight: 24, fontFamily: type.body },
-  secondStrong: { fontFamily: type.bodySemi, fontVariant: ['tabular-nums'] },
+  heroSubStrong: { fontSize: 20, fontFamily: type.display },
   rows: { marginTop: Spacing.four, borderRadius: 16, backgroundColor: palette.surface, overflow: 'hidden' },
   row: {
     minHeight: 52,
