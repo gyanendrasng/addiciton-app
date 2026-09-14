@@ -52,11 +52,9 @@ function Flow() {
   }, [dispatch, effSteps, index]);
   const done = useCallback(async () => {
     const picked = selectedHabits(answers);
-    track('onboarding_completed', {
-      habit_count: picked.length,
-      habits: picked.map((h) => h.id).join(','),
-      score: computeScore(answers),
-    });
+    // Product tier: the funnel, habit-free. Progress tier: what was chosen.
+    track('onboarding_completed', { habit_count: picked.length });
+    track('habits_chosen', { habits: picked.map((h) => h.id).join(','), score: computeScore(answers) });
     await completeOnboarding(answers);
     router.replace('/');
   }, [answers, router]);
@@ -133,15 +131,16 @@ function Flow() {
 }
 
 /**
- * A stable, non-personal name for a step. Question ids are fixed keys
- * (`frequency:porn`), interstitial titles are fixed copy — nothing here is
- * something the user typed.
+ * A stable, non-personal name for a step. Question ids are fixed keys and
+ * interstitial titles are fixed copy — nothing here is something the user
+ * typed. The per-habit frequency steps (`frequency:porn`) collapse to
+ * `frequency`: this event is product analytics and must not say which habit.
  */
 function stepName(step: Step): string {
   switch (step.kind) {
     case 'question':
     case 'multi':
-      return step.id;
+      return step.id.startsWith('frequency:') ? 'frequency' : step.id;
     case 'interstitial':
       return `interstitial:${step.title}`;
     default:

@@ -12,7 +12,7 @@ import { Tap } from '@/components/ui/tap';
 import { getDb } from '@/db/client';
 import { setHabits, setPremium, useProfile } from '@/db/repo/profile';
 import { setSetting, useSetting } from '@/db/repo/settings';
-import { ANALYTICS_KEY, setAnalyticsPref } from '@/features/settings/analytics';
+import { ANALYTICS_KEY, PRODUCT_KEY, setAnalyticsPref, setProductAnalyticsPref } from '@/features/settings/analytics';
 import {
   cancelDailyReminders,
   listScheduled,
@@ -39,6 +39,7 @@ export default function SettingsScreen() {
   const { profile } = useProfile();
   const { signedIn, user, refreshSession } = useAccount();
   const analyticsOn = useSetting<boolean>(ANALYTICS_KEY, false);
+  const productOn = useSetting<boolean>(PRODUCT_KEY, true);
   const remindersOn = useSetting<boolean>('reminders.enabled', false);
   const morning = useSetting<number>('reminders.morning', 8);
   const evening = useSetting<number>('reminders.evening', 21);
@@ -309,13 +310,27 @@ export default function SettingsScreen() {
         <Section label="Your data">
           <Row
             icon="chart.bar.fill"
+            iconTint={hues.checkin.solid}
+            iconWash={hues.checkin.wash}
+            label="Product analytics"
+            sub="Which screens get used and where people stop. Anonymous — nothing about your habits.">
+            <Switch
+              value={productOn.value}
+              onValueChange={setProductAnalyticsPref}
+              trackColor={{ true: palette.accentDeep, false: palette.surface3 }}
+              thumbColor={palette.text}
+            />
+          </Row>
+          <Row
+            icon="heart.text.square.fill"
             iconTint={hues.progress.solid}
             iconWash={hues.progress.wash}
-            label="Share usage data"
-            sub="Which features get used and how streaks progress. Never what you write.">
+            label="Share your progress"
+            sub="Which habits you’re quitting and how your streaks go, plus screen recordings. Never what you write.">
             <Switch
               value={analyticsOn.value}
               onValueChange={setAnalyticsPref}
+              disabled={!productOn.value}
               trackColor={{ true: palette.accentDeep, false: palette.surface3 }}
               thumbColor={palette.text}
             />

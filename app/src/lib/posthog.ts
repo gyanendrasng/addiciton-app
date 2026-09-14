@@ -6,10 +6,11 @@
  *
  * Privacy contract (mirrors analytics.ts):
  *   – No user-written text (notes, reasons, triggers).
- *   – No PII: no email, no name. Identity uses the opaque Better Auth user ID.
- *   – No autocapture, no session recording, no heatmaps.
- *   – Opt-in: analytics.ts defaults optedOut=true; the provider is only wired
- *     in once the user enables analytics in Settings.
+ *   – No PII: no email, no name. Identity uses the opaque Better Auth user ID,
+ *     and only once progress data is consented to.
+ *   – No autocapture, no heatmaps. Session recording only under consent.
+ *   – Product analytics are on by default (anonymous, habit-free) and off via
+ *     Settings; progress data waits for the onboarding ask. See analytics.ts.
  *   – Never from __DEV__ or a simulator: `posthog` is null there.
  */
 import Constants from 'expo-constants';
@@ -40,8 +41,12 @@ if (disabled && isConfigured) {
  * Autocapture is OFF entirely — `_layout.tsx` passes `autocapture={false}` to
  * PostHogProvider, and screens are tracked manually through the analytics seam.
  *
- * Session replay IS on, and it is the one part of the privacy contract that has
- * to be enforced by construction rather than by discipline. React Native replay
+ * Session replay is NOT started here. `enableSessionReplay` stays false at
+ * construction and `analytics.ts` calls `startSessionRecording()` the moment
+ * progress consent is in (and `stopSessionRecording()` when it goes) — the
+ * lazy start ignores the construction flag, so nothing is recorded before the
+ * answer. Replay is the one part of the privacy contract that has to be
+ * enforced by construction rather than by discipline: React Native replay
  * captures **full screenshots** — native iOS and Android default to wireframes,
  * React Native does not — so anything drawn on screen is in the recording
  * unless something masks it.
@@ -66,17 +71,16 @@ export const posthog = isConfigured && !disabled
   ? new PostHog(projectToken as string, {
       host: host ?? 'https://us.i.posthog.com',
       /**
-       * Start opted OUT, at construction.
-       *
-       * `analytics.ts` also calls `optOut()`, but that runs *after* the client
-       * is built, and lifecycle capture is enabled — so an app-open event can
-       * race the opt-out and reach PostHog before anyone consented. Play's User
-       * Data policy requires consent "before your app can begin to collect or
-       * access the personal and sensitive user data", and which habits someone
-       * is quitting is health data. `defaultOptIn: false` closes the window.
+       * Opted in at construction: product analytics are on by default, and
+       * what goes out before any consent is anonymous and habit-free —
+       * lifecycle events and the tier-1 events in `analytics.ts`. Nothing
+       * sensitive can leave until `setAnalyticsConsent('in')`, because the
+       * seam holds tier 2, the identity and the recording behind it. The
+       * Settings switch turns the whole client off via `optOut()`.
        */
-      defaultOptIn: false,
-      enableSessionReplay: true,
+      defaultOptIn: true,
+      // Off here; started by consent. See the header.
+      enableSessionReplay: false,
       sessionReplayConfig: {
         // OFF — on React Native this masks every <Text>, not just inputs; see
         // the header. User-written text is masked per view with PostHogMaskView.
@@ -91,8 +95,8 @@ export const posthog = isConfigured && !disabled
         captureNetworkTelemetry: true,
         throttleDelayMs: 1000,
       },
-      // Lifecycle events (install / update / open / background) carry no PII,
-      // and are suppressed entirely until the user opts in.
+      // Lifecycle events (install / update / open / background) carry no PII
+      // and are product analytics; the Settings switch suppresses them.
       captureAppLifecycleEvents: true,
       flushAt: 20,
       flushInterval: 10_000,

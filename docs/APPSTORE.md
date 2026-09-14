@@ -25,13 +25,17 @@ App: **Curb: Quit Any Addiction** · `app.joincurb.curb` · Apple ID `6808528188
 
 **App Privacy** — filed as Name, Email, User ID, Device ID, Purchases. All
 *App Functionality*, all *Linked*, **none used for tracking**.
-- [ ] ⚠️ **Must be re-answered — PostHog now ships.** Those answers were true of
-      the binary at the time. `posthog-react-native` is now installed, wired and
-      switchable on in Settings, and per `privacy/page.tsx` §3c it receives
-      streak lengths, slip and urge counts, and which habits someone tracks.
-      Add **Usage Data → Product Interaction** and **Health & Fitness → Health**
-      (habits are health data), still App Functionality + Analytics, Linked, not
-      tracking. A shipped app collecting more than its label declares is the top
+- [ ] ⚠️ **Must be re-answered — PostHog now ships, in two tiers** (see
+      `app/src/lib/analytics.ts` and `privacy/page.tsx` §3c).
+      *Product analytics*, on by default, anonymous, habit-free: add
+      **Usage Data → Product Interaction**, purpose Analytics, **Not linked**
+      to the user, not tracking.
+      *Progress data*, consent-gated (onboarding ask / Settings), sent under
+      the account id: add **Health & Fitness → Health** and a second
+      **Product Interaction** entry, purpose Analytics, **Linked**, not
+      tracking. Apple's form allows a data type to be declared once per
+      linkage, so Product Interaction is listed as both linked and not linked.
+      A shipped app collecting more than its label declares is the top
       takedown risk in this category.
 
 **Monetization**

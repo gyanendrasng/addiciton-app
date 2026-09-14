@@ -1,18 +1,19 @@
 /**
- * The analytics preference.
+ * The two analytics preferences.
  *
- * Off by default and only ever turned on by the user, in Settings. Two things
- * have to agree for anything to be sent: the seam in `lib/analytics.ts` and
- * PostHog's own opt-out flag, because the SDK captures lifecycle events on its
- * own schedule and would otherwise report before the seam is consulted.
+ * `PRODUCT_KEY` — product analytics, on by default, a switch in Settings.
+ * `ANALYTICS_KEY` — progress data, off until the person says yes in the
+ * onboarding ask or Settings. Both are applied to the seam in
+ * `lib/analytics.ts`, which is the only thing that decides what leaves.
  *
- * `website/src/app/privacy/page.tsx` §3c promises this control by name — "you
- * can turn analytics off in Settings" — so the two move together.
+ * `website/src/app/privacy/page.tsx` §3c promises both controls by name, so
+ * the three move together.
  */
 import { getSetting, setSetting } from '@/db/repo/settings';
-import { setAnalyticsConsent, setAnalyticsOptOut } from '@/lib/analytics';
+import { setAnalyticsConsent, setAnalyticsOptOut, setProductAnalytics } from '@/lib/analytics';
 
 export const ANALYTICS_KEY = 'analytics.enabled';
+export const PRODUCT_KEY = 'analytics.product.enabled';
 
 /**
  * Apply the stored preference. Called once, after the database opens.
@@ -22,6 +23,8 @@ export const ANALYTICS_KEY = 'analytics.enabled';
  * holds onboarding events until the answer instead of dropping them.
  */
 export async function loadAnalyticsPref() {
+  const product = await getSetting<boolean>(PRODUCT_KEY);
+  setProductAnalytics(product !== false);
   const on = await getSetting<boolean>(ANALYTICS_KEY);
   setAnalyticsConsent(on === true ? 'in' : on === false ? 'out' : 'pending');
 }
@@ -30,4 +33,9 @@ export async function loadAnalyticsPref() {
 export async function setAnalyticsPref(on: boolean) {
   await setSetting(ANALYTICS_KEY, on);
   setAnalyticsOptOut(!on);
+}
+
+export async function setProductAnalyticsPref(on: boolean) {
+  await setSetting(PRODUCT_KEY, on);
+  setProductAnalytics(on);
 }

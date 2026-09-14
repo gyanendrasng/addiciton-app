@@ -119,23 +119,35 @@ export default function Page() {
   <h3 id="analytics">c. Usage and progress data</h3>
   <p>Qwyt sends product analytics to{' '}
   <a href="https://posthog.com/privacy" rel="noopener noreferrer" target="_blank">PostHog</a>,
-  so we can see which parts of the app help and which are ignored. It receives:</p>
+  so we can see which parts of the app help and which are ignored. There are two kinds, with
+  two separate controls.</p>
+  <p><strong>Product analytics</strong> is on by default and can be turned off in{' '}
+  <em>Settings</em>. It is anonymous — a random identifier that is not connected to your
+  account — and it contains nothing about which habits you are quitting. It receives:</p>
   <ul>
     <li><strong>Interaction events</strong> — screens opened, buttons used, where people
-    stop during onboarding, whether a purchase was started or completed.</li>
+    stop during onboarding, whether a purchase was started or completed, which game was
+    played from the Games tab.</li>
+    <li><strong>Technical context</strong> — app version, platform, device model.</li>
+  </ul>
+  <p><strong>Progress data</strong> is off until you say yes — Qwyt asks at the end of
+  onboarding, and the answer can be changed any time in <em>Settings</em>. Because the habits
+  you track say something about your health, we treat this as sensitive personal
+  information, and nothing in it leaves your device before you agree. It receives:</p>
+  <ul>
     <li><strong>Progress data</strong> — which habits you are tracking, how long your
-    streaks run, how many slips and urges you have logged, which milestones you reach.</li>
-    <li><strong>Technical context</strong> — app version, platform, device model, and a
-    pseudonymous identifier.</li>
+    streaks run, how many slips and urges you have logged, which milestones you reach, and
+    how you use the Shield.</li>
     <li><strong>Session recordings</strong> — a replay of how you moved through the
     screens, so we can see where the app gets in your way. Anything you have written is
     masked before the recording leaves your device: notes, reasons and check-ins are
     covered over, not captured.</li>
+    <li><strong>Your account identifier</strong>, so your progress is counted once across
+    devices rather than as several strangers.</li>
   </ul>
-  <p>Because the habits you track say something about your health, we treat this as
-  sensitive personal information. It is used to improve Qwyt — never sold, never shared
-  for advertising, and never used to build a profile of you for anyone else. You can turn
-  analytics off in <em>Settings</em>; the rest of the app works exactly the same.</p>
+  <p>Both kinds are used to improve Qwyt — never sold, never shared for advertising, and
+  never used to build a profile of you for anyone else. Turning product analytics off turns
+  everything off; the rest of the app works exactly the same.</p>
   <p>Usage and progress data is retained for <strong>12 months</strong> and then deleted.
   Turning analytics off stops collection from that moment; to have data already collected
   removed, email <a href="mailto:privacy@joincurb.app">privacy@joincurb.app</a> and we will
