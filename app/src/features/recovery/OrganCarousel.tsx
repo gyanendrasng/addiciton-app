@@ -28,11 +28,12 @@ export type OrganSlide = {
 };
 
 /**
- * The card sits on the page's own margins, the same width as the urge button
- * below it; the neighbours show inside those margins — a 20pt inset each
- * side, with a hairline edge so the inset reads as a card and not a strip.
+ * The card sits a step inside the page margins — 8pt narrower than the urge
+ * button on each side — so the neighbours show a 28pt inset each side, with
+ * a hairline edge so the inset reads as a card and not a strip.
  */
 const GAP = Spacing.one;
+const INSET = Spacing.four + Spacing.two;
 
 /**
  * One organ at a time, the neighbours peeking in at both edges, dots beneath.
@@ -52,9 +53,9 @@ export function OrganCarousel({ slides, onOpen }: { slides: OrganSlide[]; onOpen
   const reduced = useReducedMotion();
   const ref = useAnimatedRef<Animated.ScrollView>();
   const many = slides.length > 1;
-  const slideWidth = width - Spacing.four * 2;
+  const slideWidth = many ? width - INSET * 2 : width - Spacing.four * 2;
   const step = slideWidth + GAP;
-  const sidePad = Spacing.four;
+  const sidePad = many ? INSET : Spacing.four;
   const n = slides.length;
   // The run on screen: [last, ...slides, first]; the real cards sit at 1…n.
   const run = many ? [slides[n - 1], ...slides, slides[0]] : slides;
