@@ -4,8 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActionTile, HueIcon } from '@/components/ui/action-tile';
 import { useProfile } from '@/db/repo/profile';
-import { HealthRings } from '@/features/recovery/HealthRings';
-import { healthRings } from '@/features/recovery/timeline';
+import { OrganFill } from '@/features/recovery/OrganFill';
 import { SavingsCard } from '@/features/savings/savings-card';
 import { Tap } from '@/components/ui/tap';
 import { DayGrid } from '@/components/ui/day-grid';
@@ -32,8 +31,14 @@ export default function HomeScreen() {
   const { reasons } = useReasons();
   if (!state) return <SafeAreaView style={s.root} />;
 
-  // Three of the four, at a glance. The full set lives on /recovery.
-  const rings = profile ? healthRings(profile.habits[0], state.streak.ms / 3_600_000).slice(0, 3) : [];
+  // One organ per habit, filling with the streak. The full timeline lives on /recovery.
+  const organs = profile
+    ? profile.habits.map((id) => {
+        const own = state.perHabit.find((h) => h.id === id);
+        const hours = own ? own.days * 24 + own.hours : state.streak.ms / 3_600_000;
+        return { id, label: profile.habits.length > 1 ? own?.label : undefined, hours };
+      })
+    : [];
 
   return (
     <SafeAreaView style={s.root} edges={['top']}>
@@ -66,6 +71,14 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {organs.length > 0 ? (
+          <Tap haptic="light" onPress={() => router.push('/recovery')} style={s.organCard} accessibilityRole="button" accessibilityLabel="See your recovery">
+            {organs.map((o) => (
+              <OrganFill key={o.id} habitId={o.id} habitLabel={o.label} hoursClean={o.hours} size={organs.length > 1 ? 72 : 104} />
+            ))}
+          </Tap>
+        ) : null}
+
         <Tap haptic="medium" onPress={() => router.push('/urge')} style={s.urgeBar} accessibilityRole="button">
           <HueIcon hue="urge" color={hues.urge.ink} size={26} />
           <View style={{ flex: 1 }}>
@@ -95,20 +108,6 @@ export default function HomeScreen() {
 
         <SavingsCard />
 
-        {rings.length > 0 ? (
-          <Tap
-            haptic="light"
-            onPress={() => router.push('/recovery')}
-            style={s.progressCard}
-            accessibilityRole="button"
-            accessibilityLabel="See your recovery">
-            <View style={s.recoveryTop}>
-              <Text style={s.cardTitle}>Your recovery</Text>
-              <Text style={s.cardChev}>›</Text>
-            </View>
-            <HealthRings rings={rings} size={68} animate={false} />
-          </Tap>
-        ) : null}
 
         <Tap haptic="light" onPress={() => router.push('/milestones')} style={s.progressCard} accessibilityRole="button" accessibilityLabel="See all milestones">
           <View style={s.progressTop}>
@@ -131,12 +130,6 @@ export default function HomeScreen() {
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: palette.bg },
-  recoveryTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.three,
-  },
   content: { padding: Spacing.four, gap: Spacing.four },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   eyebrow: { color: palette.accent, fontSize: 12, letterSpacing: 1.4, textTransform: 'uppercase', fontFamily: type.bodySemi },
@@ -155,6 +148,7 @@ const s = StyleSheet.create({
   },
   habitName: { color: palette.textDim, fontSize: 13, fontFamily: type.bodyMed },
   habitDays: { color: palette.accent, fontSize: 13, fontFamily: type.bodySemi, fontVariant: ['tabular-nums'] },
+  organCard: { backgroundColor: palette.surface, borderRadius: 20, padding: Spacing.three, gap: Spacing.three },
   urgeBar: {
     minHeight: 72,
     borderRadius: 22,
