@@ -28,12 +28,12 @@ export type OrganSlide = {
 };
 
 /**
- * The card sits a step inside the page margins — 8pt narrower than the urge
- * button on each side — so the neighbours show a 28pt inset each side, with
- * a hairline edge so the inset reads as a card and not a strip.
+ * The card is exactly the width of the urge button beneath it, on the page's
+ * own margins, and there is no gap between cards: the neighbours show in the
+ * full 24pt margin, their slight scale-down making the seam, and a hairline
+ * edge so the inset reads as a card and not a strip.
  */
-const GAP = Spacing.one;
-const INSET = Spacing.four + Spacing.two;
+const GAP = 0;
 
 /**
  * One organ at a time, the neighbours peeking in at both edges, dots beneath.
@@ -53,9 +53,9 @@ export function OrganCarousel({ slides, onOpen }: { slides: OrganSlide[]; onOpen
   const reduced = useReducedMotion();
   const ref = useAnimatedRef<Animated.ScrollView>();
   const many = slides.length > 1;
-  const slideWidth = many ? width - INSET * 2 : width - Spacing.four * 2;
+  const slideWidth = width - Spacing.four * 2;
   const step = slideWidth + GAP;
-  const sidePad = many ? INSET : Spacing.four;
+  const sidePad = Spacing.four;
   const n = slides.length;
   // The run on screen: [last, ...slides, first]; the real cards sit at 1…n.
   const run = many ? [slides[n - 1], ...slides, slides[0]] : slides;
@@ -127,7 +127,7 @@ function Slide({
     const range = [(index - 1) * step, index * step, (index + 1) * step];
     return {
       opacity: interpolate(x.get(), range, [0.7, 1, 0.7], Extrapolation.CLAMP),
-      transform: [{ scale: reduced ? 1 : interpolate(x.get(), range, [0.94, 1, 0.94], Extrapolation.CLAMP) }],
+      transform: [{ scale: reduced ? 1 : interpolate(x.get(), range, [0.96, 1, 0.96], Extrapolation.CLAMP) }],
     };
   });
   const pct = Math.round(slide.progress * 100);
