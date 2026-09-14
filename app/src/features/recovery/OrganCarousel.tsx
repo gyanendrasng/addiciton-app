@@ -29,10 +29,10 @@ export type OrganSlide = {
 
 /**
  * The card sits on the page's own margins, the same width as the urge button
- * below it, and the gap is wider than the margin so the neighbours wait
- * entirely off-screen — the dots say there are more, the edges stay clean.
+ * below it; the neighbours show inside those margins — a 20pt inset each
+ * side, with a hairline edge so the inset reads as a card and not a strip.
  */
-const GAP = Spacing.four + Spacing.two;
+const GAP = Spacing.one;
 
 /**
  * One organ at a time, the neighbours peeking in at both edges, dots beneath.
@@ -89,7 +89,7 @@ export function OrganCarousel({ slides, onOpen }: { slides: OrganSlide[]; onOpen
         scrollEventThrottle={16}
         contentContainerStyle={{ paddingHorizontal: sidePad, gap: GAP }}>
         {run.map((slide, i) => (
-          <Slide key={`${i}-${slide.id}`} slide={slide} index={i} step={step} width={slideWidth} x={x} reduced={reduced} onOpen={onOpen} />
+          <Slide key={`${i}-${slide.id}`} slide={slide} index={i} step={step} width={slideWidth} x={x} reduced={reduced} many={many} onOpen={onOpen} />
         ))}
       </Animated.ScrollView>
       {many ? (
@@ -110,6 +110,7 @@ function Slide({
   width,
   x,
   reduced,
+  many,
   onOpen,
 }: {
   slide: OrganSlide;
@@ -118,23 +119,25 @@ function Slide({
   width: number;
   x: SharedValue<number>;
   reduced: boolean;
+  many: boolean;
   onOpen: (id: string) => void;
 }) {
   const style = useAnimatedStyle(() => {
     const range = [(index - 1) * step, index * step, (index + 1) * step];
     return {
-      opacity: interpolate(x.get(), range, [0.55, 1, 0.55], Extrapolation.CLAMP),
-      transform: [{ scale: reduced ? 1 : interpolate(x.get(), range, [0.92, 1, 0.92], Extrapolation.CLAMP) }],
+      opacity: interpolate(x.get(), range, [0.7, 1, 0.7], Extrapolation.CLAMP),
+      transform: [{ scale: reduced ? 1 : interpolate(x.get(), range, [0.94, 1, 0.94], Extrapolation.CLAMP) }],
     };
   });
   const pct = Math.round(slide.progress * 100);
+  const peeking = many;
 
   return (
     <Animated.View style={[{ width }, style]}>
       <Tap
         haptic="light"
         onPress={() => onOpen(slide.id)}
-        style={s.card}
+        style={[s.card, peeking && s.cardPeek]}
         accessibilityRole="button"
         accessibilityLabel={`${slide.name}${slide.caption ? `, ${slide.caption}` : ''}, ${pct} percent through the 90 days. See your recovery.`}>
         <OrganPicture organ={slide.organ} progress={slide.progress} size={Math.round(width * 0.54)} />
@@ -175,6 +178,8 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.two,
   },
+  // In a run of cards, a hairline so the inset of a neighbour reads as an edge.
+  cardPeek: { borderWidth: 1, borderColor: palette.line },
   words: { alignItems: 'center', gap: 2 },
   name: { color: palette.text, fontSize: 17, fontFamily: type.bodySemi },
   caption: { color: palette.textDim, fontSize: 13, fontFamily: type.body },
