@@ -4,7 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActionTile, HueIcon } from '@/components/ui/action-tile';
 import { useProfile } from '@/db/repo/profile';
-import { OrganFill } from '@/features/recovery/OrganFill';
+import { OrganCarousel, type OrganSlide } from '@/features/recovery/OrganCarousel';
+import { ORGAN_NAME, organFor } from '@/features/recovery/OrganFill';
 import { SavingsCard } from '@/features/savings/savings-card';
 import { Tap } from '@/components/ui/tap';
 import { DayGrid } from '@/components/ui/day-grid';
@@ -31,12 +32,19 @@ export default function HomeScreen() {
   const { reasons } = useReasons();
   if (!state) return <SafeAreaView style={s.root} />;
 
-  // One organ per habit, filling with the streak. The full timeline lives on /recovery.
-  const organs = profile
+  // One organ per habit, filling with that habit's streak. The words live on /recovery.
+  const slides: OrganSlide[] = profile
     ? profile.habits.map((id) => {
         const own = state.perHabit.find((h) => h.id === id);
         const hours = own ? own.days * 24 + own.hours : state.streak.ms / 3_600_000;
-        return { id, label: profile.habits.length > 1 ? own?.label : undefined, hours };
+        const organ = organFor(id);
+        return {
+          id,
+          organ,
+          name: ORGAN_NAME[organ],
+          caption: profile.habits.length > 1 ? own?.label : undefined,
+          progress: Math.max(0, Math.min(1, hours / (90 * 24))),
+        };
       })
     : [];
 
@@ -71,12 +79,8 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {organs.length > 0 ? (
-          <Tap haptic="light" onPress={() => router.push('/recovery')} style={s.organCard} accessibilityRole="button" accessibilityLabel="See your recovery">
-            {organs.map((o) => (
-              <OrganFill key={o.id} habitId={o.id} habitLabel={o.label} hoursClean={o.hours} size={organs.length > 1 ? 72 : 104} />
-            ))}
-          </Tap>
+        {slides.length > 0 ? (
+          <OrganCarousel slides={slides} onOpen={(habit) => router.push({ pathname: '/recovery', params: { habit } })} />
         ) : null}
 
         <Tap haptic="medium" onPress={() => router.push('/urge')} style={s.urgeBar} accessibilityRole="button">
@@ -148,7 +152,6 @@ const s = StyleSheet.create({
   },
   habitName: { color: palette.textDim, fontSize: 13, fontFamily: type.bodyMed },
   habitDays: { color: palette.accent, fontSize: 13, fontFamily: type.bodySemi, fontVariant: ['tabular-nums'] },
-  organCard: { backgroundColor: palette.surface, borderRadius: 20, padding: Spacing.three, gap: Spacing.three },
   urgeBar: {
     minHeight: 72,
     borderRadius: 22,

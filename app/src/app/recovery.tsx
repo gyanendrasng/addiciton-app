@@ -1,4 +1,5 @@
 import { SymbolView } from 'expo-symbols';
+import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 
@@ -6,14 +7,17 @@ import { Card } from '@/components/ui/card';
 import { Screen } from '@/components/ui/screen';
 import { Tap } from '@/components/ui/tap';
 import { useProfile } from '@/db/repo/profile';
+import { useSetting } from '@/db/repo/settings';
 import { Subtitle } from '@/features/onboarding/components/chrome';
 import { habits as ALL_HABITS } from '@/features/onboarding/content';
 import { withAccess } from '@/features/premium/access';
 import { HealthRings } from '@/features/recovery/HealthRings';
 import { QuickWins } from '@/features/recovery/QuickWins';
 import { healthRings, progressThrough, quickWins } from '@/features/recovery/timeline';
+import { BASE_CURRENCY, ratesFor, savedFor, type Rate } from '@/features/savings/rates';
+import { CURRENCY_KEY, formatMoney, RATES_KEY } from '@/features/savings/use-savings';
 import { useStreak } from '@/features/streak/use-streak';
-import { palette } from '@/theme/palette';
+import { hues, palette } from '@/theme/palette';
 import { Spacing } from '@/theme/spacing';
 import { type } from '@/theme/type';
 
@@ -28,7 +32,11 @@ import { type } from '@/theme/type';
 function RecoveryScreen() {
   const { profile } = useProfile();
   const { state } = useStreak();
-  const [habitId, setHabitId] = useState<string | null>(null);
+  // Home's organ carousel opens this screen on a specific habit.
+  const params = useLocalSearchParams<{ habit?: string }>();
+  const [habitId, setHabitId] = useState<string | null>(params.habit ?? null);
+  const { value: overrides } = useSetting<Record<string, Rate>>(RATES_KEY, {});
+  const { value: currency } = useSetting<string>(CURRENCY_KEY, BASE_CURRENCY);
 
   if (!profile || !state) return <Screen title="Your recovery">{null}</Screen>;
 
@@ -41,6 +49,10 @@ function RecoveryScreen() {
       : state.streak.ms / 3_600_000;
 
   const entries = progressThrough(selected, hours);
+  // What this habit's streak has kept: the same arithmetic as the Savings screen, for one habit.
+  const rates = ratesFor([selected], currency, overrides);
+  const kept = savedFor([selected], profile.answers, hours / 24, rates);
+  const keptHours = Math.round(kept.minutes / 60);
   const nextIdx = entries.findIndex((e) => !e.reached);
   const rings = healthRings(selected, hours);
   const wins = quickWins(selected, hours);
@@ -66,6 +78,21 @@ function RecoveryScreen() {
           })}
         </View>
       ) : null}
+
+      <Card style={s.keptCard}>
+        {kept.money > 0 ? (
+          <View style={s.kept}>
+            <Text style={[s.keptValue, { color: palette.accent }]}>{formatMoney(kept.money, currency)}</Text>
+            <Text style={s.keptLabel}>not spent</Text>
+          </View>
+        ) : null}
+        <View style={s.kept}>
+          <Text style={[s.keptValue, { color: hues.checkin.solid }]}>
+            {keptHours.toLocaleString()} {keptHours === 1 ? 'hour' : 'hours'}
+          </Text>
+          <Text style={s.keptLabel}>back in your days</Text>
+        </View>
+      </Card>
 
       {wins.some((w) => w.reached) ? (
         <>
@@ -165,6 +192,10 @@ const s = StyleSheet.create({
   chipLabelOn: { color: palette.accent, fontFamily: type.bodySemi },
 
   card: { marginTop: Spacing.four, paddingVertical: Spacing.three },
+  keptCard: { marginTop: Spacing.four, flexDirection: 'row', gap: Spacing.four },
+  kept: { flex: 1, gap: 2 },
+  keptValue: { fontSize: 28, lineHeight: 32, fontFamily: type.display, fontVariant: ['tabular-nums'], letterSpacing: -0.5 },
+  keptLabel: { color: palette.textDim, fontSize: 13, fontFamily: type.body },
   item: { flexDirection: 'row', gap: Spacing.three },
   rail: { alignItems: 'center', width: 20 },
   node: {
