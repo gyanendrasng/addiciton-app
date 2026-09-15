@@ -132,21 +132,27 @@ function Slide({
   });
   const pct = Math.round(slide.progress * 100);
   const peeking = many;
+  // The picture is the card: it fills the height, anchored left, and the
+  // words sit as one right-aligned cluster in the bottom-right corner.
+  const height = Math.round(width * 0.66);
+  const art = Math.round(height * 1.08);
 
   return (
     <Animated.View style={[{ width }, style]}>
       <Tap
         haptic="light"
         onPress={() => onOpen(slide.id)}
-        style={[s.card, peeking && s.cardPeek]}
+        style={[s.card, { height }, peeking && s.cardPeek]}
         accessibilityRole="button"
         accessibilityLabel={`${slide.name}${slide.caption ? `, ${slide.caption}` : ''}, ${pct} percent of the way through recovery. See your recovery.`}>
-        <OrganPicture organ={slide.organ} progress={slide.progress} size={Math.round(width * 0.54)} />
+        <View pointerEvents="none" style={[s.art, { left: Spacing.two, top: Math.round((height - art) / 2) }]}>
+          <OrganPicture organ={slide.organ} progress={slide.progress} size={art} />
+        </View>
         <View style={s.words}>
+          <Text style={s.pct}>{pct}%</Text>
           <Text style={s.name}>{slide.name}</Text>
           {slide.caption ? <Text style={s.caption}>{slide.caption}</Text> : null}
         </View>
-        <Text style={s.pct}>{pct}%</Text>
       </Tap>
     </Animated.View>
   );
@@ -174,17 +180,15 @@ const s = StyleSheet.create({
   card: {
     backgroundColor: palette.surface,
     borderRadius: 20,
-    paddingVertical: Spacing.three,
-    paddingHorizontal: Spacing.three,
-    alignItems: 'center',
-    gap: Spacing.two,
+    overflow: 'hidden',
   },
   // In a run of cards, a hairline so the inset of a neighbour reads as an edge.
   cardPeek: { borderWidth: 1, borderColor: palette.line },
-  words: { alignItems: 'center', gap: 2 },
-  name: { color: palette.text, fontSize: 17, fontFamily: type.bodySemi },
-  caption: { color: palette.textDim, fontSize: 13, fontFamily: type.body },
-  pct: { color: palette.accent, fontSize: 28, lineHeight: 32, fontFamily: type.display, fontVariant: ['tabular-nums'] },
+  art: { position: 'absolute' },
+  words: { position: 'absolute', right: Spacing.three, bottom: Spacing.three, alignItems: 'flex-end', maxWidth: '42%' },
+  pct: { color: palette.accent, fontSize: 36, lineHeight: 40, fontFamily: type.display, fontVariant: ['tabular-nums'], letterSpacing: -0.8 },
+  name: { color: palette.text, fontSize: 17, fontFamily: type.bodySemi, marginTop: 2 },
+  caption: { color: palette.textDim, fontSize: 13, fontFamily: type.body, textAlign: 'right' },
   dots: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
   dot: { height: 6, borderRadius: 3 },
 });
