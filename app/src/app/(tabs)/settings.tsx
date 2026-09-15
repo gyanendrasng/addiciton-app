@@ -305,6 +305,15 @@ export default function SettingsScreen() {
             onPress={() => Linking.openURL(PRIVACY_URL)}
             chevron
           />
+          <Row
+            icon="paintbrush.pointed.fill"
+            iconTint={palette.textDim}
+            iconWash={palette.surface3}
+            label="Illustrations"
+            sub="Lungs and brain: Servier Medical Art, CC BY 3.0. Liver: Jan Clusmann, CC0."
+            onPress={() => Linking.openURL('https://smart.servier.com')}
+            chevron
+          />
         </Section>
 
         <Section label="Your data">

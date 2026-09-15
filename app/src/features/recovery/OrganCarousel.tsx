@@ -135,9 +135,9 @@ function Slide({
   // A square card. The picture is the card: centred both ways, and the words
   // tucked as one right-aligned cluster into the bottom-right corner.
   const height = width;
-  const art = Math.round(height * 0.66);
+  const art = Math.round(height * 0.64);
   // Centred, but sitting a little high so the corner cluster has the bottom-right to itself.
-  const artTop = Math.round(height * 0.43 - art / 2);
+  const artTop = Math.round(height * 0.44 - art / 2);
 
   return (
     <Animated.View style={[{ width }, style]}>
