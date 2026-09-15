@@ -4,8 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActionTile, HueIcon } from '@/components/ui/action-tile';
 import { useProfile } from '@/db/repo/profile';
-import { HealthRings } from '@/features/recovery/HealthRings';
-import { healthRings } from '@/features/recovery/timeline';
+import { OrganCarousel, type OrganSlide } from '@/features/recovery/OrganCarousel';
+import { ORGAN_NAME, organFor } from '@/features/recovery/OrganFill';
+import { recoveryFill } from '@/features/recovery/timeline';
 import { SavingsCard } from '@/features/savings/savings-card';
 import { Tap } from '@/components/ui/tap';
 import { DayGrid } from '@/components/ui/day-grid';
@@ -32,8 +33,21 @@ export default function HomeScreen() {
   const { reasons } = useReasons();
   if (!state) return <SafeAreaView style={s.root} />;
 
-  // Three of the four, at a glance. The full set lives on /recovery.
-  const rings = profile ? healthRings(profile.habits[0], state.streak.ms / 3_600_000).slice(0, 3) : [];
+  // One organ per habit, filling along that habit's documented recovery. The words live on /recovery.
+  const slides: OrganSlide[] = profile
+    ? profile.habits.map((id) => {
+        const own = state.perHabit.find((h) => h.id === id);
+        const hours = own ? own.days * 24 + own.hours : state.streak.ms / 3_600_000;
+        const organ = organFor(id);
+        return {
+          id,
+          organ,
+          name: ORGAN_NAME[organ],
+          caption: profile.habits.length > 1 ? own?.label : undefined,
+          progress: recoveryFill(id, hours).fraction,
+        };
+      })
+    : [];
 
   return (
     <SafeAreaView style={s.root} edges={['top']}>
@@ -66,6 +80,10 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {slides.length > 0 ? (
+          <OrganCarousel slides={slides} onOpen={(habit) => router.push({ pathname: '/recovery', params: { habit } })} />
+        ) : null}
+
         <Tap haptic="medium" onPress={() => router.push('/urge')} style={s.urgeBar} accessibilityRole="button">
           <HueIcon hue="urge" color={hues.urge.ink} size={26} />
           <View style={{ flex: 1 }}>
@@ -95,20 +113,6 @@ export default function HomeScreen() {
 
         <SavingsCard />
 
-        {rings.length > 0 ? (
-          <Tap
-            haptic="light"
-            onPress={() => router.push('/recovery')}
-            style={s.progressCard}
-            accessibilityRole="button"
-            accessibilityLabel="See your recovery">
-            <View style={s.recoveryTop}>
-              <Text style={s.cardTitle}>Your recovery</Text>
-              <Text style={s.cardChev}>›</Text>
-            </View>
-            <HealthRings rings={rings} size={68} animate={false} />
-          </Tap>
-        ) : null}
 
         <Tap haptic="light" onPress={() => router.push('/milestones')} style={s.progressCard} accessibilityRole="button" accessibilityLabel="See all milestones">
           <View style={s.progressTop}>
@@ -131,12 +135,6 @@ export default function HomeScreen() {
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: palette.bg },
-  recoveryTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.three,
-  },
   content: { padding: Spacing.four, gap: Spacing.four },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   eyebrow: { color: palette.accent, fontSize: 12, letterSpacing: 1.4, textTransform: 'uppercase', fontFamily: type.bodySemi },
