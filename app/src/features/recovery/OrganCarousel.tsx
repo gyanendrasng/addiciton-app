@@ -132,10 +132,10 @@ function Slide({
   });
   const pct = Math.round(slide.progress * 100);
   const peeking = many;
-  // The picture is the card: it fills the height, anchored left, and the
-  // words sit as one right-aligned cluster in the bottom-right corner.
+  // The picture is the card: centred both ways, and the words tucked as one
+  // right-aligned cluster into the bottom-right corner.
   const height = Math.round(width * 0.66);
-  const art = Math.round(height * 1.08);
+  const art = Math.round(height * 0.86);
 
   return (
     <Animated.View style={[{ width }, style]}>
@@ -145,7 +145,7 @@ function Slide({
         style={[s.card, { height }, peeking && s.cardPeek]}
         accessibilityRole="button"
         accessibilityLabel={`${slide.name}${slide.caption ? `, ${slide.caption}` : ''}, ${pct} percent of the way through recovery. See your recovery.`}>
-        <View pointerEvents="none" style={[s.art, { left: Spacing.two, top: Math.round((height - art) / 2) }]}>
+        <View pointerEvents="none" style={[s.art, { left: Math.round((width - art) / 2), top: Math.round((height - art) / 2) }]}>
           <OrganPicture organ={slide.organ} progress={slide.progress} size={art} />
         </View>
         <View style={s.words}>
@@ -185,7 +185,7 @@ const s = StyleSheet.create({
   // In a run of cards, a hairline so the inset of a neighbour reads as an edge.
   cardPeek: { borderWidth: 1, borderColor: palette.line },
   art: { position: 'absolute' },
-  words: { position: 'absolute', right: Spacing.three, bottom: Spacing.three, alignItems: 'flex-end', maxWidth: '42%' },
+  words: { position: 'absolute', right: Spacing.three, bottom: Spacing.three, alignItems: 'flex-end' },
   pct: { color: palette.accent, fontSize: 36, lineHeight: 40, fontFamily: type.display, fontVariant: ['tabular-nums'], letterSpacing: -0.8 },
   name: { color: palette.text, fontSize: 17, fontFamily: type.bodySemi, marginTop: 2 },
   caption: { color: palette.textDim, fontSize: 13, fontFamily: type.body, textAlign: 'right' },
