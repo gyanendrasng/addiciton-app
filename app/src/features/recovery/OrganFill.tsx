@@ -66,9 +66,11 @@ const SHAPES: Record<Organ, Shape> = {
 };
 
 /**
- * The drawing on its own: a translucent organ with `progress` (0–1) of it
- * filled green from the bottom, the top of the fill a soft meniscus rather
- * than a flat cut. Rises once on mount, after the screen has settled.
+ * The drawing on its own. Two organs, one over the other: a grey one — grey
+ * body, grey outline — and a green one clipped to the level, so everything
+ * still to come is grey and only what's done is green, outline included.
+ * The level's top edge is a soft meniscus, not a flat cut, and it rises once
+ * on mount, after the screen has settled.
  */
 export function OrganPicture({ organ, progress, size, animate = true }: { organ: Organ; progress: number; size: number; animate?: boolean }) {
   const reduced = useReducedMotion();
@@ -83,32 +85,30 @@ export function OrganPicture({ organ, progress, size, animate = true }: { organ:
     level.set(withDelay(durations.base, withTiming(progress, { duration: durations.reveal, easing: curves.out })));
   }, [animate, level, progress, reduced]);
 
-  const fill = useAnimatedProps(() => {
+  const levelPath = useAnimatedProps(() => {
     const y = shape.bottom - (shape.bottom - shape.top) * level.get();
     // A liquid's surface: two shallow curves across the width, then down and around.
     return { d: `M -2 ${y + 0.5} C 10 ${y - 0.7} 17 ${y + 1} 24 ${y} C 31 ${y - 1} 38 ${y + 0.7} 50 ${y + 0.3} V 50 H -2 Z` };
   });
 
-  const clipId = `organ-${organ}`;
+  const clipId = `level-${organ}`;
   return (
     <Svg width={size} height={size} viewBox="0 0 48 48">
       <Defs>
         <ClipPath id={clipId}>
-          {shape.body.map((d, i) => (
-            <Path key={i} d={d} fillRule="evenodd" />
-          ))}
+          <AnimatedPath animatedProps={levelPath} />
         </ClipPath>
       </Defs>
-      {/* the empty body is a track, so what's left reads as clearly as what's done */}
-      <G>
+      {/* what's still to come */}
+      <G fill={palette.surface3} stroke={palette.line} strokeWidth={0.6} strokeLinejoin="round">
         {shape.body.map((d, i) => (
-          <Path key={i} d={d} fill={palette.line} fillRule="evenodd" />
+          <Path key={`g${i}`} d={d} fillRule="evenodd" />
         ))}
       </G>
-      <AnimatedPath fill={palette.accent} clipPath={`url(#${clipId})`} animatedProps={fill} />
-      <G fill="none" stroke={palette.accent} strokeWidth={0.6} strokeLinejoin="round">
+      {/* what's done */}
+      <G clipPath={`url(#${clipId})`} fill={palette.accent} stroke={palette.accent} strokeWidth={0.6} strokeLinejoin="round">
         {shape.body.map((d, i) => (
-          <Path key={`o${i}`} d={d} fillRule="evenodd" />
+          <Path key={`a${i}`} d={d} fillRule="evenodd" />
         ))}
       </G>
     </Svg>
