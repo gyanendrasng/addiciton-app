@@ -141,7 +141,7 @@ export function progressThrough(habitId: string, hoursClean: number): TimelineEn
  *   habit formation, not physiology — Lally 2010, median 66 days to
  *   automaticity, asymptotic — and it says so on /recovery.
  */
-type Anchor = [hours: number, fraction: number];
+export type Anchor = [hours: number, fraction: number];
 const CURVE: Record<string, Anchor[]> = {
   smoking: [[0, 0], [72, 0.15], [15 * DAY, 0.3], [MONTH, 0.45], [12 * WEEK, 0.7], [6 * MONTH, 0.85], [YEAR, 1]],
   alcohol: [[0, 0], [72, 0.05], [2 * WEEK, 0.3], [6 * WEEK, 0.55], [3 * MONTH, 0.8], [6 * MONTH, 1]],
@@ -153,6 +153,11 @@ CURVE.porn = CURVE.behavioural;
 CURVE.social = CURVE.behavioural;
 CURVE.gambling = CURVE.behavioural;
 CURVE.other = CURVE.behavioural;
+
+/** The curve itself, for drawing — the anchors the fill interpolates between. */
+export function recoveryCurve(habitId: string): Anchor[] {
+  return CURVE[habitId] ?? CURVE.behavioural;
+}
 
 export type RecoveryFill = {
   /** 0–1 along the organ's recovery curve */

@@ -14,6 +14,7 @@ import { withAccess } from '@/features/premium/access';
 import { HealthRings } from '@/features/recovery/HealthRings';
 import { ORGAN_NAME, OrganPicture, organFor } from '@/features/recovery/OrganFill';
 import { QuickWins } from '@/features/recovery/QuickWins';
+import { RecoveryCurve } from '@/features/recovery/RecoveryCurve';
 import { healthRings, progressThrough, quickWins, recoveryFill } from '@/features/recovery/timeline';
 import { BASE_CURRENCY, ratesFor, savedFor, type Rate } from '@/features/savings/rates';
 import { CURRENCY_KEY, formatMoney, RATES_KEY } from '@/features/savings/use-savings';
@@ -87,12 +88,19 @@ function RecoveryScreen() {
       ) : null}
 
       <Card style={s.organCard}>
-        <OrganPicture key={selected} organ={organ} progress={fill.fraction} size={ORGAN_SIZE} />
-        <View style={s.organWords}>
-          <Text style={s.organPct}>{pct}%</Text>
-          <Text style={s.organName}>{ORGAN_NAME[organ]} recovery</Text>
-          <Text style={s.organNext}>{fill.next ? `Next milestone at ${fill.next.title}` : 'Every milestone reached'}</Text>
+        <View style={s.organRow}>
+          <OrganPicture key={selected} organ={organ} progress={fill.fraction} size={ORGAN_SIZE} />
+          <View style={s.organWords}>
+            <Text style={s.organPct}>{pct}%</Text>
+            <Text style={s.organName}>{ORGAN_NAME[organ]} recovery</Text>
+            <Text style={s.organNext}>{fill.next ? `Next milestone at ${fill.next.title}` : 'Every milestone reached'}</Text>
+          </View>
         </View>
+        <RecoveryCurve habitId={selected} hoursClean={hours} />
+        <Text style={s.organNote}>
+          How the number is worked out: the recovery timeline for your {ORGAN_NAME[organ].toLowerCase()} from the research, month by month, with the dot where your
+          streak is. Steep at first, then slower — the early days count for a lot.
+        </Text>
       </Card>
 
       <Card style={s.keptCard}>
@@ -209,8 +217,10 @@ const s = StyleSheet.create({
 
   card: { marginTop: Spacing.four, paddingVertical: Spacing.three },
   // The same organ as Home, with its number and what it's working toward beside it.
-  organCard: { marginTop: Spacing.four, flexDirection: 'row', alignItems: 'center', gap: Spacing.four },
+  organCard: { marginTop: Spacing.four },
+  organRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.four },
   organWords: { flex: 1, gap: 2 },
+  organNote: { color: palette.textFaint, fontSize: 12, lineHeight: 17, fontFamily: type.body, marginTop: Spacing.three },
   organPct: { color: palette.accent, fontSize: 34, lineHeight: 38, fontFamily: type.display, fontVariant: ['tabular-nums'], letterSpacing: -1 },
   organName: { color: palette.text, fontSize: 15, fontFamily: type.bodySemi },
   organNext: { color: palette.textDim, fontSize: 13, lineHeight: 18, fontFamily: type.body, marginTop: 2 },
