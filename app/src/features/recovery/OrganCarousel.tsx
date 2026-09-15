@@ -134,8 +134,8 @@ function Slide({
   const peeking = many;
   // The picture is the card: centred both ways, and the words tucked as one
   // right-aligned cluster into the bottom-right corner.
-  const height = Math.round(width * 0.66);
-  const art = Math.round(height * 0.86);
+  const height = Math.round(width * 0.62);
+  const art = Math.round(height * 0.88);
 
   return (
     <Animated.View style={[{ width }, style]}>
@@ -148,6 +148,7 @@ function Slide({
         <View pointerEvents="none" style={[s.art, { left: Math.round((width - art) / 2), top: Math.round((height - art) / 2) }]}>
           <OrganPicture organ={slide.organ} progress={slide.progress} size={art} />
         </View>
+        <Text style={s.eyebrow}>Recovery</Text>
         <View style={s.words}>
           <Text style={s.pct}>{pct}%</Text>
           <Text style={s.name}>{slide.name}</Text>
@@ -185,9 +186,19 @@ const s = StyleSheet.create({
   // In a run of cards, a hairline so the inset of a neighbour reads as an edge.
   cardPeek: { borderWidth: 1, borderColor: palette.line },
   art: { position: 'absolute' },
+  eyebrow: {
+    position: 'absolute',
+    left: Spacing.three,
+    top: Spacing.three,
+    color: palette.accent,
+    fontSize: 12,
+    fontFamily: type.bodySemi,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
   words: { position: 'absolute', right: Spacing.three, bottom: Spacing.three, alignItems: 'flex-end' },
-  pct: { color: palette.accent, fontSize: 36, lineHeight: 40, fontFamily: type.display, fontVariant: ['tabular-nums'], letterSpacing: -0.8 },
-  name: { color: palette.text, fontSize: 17, fontFamily: type.bodySemi, marginTop: 2 },
+  pct: { color: palette.accent, fontSize: 34, lineHeight: 38, fontFamily: type.display, fontVariant: ['tabular-nums'], letterSpacing: -0.8 },
+  name: { color: palette.text, fontSize: 15, fontFamily: type.bodySemi },
   caption: { color: palette.textDim, fontSize: 13, fontFamily: type.body, textAlign: 'right' },
   dots: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
   dot: { height: 6, borderRadius: 3 },

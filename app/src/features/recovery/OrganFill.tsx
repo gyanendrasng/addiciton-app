@@ -3,7 +3,7 @@ import Animated, { useAnimatedProps, useReducedMotion, useSharedValue, withDelay
 import Svg, { ClipPath, Defs, G, Path } from 'react-native-svg';
 
 import { curves, durations } from '@/theme/motion';
-import { hues, palette } from '@/theme/palette';
+import { palette } from '@/theme/palette';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -99,9 +99,10 @@ export function OrganPicture({ organ, progress, size, animate = true }: { organ:
           ))}
         </ClipPath>
       </Defs>
+      {/* the empty body is a track, so what's left reads as clearly as what's done */}
       <G>
         {shape.body.map((d, i) => (
-          <Path key={i} d={d} fill={hues.pledge.wash} fillRule="evenodd" />
+          <Path key={i} d={d} fill={palette.line} fillRule="evenodd" />
         ))}
       </G>
       <AnimatedPath fill={palette.accent} clipPath={`url(#${clipId})`} animatedProps={fill} />
