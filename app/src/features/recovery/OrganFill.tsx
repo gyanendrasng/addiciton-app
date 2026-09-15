@@ -122,6 +122,28 @@ const SHAPES: Record<Organ, Shape> = {
   },
 };
 
+/** The drawn bounds of a shape, from its body paths, so it can be centred by what's actually there. */
+function boundsOf(shape: Shape) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const d of shape.body) {
+    const nums = d.match(/-?\d+(?:\.\d+)?/g) ?? [];
+    for (let i = 0; i + 1 < nums.length; i += 2) {
+      const x = Number(nums[i]), y = Number(nums[i + 1]);
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+  }
+  return { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2 };
+}
+const CENTRE: Record<Organ, { dx: number; dy: number }> = Object.fromEntries(
+  (Object.keys(SHAPES) as Organ[]).map((k) => {
+    const { cx, cy } = boundsOf(SHAPES[k]);
+    return [k, { dx: SHAPES[k].box / 2 - cx, dy: SHAPES[k].box / 2 - cy }];
+  }),
+) as Record<Organ, { dx: number; dy: number }>;
+
 /**
  * The drawing on its own. Two organs, one over the other: a grey one — grey
  * body, grey outline — and a green one clipped to the level, so everything
@@ -142,8 +164,9 @@ export function OrganPicture({ organ, progress, size, animate = true }: { organ:
     level.set(withDelay(durations.base, withTiming(progress, { duration: durations.reveal, easing: curves.out })));
   }, [animate, level, progress, reduced]);
 
+  const { dx, dy } = CENTRE[organ];
   const levelPath = useAnimatedProps(() => {
-    const y = shape.bottom - (shape.bottom - shape.top) * level.get();
+    const y = shape.bottom - (shape.bottom - shape.top) * level.get() + dy;
     const b = shape.box;
     const a = b / 48; // the meniscus in the shape's own units
     // A liquid's surface: two shallow curves across the width, then down and around.
@@ -161,6 +184,7 @@ export function OrganPicture({ organ, progress, size, animate = true }: { organ:
           <AnimatedPath animatedProps={levelPath} />
         </ClipPath>
       </Defs>
+      <G transform={`translate(${dx} ${dy})`}>
       {/* what's still to come */}
       <G fill={palette.surface3} stroke={palette.line} strokeWidth={0.6 * k} strokeLinejoin="round">
         {shape.body.map((d, i) => (
@@ -184,6 +208,7 @@ export function OrganPicture({ organ, progress, size, animate = true }: { organ:
             <Path key={`ad${i}`} d={t.d} strokeWidth={t.w} />
           ))}
         </G>
+      </G>
       </G>
     </Svg>
   );

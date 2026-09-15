@@ -132,10 +132,12 @@ function Slide({
   });
   const pct = Math.round(slide.progress * 100);
   const peeking = many;
-  // The picture is the card: centred both ways, and the words tucked as one
-  // right-aligned cluster into the bottom-right corner.
-  const height = Math.round(width * 0.62);
-  const art = Math.round(height * 0.88);
+  // A square card. The picture is the card: centred both ways, and the words
+  // tucked as one right-aligned cluster into the bottom-right corner.
+  const height = width;
+  const art = Math.round(height * 0.66);
+  // Centred, but sitting a little high so the corner cluster has the bottom-right to itself.
+  const artTop = Math.round(height * 0.43 - art / 2);
 
   return (
     <Animated.View style={[{ width }, style]}>
@@ -145,7 +147,7 @@ function Slide({
         style={[s.card, { height }, peeking && s.cardPeek]}
         accessibilityRole="button"
         accessibilityLabel={`${slide.name}${slide.caption ? `, ${slide.caption}` : ''}, ${pct} percent of the way through recovery. See your recovery.`}>
-        <View pointerEvents="none" style={[s.art, { left: Math.round((width - art) / 2), top: Math.round((height - art) / 2) }]}>
+        <View pointerEvents="none" style={[s.art, { left: Math.round((width - art) / 2), top: artTop }]}>
           <OrganPicture organ={slide.organ} progress={slide.progress} size={art} />
         </View>
         <Text style={s.eyebrow}>Recovery</Text>
@@ -197,8 +199,8 @@ const s = StyleSheet.create({
     textTransform: 'uppercase',
   },
   words: { position: 'absolute', right: Spacing.three, bottom: Spacing.three, alignItems: 'flex-end' },
-  pct: { color: palette.accent, fontSize: 34, lineHeight: 38, fontFamily: type.display, fontVariant: ['tabular-nums'], letterSpacing: -0.8 },
-  name: { color: palette.text, fontSize: 15, fontFamily: type.bodySemi },
+  pct: { color: palette.accent, fontSize: 40, lineHeight: 44, fontFamily: type.display, fontVariant: ['tabular-nums'], letterSpacing: -1 },
+  name: { color: palette.text, fontSize: 17, fontFamily: type.bodySemi },
   caption: { color: palette.textDim, fontSize: 13, fontFamily: type.body, textAlign: 'right' },
   dots: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
   dot: { height: 6, borderRadius: 3 },
