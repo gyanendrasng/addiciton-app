@@ -115,53 +115,66 @@ export function progressThrough(habitId: string, hoursClean: number): TimelineEn
 }
 
 /**
- * How long each habit's documented recovery runs, from the sources above:
- * cilia regrown and clearing normally by about nine months for nicotine; liver
- * enzymes typically back in range by six months for alcohol (fibrosis is a
- * longer, different story a quit app shouldn't assume); receptor density and
- * attention back by three months for cannabis; and for the behavioural habits,
- * the three months by which a new response has become the default — there is
- * no imaging-grade timeline for those, so nothing more is claimed.
+ * How far along the organ's recovery a streak is — a curve, not a count.
+ *
+ * Each habit gets anchors of (hours, fraction) taken from the research, and
+ * the fill interpolates between them. The shape is fast then slow, because
+ * that is the shape of the data: the early, easy gains come in days, the
+ * tissue-level ones take months.
+ *
+ * Lungs (nicotine):
+ *   72 h   bronchial tubes relax, breathing easier (NHS) — tone, not repair
+ *   15 d   mucociliary clearance measurably improving (cessation study,
+ *          Clinics 2016, persisting to day 180)
+ *   1 mo   63% of quitters show significant clearance improvement (same)
+ *   12 wk  FEV1 gain peaks in a 1-year cessation trial (Respir Med 2011);
+ *          NHS: lung function up by as much as 10% by 3–9 months
+ *   6 mo   airway inflammation markers still settling (Respir Res 2010)
+ *   12 mo  85% show clearance improvement, mucus properties normal, cilia
+ *          near a non-smoker's (Clinics 2016)
+ * Liver (alcohol): GGT and liver fat improve over 2–6 weeks; AST/ALT over
+ *   weeks to a few months; enzymes typically in range by ~6 months.
+ *   Fibrosis is a longer, different story a quit app shouldn't assume.
+ * Brain (cannabis): CB1 receptor density normal by ~4 weeks on PET
+ *   (Hirvonen 2012); attention keeps improving to ~3 months.
+ * Brain (behavioural): no imaging-grade timeline exists, so the curve is
+ *   habit formation, not physiology — Lally 2010, median 66 days to
+ *   automaticity, asymptotic — and it says so on /recovery.
  */
-const HORIZON: Record<string, number> = {
-  smoking: 9 * MONTH,
-  vaping: 9 * MONTH,
-  alcohol: 6 * MONTH,
-  weed: 3 * MONTH,
-  porn: 3 * MONTH,
-  social: 3 * MONTH,
-  gambling: 3 * MONTH,
-  other: 3 * MONTH,
+type Anchor = [hours: number, fraction: number];
+const CURVE: Record<string, Anchor[]> = {
+  smoking: [[0, 0], [72, 0.15], [15 * DAY, 0.3], [MONTH, 0.45], [12 * WEEK, 0.7], [6 * MONTH, 0.85], [YEAR, 1]],
+  alcohol: [[0, 0], [72, 0.05], [2 * WEEK, 0.3], [6 * WEEK, 0.55], [3 * MONTH, 0.8], [6 * MONTH, 1]],
+  weed: [[0, 0], [48, 0.1], [WEEK, 0.35], [4 * WEEK, 0.75], [3 * MONTH, 1]],
+  behavioural: [[0, 0], [72, 0.1], [WEEK, 0.25], [2 * WEEK, 0.4], [MONTH, 0.6], [66 * DAY, 0.85], [3 * MONTH, 1]],
 };
+CURVE.vaping = CURVE.smoking;
+CURVE.porn = CURVE.behavioural;
+CURVE.social = CURVE.behavioural;
+CURVE.gambling = CURVE.behavioural;
+CURVE.other = CURVE.behavioural;
 
 export type RecoveryFill = {
-  /** 0–1: documented steps passed, plus the part of the way to the next */
+  /** 0–1 along the organ's recovery curve */
   fraction: number;
-  reached: number;
-  total: number;
+  /** the next documented milestone, for the words */
   next: TimelineEntry | null;
 };
 
-/**
- * How far through the organ's documented recovery the streak has come.
- *
- * Each milestone within the habit's horizon is one step; the fill is the
- * steps passed plus the fraction of the way to the next. The early steps are
- * close together — 20 minutes, 12 hours, 48, 72 — so the first days move the
- * picture visibly, and it slows as the remaining milestones spread out. The
- * brain's three-month horizon fills before the liver's six or the lungs' nine.
- * It is the same sourced list the detail page shows, so the two agree, and it
- * is a position along a published timeline, not a measurement of anyone.
- */
 export function recoveryFill(habitId: string, hoursClean: number): RecoveryFill {
-  const horizon = HORIZON[habitId] ?? 3 * MONTH;
-  const steps = progressThrough(habitId, hoursClean).filter((e) => e.at <= horizon);
-  const total = steps.length;
-  if (total === 0) return { fraction: 0, reached: 0, total: 0, next: null };
-  const reached = steps.filter((e) => e.reached).length;
-  const next = steps.find((e) => !e.reached) ?? null;
-  const fraction = Math.min(1, (reached + (next ? next.progress : 0)) / total);
-  return { fraction, reached, total, next };
+  const curve = CURVE[habitId] ?? CURVE.behavioural;
+  const h = Math.max(0, hoursClean);
+  let fraction = 1;
+  for (let i = 1; i < curve.length; i++) {
+    const [h0, f0] = curve[i - 1];
+    const [h1, f1] = curve[i];
+    if (h <= h1) {
+      fraction = f0 + ((h - h0) / (h1 - h0)) * (f1 - f0);
+      break;
+    }
+  }
+  const next = progressThrough(habitId, hoursClean).find((e) => !e.reached) ?? null;
+  return { fraction: Math.max(0, Math.min(1, fraction)), next };
 }
 
 export type HealthRing = TimelineEntry & { short: string };
