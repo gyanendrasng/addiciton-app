@@ -1,12 +1,15 @@
 REBRAND NOTE: This is the same app previously published as "Curb: Addiction Recovery" (same bundle ID, same developer, same subscriptions). Only the name and in-app wording changed. It is not a duplicate of any other app.
 
 Qwyt is subscription-only with no free tier, so the paywall appears immediately
-after onboarding.
+after onboarding, before any sign-in. A purchase is made first; the app then
+asks for an account (Sign in with Apple, Google, or an email code) so the
+subscription follows the person to a new device.
 
 DEMO ACCOUNT (fastest path — already subscribed)
   Email: review@joincurb.app
   Code:  418574
 
+On the paywall, tap "Sign in" (under the plans, next to "Restore purchase").
 Sign-in is a one-time code sent by email. For this address the code is fixed at
 418574, so no mailbox access is needed: enter the email, tap Continue, then
 enter 418574. This account already holds an active subscription, so the app

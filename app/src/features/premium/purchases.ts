@@ -67,6 +67,9 @@ export async function configurePurchases(appUserID?: string | null) {
   const Purchases = m.default;
   if (!configured) {
     if (__DEV__) Purchases.setLogLevel(m.LOG_LEVEL.WARN);
+    // No account yet is the normal case now: the wall comes before sign-in,
+    // so the SDK starts anonymous and `logIn` merges that customer into the
+    // account later.
     Purchases.configure({ apiKey: API_KEY, appUserID: appUserID ?? null });
     configured = true;
     return;
@@ -75,14 +78,43 @@ export async function configurePurchases(appUserID?: string | null) {
   if (appUserID) await Purchases.logIn(appUserID);
 }
 
+/** RevenueCat's current App User ID — anonymous (`$RCAnonymousID:…`) before sign-in. */
+export async function currentAppUserId(): Promise<string | null> {
+  const m = sdk();
+  if (!m || !configured) return null;
+  try {
+    return await m.default.getAppUserID();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Does the store say this device's customer holds the entitlement right now?
+ * null when there is no store to ask. This is the truth for a purchase the
+ * server hasn't been told about yet.
+ */
+export async function storeEntitlementActive(): Promise<boolean | null> {
+  const m = sdk();
+  if (!m || !API_KEY) return null;
+  try {
+    const info = await m.default.getCustomerInfo();
+    return !!info.entitlements.active[ENTITLEMENT_ID];
+  } catch {
+    return null;
+  }
+}
+
 /** Called on sign-out so the next buyer isn't attributed to the last user. */
 export async function logOutPurchases() {
   const m = sdk();
   if (!m || !configured) return;
   try {
+    // Already anonymous — nothing to drop, and `logOut` would throw.
+    if (await m.default.isAnonymous()) return;
     await m.default.logOut();
   } catch {
-    // Already anonymous — RevenueCat throws rather than no-oping.
+    // Nothing the user can do about it; the next configure sorts it out.
   }
 }
 

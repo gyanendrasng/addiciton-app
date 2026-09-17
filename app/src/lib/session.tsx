@@ -21,6 +21,8 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
+import { setSetting } from '@/db/repo/settings';
+import { ACCOUNT_LINKED_KEY } from '@/features/premium/claim';
 import { configurePurchases, logOutPurchases } from '@/features/premium/purchases';
 import { identify, resetAnalytics } from './analytics';
 import { authClient } from './auth-client';
@@ -100,8 +102,14 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
    */
   useEffect(() => {
     const id = session?.user?.id;
-    if (id) void configurePurchases(id);
-    else void logOutPurchases();
+    // The SDK starts anonymous — the wall comes before sign-in, so a purchase
+    // can happen with no account — and `logIn` moves it to the account later.
+    void configurePurchases(id ?? null).then(() => {
+      if (!id) void logOutPurchases();
+    });
+    // The gate reads this mirror so a signed-in user is never walled off by a
+    // session fetch that failed offline.
+    if (id) void setSetting(ACCOUNT_LINKED_KEY, true);
   }, [session?.user?.id]);
 
   /**

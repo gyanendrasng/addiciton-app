@@ -14,6 +14,8 @@ import { AUTH_BASE_URL, authClient } from '@/lib/auth-client';
 import { useSession } from '@/lib/session';
 import { getSetting, setSetting } from '@/db/repo/settings';
 import { setPremium } from '@/db/repo/profile';
+import { claimEntitlement, clearPendingClaim, pendingClaim } from '@/features/premium/claim';
+import { configurePurchases, storeEntitlementActive } from '@/features/premium/purchases';
 
 export type Entitlement = {
   active: boolean;
@@ -48,7 +50,9 @@ export async function fetchEntitlement(): Promise<Entitlement | null> {
     });
     if (!res.ok) return null;
     const data = (await res.json()) as Entitlement & { signedIn: boolean };
-    if (!data.signedIn) return NO_ENTITLEMENT;
+    // Not signed in is "the server can't know", not "no" — a purchase made
+    // before sign-in is real, and the mirror must not be cleared by it.
+    if (!data.signedIn) return null;
     const entitlement: Entitlement = {
       active: data.active,
       productId: data.productId,
@@ -76,7 +80,20 @@ export function useAccount() {
       setEntitlement(fresh);
       // Mirror the server's answer into local SQLite so the premium gate can
       // decide instantly, and correctly, on a cold or offline launch.
-      await setPremium(fresh.active);
+      if (fresh.active) {
+        await setPremium(true);
+        await clearPendingClaim();
+      } else if (await pendingClaim()) {
+        // The server hasn't been told about this purchase yet, so its "no"
+        // isn't one. The store knows; only a definite no from there revokes.
+        const store = await storeEntitlementActive();
+        if (store === false) {
+          await setPremium(false);
+          await clearPendingClaim();
+        }
+      } else {
+        await setPremium(false);
+      }
     } else {
       const cached = await getSetting<Entitlement>(CACHE_KEY);
       if (cached) setEntitlement(cached);
@@ -84,17 +101,27 @@ export function useAccount() {
     setChecking(false);
   }, []);
 
+  /**
+   * On sign-in, a purchase made before the account has to be handed to it:
+   * `logIn` merges the anonymous RevenueCat customer into this user, then the
+   * server is asked to re-read and record the entitlement — and only then is
+   * the ordinary refresh worth doing.
+   */
+  const userId = session?.user?.id ?? null;
   useEffect(() => {
-    if (loading || !session) return;
+    if (loading || !userId) return;
     let alive = true;
-    // Leave the synchronous effect body before touching state.
-    void Promise.resolve().then(() => {
-      if (alive) refresh();
-    });
+    void (async () => {
+      if (await pendingClaim()) {
+        await configurePurchases(userId);
+        await claimEntitlement();
+      }
+      if (alive) await refresh();
+    })();
     return () => {
       alive = false;
     };
-  }, [loading, refresh, session]);
+  }, [loading, refresh, userId]);
 
   // Signed-out state is derived, not stored — avoids a cascading render.
   const current = session ? (entitlement ?? NO_ENTITLEMENT) : NO_ENTITLEMENT;

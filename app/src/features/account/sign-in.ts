@@ -24,6 +24,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { Platform } from 'react-native';
 
 import { setPremium } from '@/db/repo/profile';
+import { ACCOUNT_LINKED_KEY, clearPendingClaim } from '@/features/premium/claim';
 import { setSetting } from '@/db/repo/settings';
 import { DEV_SKIP_AUTH_KEY } from '@/features/settings/dev';
 import { resetAnalytics, track } from '@/lib/analytics';
@@ -179,6 +180,8 @@ export async function signOutEverywhere() {
     // state below is what the gate reads, so clear it regardless.
   }
   await setPremium(false);
+  await setSetting(ACCOUNT_LINKED_KEY, false);
+  await clearPendingClaim();
   if (__DEV__) await setSetting(DEV_SKIP_AUTH_KEY, false);
   // Drop the analytics identity with the session. Without this the device keeps
   // the signed-out user's distinct_id, so the next person to sign in on this

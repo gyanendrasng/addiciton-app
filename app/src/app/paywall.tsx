@@ -27,6 +27,7 @@ import {
   restorePurchases,
   type StorePrice,
 } from '@/features/premium/purchases';
+import { unlockFromStore } from '@/features/premium/claim';
 import { usePremium } from '@/features/premium/use-premium';
 import { HowWorkedOut } from '@/features/savings/HowWorkedOut';
 import { useYearAhead } from '@/features/savings/use-year-ahead';
@@ -39,7 +40,9 @@ import { type } from '@/theme/type';
  * The wall.
  *
  * Qwyt has no free tier and no trial — this screen is the only way into the
- * app, and it is deliberately not dismissible. Apple 3.1.2 requires the price,
+ * app, and it is deliberately not dismissible. It comes straight after
+ * onboarding, before any account: the purchase is made anonymously and
+ * attached to the account the person creates next (see premium/claim.ts). Apple 3.1.2 requires the price,
  * the billing period and links to Terms and Privacy to be visible here, plus a
  * Restore control, so none of those are optional decoration.
  */
@@ -60,7 +63,7 @@ export default function PaywallScreen() {
   const params = useLocalSearchParams<{ preview?: string }>();
   const pinned = __DEV__ && !!params.preview;
   const tight = height < 780 || PixelRatio.getFontScale() > 1.15 || (pinned && params.preview === 'tight');
-  const { premium, refresh, checking } = usePremium();
+  const { premium, refresh, checking, signedIn } = usePremium();
   // A simulator has no store, so the preview shows the USD fallbacks instead of dashes.
   const priceFor = (p: Plan): StorePrice | undefined =>
     prices[p.packageId] ?? (pinned ? { productId: p.productId, price: p.price, period: '', amount: p.amount, currency: 'USD' } : undefined);
@@ -123,10 +126,13 @@ export default function PaywallScreen() {
     if (purchasesAvailable()) {
       const result = await purchasePlan(plan);
       if (result.ok) {
-        // The store confirmed. RevenueCat's webhook writes the server-side
-        // entitlement; refresh pulls it, and premium going true dismisses this
-        // screen via the effect above.
+        // The store confirmed, and the store is the truth: open the app now.
+        // There may be no account yet — the wall comes before sign-in — so
+        // the purchase is remembered as a pending claim and handed to the
+        // account when one is made (claim.ts). Premium going true dismisses
+        // this screen via the effect above, and the gate asks for the account.
         track('purchase_completed', { plan_id: plan.id });
+        await unlockFromStore();
         await refresh();
       } else if (!result.cancelled) {
         setError(result.message);
@@ -153,8 +159,10 @@ export default function PaywallScreen() {
 
     if (purchasesAvailable()) {
       const result = await restorePurchases();
-      if (result.ok) await refresh();
-      else if (!result.cancelled) setError(result.message);
+      if (result.ok) {
+        await unlockFromStore();
+        await refresh();
+      } else if (!result.cancelled) setError(result.message);
       setBusy(null);
       return;
     }
@@ -324,6 +332,18 @@ export default function PaywallScreen() {
               {busy === 'restore' || checking ? 'Restoring…' : 'Restore purchase'}
             </Text>
           </Tap>
+          {/* A subscriber on a new phone, or one who bought on the other
+              store's account: their subscription lives on their Qwyt account,
+              and this is the way to it from a wall that now comes before
+              sign-in. Gone once they're in. */}
+          {signedIn ? null : (
+            <>
+              <Text maxFontSizeMultiplier={1.25} style={s.legalDot}>·</Text>
+              <Tap haptic="none" onPress={() => router.push('/sign-in')} accessibilityRole="button" style={s.legalTap}>
+                <Text maxFontSizeMultiplier={1.25} style={s.legalLink}>Sign in</Text>
+              </Tap>
+            </>
+          )}
           <Text maxFontSizeMultiplier={1.25} style={s.legalDot}>·</Text>
           <Tap
             haptic="none"

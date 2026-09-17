@@ -169,6 +169,46 @@ export async function resyncFromRevenueCat(
   return { active: state.active };
 }
 
+/**
+ * Attach a signed-in user's RevenueCat entitlement to their account.
+ *
+ * Read the user's own id first — after the app's `logIn` the anonymous
+ * customer is an alias of it, so this is normally enough. If that comes back
+ * empty and the app told us which anonymous id the purchase was made under,
+ * read that too: it covers the moment before the merge has propagated, and a
+ * store where aliases don't resolve by the newer id. Either way the row is
+ * written under the user, and `revenuecatId` records where it was found so
+ * later webhooks for that id resolve to this user.
+ *
+ * Without a REST key there is nothing to read; the row is left as it is and
+ * the next webhook fills it in.
+ */
+export async function claimForUser(userId: string, anonymousId: string | null): Promise<{ active: boolean }> {
+  if (!restConfigured()) {
+    const [row] = await db.select({ active: entitlement.active }).from(entitlement).where(eq(entitlement.userId, userId)).limit(1);
+    return { active: row?.active ?? false };
+  }
+  let found = userId;
+  let state = await fetchActiveEntitlements(userId);
+  if ((!state || !state.active) && anonymousId) {
+    const viaAnon = await fetchActiveEntitlements(anonymousId);
+    if (viaAnon?.active) {
+      state = viaAnon;
+      found = anonymousId;
+    }
+  }
+  if (!state) throw new Error(`active_entitlements unavailable for ${userId}`);
+  const isLifetime = state.active && state.expiresAt === null;
+  await upsertEntitlement(userId, {
+    active: state.active,
+    expiresAt: state.expiresAt,
+    willRenew: state.active ? !isLifetime : false,
+    isLifetime,
+    revenuecatId: found,
+  });
+  return { active: state.active };
+}
+
 /** Does this event type mean the customer should HAVE access right now? */
 export function isGrant(type: string): boolean {
   return GRANTS.has(type);

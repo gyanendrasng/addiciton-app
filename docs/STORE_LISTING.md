@@ -33,9 +33,12 @@ indexed terms) · `Track streaks, ride out urges` (29)
 ## Keywords — 100 chars, comma-separated, no spaces
 
 ```
-sober,craving,recovery,nofap,smoking,alcohol,vaping,weed,gambling,relapse,counter,streak,urges,porn
+sober,craving,recovery,smoking,alcohol,vaping,cannabis,gambling,relapse,counter,streak,urges,quit
 ```
-99 chars. **Tuned to the subtitle that actually shipped.** Apple indexes name +
+99 chars. **Tuned to the subtitle that actually shipped.** No "porn", "nofap"
+or "weed": App Review rejected 1.1.2 under Guideline 1.1 for those terms in the
+description and keywords (12 Sep 2026) — the store listing names no explicit
+habit; the app itself still offers them. Apple indexes name +
 subtitle + keywords as one pool, so "quit", "tracker", "habit" and "addiction"
 are absent — they're already in the name and subtitle, and a repeated word earns
 nothing twice. That frees the slots for "streak" and "urges", which the current
@@ -60,9 +63,9 @@ plan for the two minutes when an urge hits.
 ## Description — 4000 chars
 
 ```
-Curb is a recovery companion for whatever you're trying to stop — porn,
-alcohol, smoking, vaping, weed, social media, gambling, or something you'd
-rather not name.
+Curb is a recovery companion for whatever you're trying to stop — alcohol,
+smoking, vaping, cannabis, social media, gambling, or a habit you'd rather not
+name.
 
 Most quitting apps count days. Curb is built for the moment the count is about
 to break.
@@ -124,8 +127,8 @@ questions that apply:
 
 - **Alcohol, Tobacco, or Drug Use or References** — yes, infrequent/mild. The
   app names these habits; it doesn't depict use.
-- **Sexual Content or Nudity** — **no.** Curb lists "porn" as a habit to quit
-  and shows no sexual content of any kind. Don't over-answer this one; it's the
+- **Sexual Content or Nudity** — **no.** The app offers "porn" as a habit to
+  quit (the store copy doesn't name it) and shows no sexual content of any kind. Don't over-answer this one; it's the
   difference between 12+ and 17+.
 - **Medical/Treatment Information** — no. It tracks; it doesn't advise.
 
@@ -209,7 +212,8 @@ real build. The same image can be reused for all three.
 
 **Review notes** per product:
 ```
-Curb has no free tier. The paywall appears immediately after onboarding and
+Curb has no free tier. The paywall appears immediately after onboarding,
+before any sign-in — the account is asked for after the purchase — and
 this product unlocks the full app. Sign in with any email to reach it.
 ```
 

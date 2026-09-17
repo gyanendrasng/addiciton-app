@@ -1,6 +1,8 @@
 import { Redirect } from 'expo-router';
 
 import { useProfile } from '@/db/repo/profile';
+import { useSetting } from '@/db/repo/settings';
+import { ACCOUNT_LINKED_KEY } from './claim';
 import { usePremium } from './use-premium';
 
 /**
@@ -11,23 +13,29 @@ import { usePremium } from './use-premium';
  * `curb://relapse` and the rest opened the full feature with no account and no
  * subscription. A gate that one deep link walks around is not a gate.
  *
- * Order matters. Premium is checked FIRST, off the local mirror in SQLite, so a
- * paying user opening the app offline goes straight in — being locked out of
- * your own recovery history by a failed network call would be the worst bug
- * this app could ship.
+ * The order is onboarding → paywall → account → in. The wall comes straight
+ * after onboarding, while the reasons are fresh, and the purchase happens
+ * before there is an account (see `claim.ts` for how it finds its owner).
+ * The account comes after, once — it is what makes the subscription follow
+ * the person to a new phone, and by then they have something worth keeping.
+ *
+ * Premium is read off the local mirror in SQLite, and "has an account" off a
+ * local mirror too, so a paying user opening the app offline goes straight
+ * in — being locked out of your own recovery history by a failed network call
+ * would be the worst bug this app could ship.
  */
 export type AccessState = 'loading' | 'onboarding' | 'signin' | 'paywall' | 'ok';
 
 export function useAccessState(): AccessState {
   const { profile, loading } = useProfile();
   const { premium, signedIn, sessionResolved } = usePremium();
+  const { value: linked, loading: linkedLoading } = useSetting<boolean>(ACCOUNT_LINKED_KEY, false);
 
-  if (loading) return 'loading';
+  if (loading || linkedLoading) return 'loading';
   if (!profile) return 'onboarding';
-  if (premium) return 'ok';
-  // An account comes before the purchase so the entitlement has an owner.
-  if (!signedIn) return sessionResolved ? 'signin' : 'loading';
-  return 'paywall';
+  if (!premium) return 'paywall';
+  if (signedIn || linked) return 'ok';
+  return sessionResolved ? 'signin' : 'loading';
 }
 
 /** The route an un-entitled user belongs on, or null if they're allowed in. */
