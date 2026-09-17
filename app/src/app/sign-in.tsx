@@ -44,10 +44,10 @@ type Pane = 'providers' | 'email' | 'code';
 /**
  * Sign in / create an account.
  *
- * Kept deliberately short. In the required flow this lands straight after a
- * dozen onboarding questions, so it is not the place for a second pitch — one
- * heading, one line, three buttons. The reasons to have an account were made
- * already; here the user just wants through.
+ * Kept deliberately short. In the required flow this lands straight after
+ * the purchase, so it is not the place for a second pitch — one heading, one
+ * line, three buttons. They've paid; here they just want through, and the
+ * one line says why the account is worth the tap.
  */
 export default function SignInScreen() {
   const router = useRouter();
@@ -145,11 +145,19 @@ export default function SignInScreen() {
       : pane === 'code'
         ? 'Enter your code.'
         : mustSignIn
-          ? 'Create your account.'
+          ? 'Keep your subscription.'
           : 'Sign in.';
 
+  // In the required flow the person has just paid: the account is what ties
+  // that to them rather than to this phone, and that is the whole pitch.
   const subheading =
-    pane === 'email' ? 'We’ll send a 6-digit code.' : pane === 'code' ? `Sent to ${email}.` : null;
+    pane === 'email'
+      ? 'We’ll send a 6-digit code.'
+      : pane === 'code'
+        ? `Sent to ${email}.`
+        : mustSignIn
+          ? 'An account ties Qwyt Premium to you, so it’s there on a new phone or after a reinstall.'
+          : null;
 
   return (
     <SafeAreaView style={s.root} edges={['top', 'bottom']}>

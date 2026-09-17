@@ -17,6 +17,31 @@ Everything here was worked out against the real dashboards, not from memory.
 - App-Specific Shared Secret is **optional** — StoreKit 1 receipt validation
   only. The In-App Purchase Key covers StoreKit 2, which is what ships.
 
+## Purchase before account
+
+The wall comes before sign-in, so the first purchase is made under RevenueCat's
+**anonymous** App User ID. How it reaches the account
+(`app/src/features/premium/claim.ts`):
+
+1. Store confirms → local premium mirror goes true, the anonymous id is saved
+   as a *pending claim*. The app opens; the gate then asks for an account.
+2. Sign-in → `Purchases.logIn(userId)` merges the anonymous customer into the
+   account (RevenueCat: "CustomerInfo merged"). No webhook announces a merge.
+3. The app calls **`POST /api/entitlement/sync`** with the anonymous id; the
+   server re-reads `active_entitlements` for the user (then the anonymous id as
+   a fallback) and writes the `entitlement` row with `revenuecatId` set to
+   wherever it was found, so later webhooks resolve to the user.
+4. While a claim is pending, a "not premium" from the server is ignored; only
+   the store's own `getCustomerInfo()` saying no revokes.
+
+Restore still works with no account (Apple ID / Play account). An existing
+subscriber on a new phone uses **Sign in** on the paywall; the server
+entitlement then opens the app.
+
+Deploy the website before shipping the app change: without the sync route the
+claim stays pending (the app still opens; the server learns at the next
+renewal webhook via `aliases`).
+
 ## RevenueCat
 
 1. **App** — Apps → + New → App Store. Bundle id `app.joincurb.curb`, upload the

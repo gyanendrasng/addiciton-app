@@ -40,8 +40,9 @@ export type Plan = {
 /**
  * Order: shortest commitment first, best value last.
  * The eye lands on weekly's $9.99 and then reads down to $59.99 for a whole
- * year, which is the comparison that sells the year. Leading with the year
- * makes it the expensive-looking number instead of the cheap one.
+ * year, which is the comparison that sells the year. Listing the year first
+ * would make it the expensive-looking number instead of the cheap one — so it
+ * sits last, and is the one preselected (paywall.tsx).
  */
 export const PLANS: Plan[] = [
   {
