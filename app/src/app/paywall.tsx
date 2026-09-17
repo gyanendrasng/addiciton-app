@@ -113,8 +113,15 @@ export default function PaywallScreen() {
     if (premium && !pinned) router.replace('/');
   }, [premium, pinned, router]);
 
-  // Weekly is preselected — the lowest number to say yes to.
-  const plan = PLANS.find((p) => p.id === selected) ?? PLANS[0];
+  /**
+   * Yearly is preselected. Health & Fitness is the one category where annual
+   * keeps gaining share (61% of category revenue, Adapty 2026), a preselected
+   * annual with the shorter plans visible as anchors moves most buyers onto it,
+   * and a year is the commitment the product's own story asks for. Weekly stays
+   * on the screen, as prominent as ever, for whoever wants the small first step.
+   */
+  const DEFAULT_PLAN = PLANS.find((p) => p.id === 'yearly') ?? PLANS[0];
+  const plan = PLANS.find((p) => p.id === selected) ?? DEFAULT_PLAN;
   const yearlyPrice = yearlyPlan ? priceFor(yearlyPlan)?.price : undefined;
 
   const buy = async () => {
