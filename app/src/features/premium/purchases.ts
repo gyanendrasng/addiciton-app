@@ -61,6 +61,14 @@ let configured = false;
  * are UUIDv4 (Apple and Play's server-to-server purchase tracking requires
  * that shape).
  */
+/**
+ * `logIn` calls are serialised and deduplicated: the session provider and the
+ * account hook both ask for the same identity at sign-in, and two concurrent
+ * `logIn`s for one id are at best wasted round trips.
+ */
+let identity: string | null = null;
+let identifying: Promise<void> = Promise.resolve();
+
 export async function configurePurchases(appUserID?: string | null) {
   const m = sdk();
   if (!m || !API_KEY) return;
@@ -69,13 +77,17 @@ export async function configurePurchases(appUserID?: string | null) {
     if (__DEV__) Purchases.setLogLevel(m.LOG_LEVEL.WARN);
     // No account yet is the normal case now: the wall comes before sign-in,
     // so the SDK starts anonymous and `logIn` merges that customer into the
-    // account later.
+    // account later. With no id given it reuses whatever it last identified.
     Purchases.configure({ apiKey: API_KEY, appUserID: appUserID ?? null });
     configured = true;
+    identity = appUserID ?? null;
     return;
   }
-  // Already configured — just move the identity.
-  if (appUserID) await Purchases.logIn(appUserID);
+  // Already configured — just move the identity, once.
+  if (!appUserID || appUserID === identity) return identifying;
+  identity = appUserID;
+  identifying = identifying.then(() => Purchases.logIn(appUserID)).then(() => undefined);
+  return identifying;
 }
 
 /** RevenueCat's current App User ID — anonymous (`$RCAnonymousID:…`) before sign-in. */
@@ -105,6 +117,30 @@ export async function storeEntitlementActive(): Promise<boolean | null> {
   }
 }
 
+/**
+ * Post the device's receipt under the current identity, and say whether the
+ * entitlement is now active on it.
+ *
+ * This is how a purchase made before sign-in reaches an account RevenueCat
+ * won't merge into. `logIn` merges an anonymous customer only into an account
+ * with no history of its own; log into an account that has any — a lapsed
+ * subscription, an old promotional grant — and the purchase stays on the
+ * anonymous customer, and the account reads as unentitled. Re-posting the
+ * receipt under the account moves the subscription across (the project's
+ * transfer behaviour is "transfer to new App User ID"). Unlike a restore this
+ * never shows an App Store sign-in sheet.
+ */
+export async function syncPurchasesToIdentity(): Promise<boolean | null> {
+  const m = sdk();
+  if (!m || !API_KEY) return null;
+  try {
+    const { customerInfo } = await m.default.syncPurchasesForResult();
+    return !!customerInfo.entitlements.active[ENTITLEMENT_ID];
+  } catch {
+    return null;
+  }
+}
+
 /** Called on sign-out so the next buyer isn't attributed to the last user. */
 export async function logOutPurchases() {
   const m = sdk();
@@ -113,6 +149,7 @@ export async function logOutPurchases() {
     // Already anonymous — nothing to drop, and `logOut` would throw.
     if (await m.default.isAnonymous()) return;
     await m.default.logOut();
+    identity = null;
   } catch {
     // Nothing the user can do about it; the next configure sorts it out.
   }
