@@ -100,17 +100,34 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
    * the next person to buy on this device would be attributed to the last
    * account.
    */
+  /**
+   * `logOut` only on the way OUT of a signed-in state, never on "no id right
+   * now": on every cold launch the session is null until the cookie resolves,
+   * and logging RevenueCat out in that window throws away the identified
+   * customer for a fresh anonymous one until `logIn` runs again — a gap in
+   * which the store answers "not entitled" for someone who is. The store is
+   * consulted as the truth for a purchase the server hasn't been told about
+   * yet (claim.ts), so that gap turned into the paywall.
+   */
+  const purchasesUser = useRef<string | null>(null);
   useEffect(() => {
-    const id = session?.user?.id;
-    // The SDK starts anonymous — the wall comes before sign-in, so a purchase
-    // can happen with no account — and `logIn` moves it to the account later.
-    void configurePurchases(id ?? null).then(() => {
-      if (!id) void logOutPurchases();
-    });
-    // The gate reads this mirror so a signed-in user is never walled off by a
-    // session fetch that failed offline.
-    if (id) void setSetting(ACCOUNT_LINKED_KEY, true);
-  }, [session?.user?.id]);
+    const id = session?.user?.id ?? null;
+    if (id) {
+      purchasesUser.current = id;
+      // The SDK starts anonymous — the wall comes before sign-in, so a purchase
+      // can happen with no account — and `logIn` moves it to the account.
+      void configurePurchases(id);
+      // The gate reads this mirror so a signed-in user is never walled off by
+      // a session fetch that failed offline.
+      void setSetting(ACCOUNT_LINKED_KEY, true);
+    } else {
+      void configurePurchases(null);
+      if (!loading && purchasesUser.current !== null) {
+        purchasesUser.current = null;
+        void logOutPurchases();
+      }
+    }
+  }, [session?.user?.id, loading]);
 
   /**
    * Identify the user in analytics using the opaque Better Auth user ID.

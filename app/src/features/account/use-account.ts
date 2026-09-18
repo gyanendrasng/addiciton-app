@@ -15,7 +15,7 @@ import { useSession } from '@/lib/session';
 import { getSetting, setSetting } from '@/db/repo/settings';
 import { setPremium } from '@/db/repo/profile';
 import { claimEntitlement, clearPendingClaim, pendingClaim } from '@/features/premium/claim';
-import { configurePurchases, storeEntitlementActive } from '@/features/premium/purchases';
+import { configurePurchases, storeEntitlementActive, syncPurchasesToIdentity } from '@/features/premium/purchases';
 
 export type Entitlement = {
   active: boolean;
@@ -85,8 +85,11 @@ export function useAccount() {
         await clearPendingClaim();
       } else if (await pendingClaim()) {
         // The server hasn't been told about this purchase yet, so its "no"
-        // isn't one. The store knows; only a definite no from there revokes.
-        const store = await storeEntitlementActive();
+        // isn't one. The store knows — and if the account doesn't hold the
+        // purchase yet, re-posting the receipt under it is what moves it
+        // across. Only a definite no after that revokes.
+        let store = await storeEntitlementActive();
+        if (store === false) store = await syncPurchasesToIdentity();
         if (store === false) {
           await setPremium(false);
           await clearPendingClaim();
@@ -103,9 +106,11 @@ export function useAccount() {
 
   /**
    * On sign-in, a purchase made before the account has to be handed to it:
-   * `logIn` merges the anonymous RevenueCat customer into this user, then the
-   * server is asked to re-read and record the entitlement — and only then is
-   * the ordinary refresh worth doing.
+   * `logIn` moves RevenueCat to this user; if the account doesn't then hold
+   * the purchase (it merges only into an account with no history), the
+   * receipt is re-posted under it, which does; then the server is asked to
+   * re-read and record the entitlement — and only then is the ordinary
+   * refresh worth doing.
    */
   const userId = session?.user?.id ?? null;
   useEffect(() => {
@@ -114,6 +119,7 @@ export function useAccount() {
     void (async () => {
       if (await pendingClaim()) {
         await configurePurchases(userId);
+        if ((await storeEntitlementActive()) === false) await syncPurchasesToIdentity();
         await claimEntitlement();
       }
       if (alive) await refresh();
