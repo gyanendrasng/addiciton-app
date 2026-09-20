@@ -50,8 +50,12 @@ export function useStreak(): { state: StreakState | null; loading: boolean } {
     const tierProgress = next ? Math.min(1, (streak.ms / 86_400_000 - from) / (next.days - from)) : 1;
     const perHabit: HabitStreak[] = profile.habits.map((id) => {
       const label = ALL_HABITS.find((h) => h.id === id)?.label ?? id;
+      // A slip counts against this habit if it was tagged with it, or if it
+      // carries no tag that is still tracked (untagged, or tagged only with a
+      // habit since removed in Settings). The hero above counts every slip,
+      // so this keeps the chips from ever showing a longer run than the hero.
       const times = relapses.data!
-        .filter((r) => r.habitIds.length === 0 || r.habitIds.includes(id))
+        .filter((r) => r.habitIds.includes(id) || !r.habitIds.some((h) => profile.habits.includes(h)))
         .map((r) => r.createdAt);
       const hs = computeStreak(t, streakStart(profile.quitStartedAt, times));
       return { id, label, days: hs.days, hours: hs.hours };
