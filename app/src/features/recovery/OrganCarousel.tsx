@@ -21,7 +21,7 @@ export type OrganSlide = {
   id: string;
   organ: Organ;
   name: string;
-  /** the habit, shown only when there's more than one */
+  /** the habit — always shown, so the card says what it is about */
   caption?: string;
   /** 0–1 along the organ's documented recovery */
   progress: number;

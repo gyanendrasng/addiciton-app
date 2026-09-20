@@ -29,7 +29,7 @@ export type StreakState = {
   next: Tier | null;
   /** 0..1 progress from the current tier to the next */
   tierProgress: number;
-  /** one counter per tracked habit (empty when only one habit) */
+  /** one counter per tracked habit, so the home always names what the streak is clean from */
   perHabit: HabitStreak[];
 };
 
@@ -48,17 +48,14 @@ export function useStreak(): { state: StreakState | null; loading: boolean } {
     const next = nextTier(streak.days);
     const from = tier?.days ?? 0;
     const tierProgress = next ? Math.min(1, (streak.ms / 86_400_000 - from) / (next.days - from)) : 1;
-    const perHabit: HabitStreak[] =
-      profile.habits.length > 1
-        ? profile.habits.map((id) => {
-            const label = ALL_HABITS.find((h) => h.id === id)?.label ?? id;
-            const times = relapses.data!
-              .filter((r) => r.habitIds.length === 0 || r.habitIds.includes(id))
-              .map((r) => r.createdAt);
-            const hs = computeStreak(t, streakStart(profile.quitStartedAt, times));
-            return { id, label, days: hs.days, hours: hs.hours };
-          })
-        : [];
+    const perHabit: HabitStreak[] = profile.habits.map((id) => {
+      const label = ALL_HABITS.find((h) => h.id === id)?.label ?? id;
+      const times = relapses.data!
+        .filter((r) => r.habitIds.length === 0 || r.habitIds.includes(id))
+        .map((r) => r.createdAt);
+      const hs = computeStreak(t, streakStart(profile.quitStartedAt, times));
+      return { id, label, days: hs.days, hours: hs.hours };
+    });
     return {
       streak,
       periodStart: start,
