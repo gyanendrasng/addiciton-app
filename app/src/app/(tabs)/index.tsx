@@ -34,6 +34,8 @@ export default function HomeScreen() {
   if (!state) return <SafeAreaView style={s.root} />;
 
   // One organ per habit, filling along that habit's documented recovery. The words live on /recovery.
+  // The card always names the habit — "Lungs" alone doesn't tell a new user
+  // the app knows what they're quitting.
   const slides: OrganSlide[] = profile
     ? profile.habits.map((id) => {
         const own = state.perHabit.find((h) => h.id === id);
@@ -43,7 +45,7 @@ export default function HomeScreen() {
           id,
           organ,
           name: ORGAN_NAME[organ],
-          caption: profile.habits.length > 1 ? own?.label : undefined,
+          caption: own?.label,
           progress: recoveryFill(id, hours).fraction,
         };
       })
