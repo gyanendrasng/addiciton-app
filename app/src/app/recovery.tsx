@@ -46,12 +46,9 @@ function RecoveryScreen() {
   if (!profile || !state) return <Screen title="Your recovery">{null}</Screen>;
 
   const selected = habitId ?? profile.habits[0];
-  // Per-habit streaks exist only when tracking more than one.
-  const hours =
-    state.perHabit.find((h) => h.id === selected)?.days != null
-      ? (state.perHabit.find((h) => h.id === selected)!.days * 24 +
-          state.perHabit.find((h) => h.id === selected)!.hours)
-      : state.streak.ms / 3_600_000;
+  // This habit's own run; the whole streak only if the habit has no counter yet.
+  const own = state.perHabit.find((h) => h.id === selected);
+  const hours = own ? own.days * 24 + own.hours : state.streak.ms / 3_600_000;
 
   const entries = progressThrough(selected, hours);
   // What this habit's streak has kept: the same arithmetic as the Savings screen, for one habit.
