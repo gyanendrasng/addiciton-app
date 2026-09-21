@@ -125,15 +125,17 @@ claims scrutiny, and Curb isn't a medical app — its own disclaimer says so.
 Answer the questionnaire honestly rather than aiming for a number. The
 questions that apply:
 
-- **Alcohol, Tobacco, or Drug Use or References** — yes, infrequent/mild. The
-  app names these habits; it doesn't depict use.
+- **Alcohol, Tobacco, or Drug Use or References** — **Frequent/Intense.** App
+  Review rejected 1.1.3 (2.3.6, 21 Sep 2026) with it set to infrequent: the
+  app is about quitting smoking, vaping, alcohol and cannabis, so it must be
+  rated for the highest level of that content even though it depicts none.
 - **Sexual Content or Nudity** — **no.** The app offers "porn" as a habit to
   quit (the store copy doesn't name it) and shows no sexual content of any kind. Don't over-answer this one; it's the
   difference between 12+ and 17+.
 - **Medical/Treatment Information** — no. It tracks; it doesn't advise.
 
-Expect 12+. Apple moved to 4+/9+/13+/16+/18+ in July 2025, so the exact label
-may differ.
+Expect 17+ / 18+ with that answer (13+ before it). Apple moved to
+4+/9+/13+/16+/18+ in July 2025, so the exact label may differ.
 
 ## Review notes (App Review Information)
 
