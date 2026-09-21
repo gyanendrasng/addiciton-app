@@ -11,7 +11,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 
-import { maybeAskForReview } from '@/features/review';
 import { setAnalyticsPref } from '@/features/settings/analytics';
 import { Spacing } from '@/theme/spacing';
 import { palette } from '@/theme/palette';
@@ -113,8 +112,6 @@ export function Signature({ onNext }: { onNext: () => void }) {
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             } catch {}
             onNext();
-            // The signed pledge is the high point of onboarding; ask here.
-            void maybeAskForReview('pledge');
           }}
         />
         <Cta

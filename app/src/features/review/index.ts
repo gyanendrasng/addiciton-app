@@ -6,12 +6,14 @@ import { dayKey, now } from '@/lib/clock';
 /**
  * The App Store rating prompt.
  *
- * Three moments: the signed pledge at the end of onboarding — the emotional
- * peak, before the app has proven anything, which is the trade — and then the
- * two where it has: a milestone, a second survived urge. Never from a button,
- * and never on a day the person has logged a lapse. iOS shows the sheet at
- * most three times a year on its own; the gate here keeps us from even asking
- * more than once a season, so those chances land on good days.
+ * Two moments, both after the app has proven something: a milestone, and a
+ * second survived urge. Not during onboarding — the signed pledge was tried
+ * as a third, and App Review rejected 1.1.3 for it under 5.6.3 ("before
+ * they've had enough time to gain a clear understanding of the app's
+ * value"). Never from a button, and never on a day the person has logged a
+ * lapse. iOS shows the sheet at most three times a year on its own; the gate
+ * here keeps us from even asking more than once a season, so those chances
+ * land on good days.
  */
 type StoreReviewModule = typeof import('expo-store-review');
 
@@ -34,7 +36,7 @@ const ASKED_AT = 'review.askedAt';
 const COOLDOWN_MS = 90 * 86_400_000;
 const SETTLE_MS = 600;
 
-export type ReviewMoment = 'pledge' | 'milestone' | 'urge_survived';
+export type ReviewMoment = 'milestone' | 'urge_survived';
 
 export async function maybeAskForReview(moment: ReviewMoment) {
   try {
